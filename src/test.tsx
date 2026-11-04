@@ -1,37 +1,40 @@
 import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from 'react'
 import type { PageId } from './wf'
 
-/* =========================================================================
-   gebruikerstest InnerGames · test mode v5
-   ronde 0 = huidige site (baseline) · ronde 1 = prototype (vindbaarheid + preview + vertrouwen) · retest = ronde 1 op de verbeterde versie
-   v5: wireframe-ronde weg. Eén sessie van ± 40 minuten op het ontwerp, zodat 12 mensen genoeg zijn (3 + 6 + 3).
-   Onderwijs = mbo en hbo (wens Ariën, week 9).
-   Decision codes D1 to D12: see InnerGames_Usability_Test_Plan_v3, section 3.
-   ========================================================================= */
-
-type Task = { text: string; codes: string[]; expect: string; ask?: Q[]; noSeq?: boolean }
-type Q = { id: string; q: string; kind: 'text' | 'scale7' | 'pick3' | 'choice'; low?: string; high?: string; code?: string; options?: string[]; follow?: string; followWhen?: string[] }
+type Q = {
+  id: string
+  q: string
+  kind: 'scale' | 'slider' | 'text' | 'words' | 'choice'
+  low?: string
+  high?: string
+  /** choice: knoppen, of een dropdown bij meer dan 6 opties */
+  options?: string[]
+  /** choice: vervolgvraag (open tekst) */
+  follow?: string
+  /** choice: toon de vervolgvraag alleen bij deze opties; zonder lijst altijd na een keuze */
+  followWhen?: string[]
+}
+type Task = { t: string; code: string; expect?: string; ask?: Q[] }
 type Round = {
   name: string
-  view: 'ontwerp' | 'live'
-  impression?: { q: string; code: string }[]
-  menu?: string[]
-  after: 'seq' | 'none'
+  view: 'huidige site' | 'wireframe' | 'ontwerp'
+  warmup: boolean
+  five: { id: string; q: string }[]
+  menu: boolean
   tasks: Task[][]
+  ease: boolean
   closing: Q[]
-  profileQ: string[][]
+  profileQ: Q[][]
 }
 
-/* Warm-up: critical incident technique. Ask about the LAST real time, not about "usually".
-   No real example? Ask how they would do it and write "hypothetisch" in the notes. */
 export const PROFILES = [
   {
-    name: 'onderwijs (docent mbo / hbo)',
+    name: 'onderwijs (docent)',
     warm: [
-      'Vertel eens over de laatste keer dat je iets extra’s voor je studenten of je team regelde, zoals een workshop, gastles, training of spel. Wat was het?',
+      "Vertel eens over de laatste keer dat je iets extra's voor je klas regelde, zoals een workshop, gastles of spel. Wat was het?",
       'Hoe kwam je daarbij terecht? Waar zocht of hoorde je het eerst?',
       'Wat moest je weten voordat je ja zei, en waar vond je dat?',
-      'Wie moest er nog meer mee instemmen, bijvoorbeeld je teamleider of opleidingsmanager?',
+      'Wie moest er nog meer mee instemmen?',
       'Hoe werd het betaald?',
     ],
   },
@@ -57,172 +60,195 @@ export const PROFILES = [
   },
 ]
 
-/* Answer formats (v4):
-   - open text when we want to discover something (why, what's missing, expectations, first impression)
-   - choice when the answer space is known and we need to count it (ja/nee, next step, which offer)
-   - every choice has "weet ik niet" or "iets anders", and most get a "waarom" follow-up
-   - never a list of trust signals or menu words to tick: that would put words in people's mouths */
-const YNW = ['ja', 'nee', 'weet ik niet']
-const OFFERS = [
+export const KNOWN = ['nooit van gehoord', 'van naam', 'eerder mee gewerkt'] as const
+export const REC = ['ja, scherm en stem', 'alleen stem', 'nee, geen opname'] as const
+export const QUOTE_OK = ['ja, anoniem', 'nee'] as const
+
+const WARM_HINT = "Vraag naar de laatste echte keer, niet naar 'meestal'. Geen voorbeeld? Vraag hoe ze het zouden doen en schrijf 'hypothetisch' erbij."
+const PROBE = 'neutraal doorvragen: Wat denk je nu? · Wat verwacht je dat er gebeurt? · Wat zoek je op dit moment? · Kun je daar iets meer over vertellen?'
+const AFTERWARDS = 'achteraf: Waar had je verwacht dit te vinden?'
+
+const MENU = ['sessies en workshops', 'onze spellen', 'projecten', 'train-de-trainer']
+const WORDS = ['speels', 'professioneel', 'betrouwbaar', 'warm', 'creatief', 'rustig', 'duidelijk', 'uitnodigend', 'serieus', 'kinderachtig', 'rommelig', 'saai', 'druk', 'goedkoop', 'ouderwets', 'afstandelijk']
+
+const AGREE = { low: '1 = helemaal oneens', high: '7 = helemaal eens' }
+const UMUX: Q[] = [
+  { id: 'umux1', q: 'Wat deze website kan, past bij wat ik nodig heb.', kind: 'scale', ...AGREE },
+  { id: 'umux2', q: 'Deze website is makkelijk te gebruiken.', kind: 'scale', ...AGREE },
+]
+
+/* ---------- antwoordvragen na een taak ---------- */
+const YNX = ['ja', 'nee', 'weet ik niet']
+const YMN = ['ja', 'misschien', 'nee']
+const CHOSEN_OPTIONS = [
   'Energiek team!', 'Het spel tussen hoofd en lichaam', 'Ontdek jouw drijfveren', 'De Klimaat Collage', 'Het Impact Imperium (workshop)', 'MemoryStory', 'Kansen Keren (workshop)', 'Hoezo Raar?!', 'Positive Masculinity',
   'the elemental five (spel)', 'Sociality (spel)', 'Impact Imperium klassenset (spel)', 'Kansen Keren (spel)', 'train-de-trainer', 'iets anders', 'niets gevonden',
 ]
-const pick: Q = { id: 'keuze', q: 'Wat heb je gekozen?', kind: 'choice', options: OFFERS, follow: 'Waarom deze?', followWhen: OFFERS.slice(0, -1) }
+const CHOSEN: Q = { id: 'gekozen', q: 'Wat heb je gekozen?', kind: 'choice', options: CHOSEN_OPTIONS, follow: 'Waarom deze?', followWhen: CHOSEN_OPTIONS.filter((o) => o !== 'niets gevonden') }
+const canIf = (follow: string, followWhen?: string[]): Q => ({ id: 'kan', q: 'Kan het?', kind: 'choice', options: YNX, follow, followWhen })
+const text = (id: string, q: string): Q => ({ id, q, kind: 'text' })
 
-/* Round 1 tasks. Same structure for every profile so tasks 1 to 3 can be compared over 6 people:
-   1 find something that fits (D1, D4) · 2 check the facts (D3) · 3 arrange it (D5) · 4 profile-specific.
-   No menu words in the tasks. "expect" is only shown to the test leader.
-   "ask" = the answer to the task itself, asked BEFORE the ease score. Action tasks (task 3) have no ask:
-   success there is reaching the form, which the page log shows. */
-const R1_TASKS: Task[][] = [
+const TASKS_R1: Task[][] = [
   [
-    { text: 'Je bent docent in het mbo of hbo. Over drie weken heeft je opleiding een projectweek over duurzaamheid. Zoek iets van InnerGames dat je in die week met je klas kunt doen.', codes: ['D1', 'D4'], expect: 'Het Impact Imperium (workshop) of Impact Imperium klassenset. De Klimaat Collage past qua onderwerp ook. Let op de route: onderwijs-kaart, menu of filter?', ask: [pick] },
-    { text: 'Jullie hebben € 500 voor die week en de klas heeft 28 studenten. Kan jouw keuze, ja of nee?', codes: ['D3'], expect: 'Het Impact Imperium: € 423,50, tot 32 → ja. Klassenset € 275 (4 tot 40) → ja. Klimaat Collage € 1.800 → nee.', ask: [{ id: 'kan', q: 'Kan het?', kind: 'choice', options: YNW, follow: 'Welke prijs en welke groepsgrootte zag je?' }] },
-    { text: 'Je wilt donderdag 12 maart vastleggen. Regel dat via de website.', codes: ['D5'], expect: '"boek of vraag aan" → aanvraagformulier met de workshop al ingevuld, datum 12 maart ingevuld en verstuurd. Of WhatsApp. Binnen 2 klikken vanaf de workshoppagina.' },
-    { text: 'Je wilt dit later ook zonder trainer met andere klassen doen. Kan dat, en wat kost het?', codes: ['D12'], expect: 'Ja: Impact Imperium klassenset, € 275. Via de link op de workshoppagina of via onze spellen.', ask: [{ id: 'kan', q: 'Kan het?', kind: 'choice', options: YNW, follow: 'Wat kost het?', followWhen: ['ja'] }] },
+    { t: 'Je havo 4-klas heeft over twee weken een projectweek over duurzaamheid. Zoek iets van InnerGames dat je in die week met je klas kunt doen.', code: 'D1, D4', expect: 'Het Impact Imperium (workshop) of Impact Imperium klassenset. De Klimaat Collage past ook.', ask: [CHOSEN] },
+    { t: 'Jullie hebben € 500 voor die week en de klas heeft 28 leerlingen. Kan jouw keuze, ja of nee?', code: 'D3', expect: 'Impact Imperium € 423,50 tot 32 leerlingen: ja. Klassenset € 275: ja. Klimaat Collage € 1.800: nee.', ask: [canIf('Welke prijs en welke groepsgrootte zag je?')] },
+    // "regel het": succes is het formulier bereiken, dat staat in het paginalog
+    { t: 'Je wilt donderdag 12 maart vastleggen. Regel dat via de website.', code: 'D5', expect: '"boek of vraag aan" → formulier, of WhatsApp, binnen 2 klikken.' },
+    { t: 'Je wilt dit later ook zonder trainer met andere klassen doen. Kan dat, en wat kost het?', code: 'D12', expect: 'Ja: klassenset € 275.', ask: [canIf('Wat kost het?', ['ja'])] },
   ],
   [
-    { text: 'In je team werkt iedereen op zijn eigen eiland. Je leidinggevende geeft je één middag om daar iets aan te doen. Zoek iets dat past.', codes: ['D1', 'D4'], expect: 'Een workshop van maximaal een middag voor organisaties: Ontdek jouw drijfveren, Het spel tussen hoofd en lichaam, Kansen Keren of Hoezo Raar?!. Kiest iemand Energiek team! (3 x 4 uur): zag die de duur?', ask: [pick] },
-    { text: 'Je team is 14 mensen. Wat kost jouw keuze, en kan het met iedereen?', codes: ['D3'], expect: 'Bijv. Ontdek jouw drijfveren: € 950, tot 12 personen → niet met 14 zonder te vragen. Let op: leest de deelnemer de groepsgrootte?', ask: [{ id: 'prijs', q: 'Wat kost het?', kind: 'text' }, { id: 'kan', q: 'Kan het met 14 mensen?', kind: 'choice', options: YNW }] },
-    { text: 'Je wilt een datum vastleggen. Regel dat via de website.', codes: ['D5'], expect: '"boek of vraag aan" → aanvraagformulier met de workshop al ingevuld, een datum en het aantal mensen ingevuld en verstuurd. Of WhatsApp. Binnen 2 klikken vanaf de workshoppagina.' },
-    { text: 'Je leidinggevende wil weten wie de workshop komt geven. Zoek het uit.', codes: ['D2', 'D11'], expect: 'Het blok "wie begeleidt" op de workshoppagina (naam + foto), of ons team via het menu. Noteer waar de deelnemer eerst zocht.', ask: [{ id: 'wie', q: 'Heb je een naam gevonden?', kind: 'choice', options: YNW, follow: 'Welke naam, en waar vond je die?', followWhen: ['ja'] }] },
+    { t: 'In je team werkt iedereen op zijn eigen eiland. Je leidinggevende geeft je één middag om daar iets aan te doen. Zoek iets dat past.', code: 'D1, D4', expect: 'Een workshop van een halve dag of korter voor organisaties. Kiest iemand Energiek team! (3 x 4 uur): zag die de duur?', ask: [CHOSEN] },
+    { t: 'Je team is 14 mensen. Wat kost jouw keuze, en kan het met iedereen?', code: 'D3', expect: 'Bijv. Ontdek jouw drijfveren: € 950, tot 12 personen, dus niet met 14 zonder te vragen.', ask: [text('kost', 'Wat kost het?'), { id: 'kan14', q: 'Kan het met 14 mensen?', kind: 'choice', options: YNX }] },
+    { t: 'Je wilt een datum vastleggen. Regel dat via de website.', code: 'D5', expect: 'Formulier of WhatsApp binnen 2 klikken.' },
+    { t: 'Je leidinggevende wil weten wie de workshop komt geven. Zoek het uit.', code: 'D2, D11', expect: 'Ons team, of een naam op de workshoppagina.', ask: [{ id: 'naam', q: 'Heb je een naam gevonden?', kind: 'choice', options: YNX, follow: 'Welke naam, en waar vond je die?', followWhen: ['ja'] }] },
   ],
   [
-    { text: 'Je begeleidt zelf groepen. Je wilt leren hoe je de spellen van InnerGames zelf kunt inzetten. Zoek uit of dat kan.', codes: ['D1', 'D7'], expect: 'Train-de-trainer, via het menu of de trainers-kaart op de homepage.', ask: [{ id: 'kan', q: 'Kan het?', kind: 'choice', options: YNW, follow: 'Hoe heet het aanbod?', followWhen: ['ja'] }] },
-    { text: 'Hoeveel tijd kost je dat, en wat betaal je ervoor?', codes: ['D3', 'D7'], expect: '8 uur (4 theorie, 4 praktijk), € 1.800 per persoon.', ask: [{ id: 'tijd', q: 'Hoeveel tijd kost het?', kind: 'text' }, { id: 'prijs', q: 'Wat kost het?', kind: 'text' }] },
-    { text: 'Je wilt je aanmelden. Regel dat via de website.', codes: ['D5'], expect: '"vraag de training aan" → aanvraagformulier met train-de-trainer al ingevuld en verstuurd, of WhatsApp.' },
-    { text: 'Je gebruikt The Elemental Five al met grondankers. Je wilt alleen de kaarten erbij kopen. Kan dat, en wat kost het?', codes: ['D6'], expect: 'Ja: the elemental five, losse kaartenset, € 39. Op de spelpagina van The Elemental Five, bij de keuze wat je koopt.', ask: [{ id: 'kan', q: 'Kan het?', kind: 'choice', options: YNW, follow: 'Wat kost het?', followWhen: ['ja'] }] },
+    { t: 'Je begeleidt zelf groepen. Je wilt leren hoe je de spellen van InnerGames zelf kunt inzetten. Zoek uit of dat kan.', code: 'D1, D7', expect: 'Train-de-trainer.', ask: [canIf('Hoe heet het aanbod?', ['ja'])] },
+    { t: 'Hoeveel tijd kost je dat, en wat betaal je ervoor?', code: 'D3, D7', expect: '8 uur, € 1.800 per persoon.', ask: [text('tijd', 'Hoeveel tijd kost het?'), text('kost', 'Wat kost het?')] },
+    { t: 'Je wilt je aanmelden. Regel dat via de website.', code: 'D5', expect: '"vraag de training aan" → formulier.' },
+    { t: 'Je gebruikt The Elemental Five al met grondankers. Je wilt alleen de kaarten erbij kopen. Kan dat, en wat kost het?', code: 'D6', expect: 'Ja: kaartenset € 39.', ask: [canIf('Wat kost het?', ['ja'])] },
   ],
 ]
 
-/* Preview task, added to round 1 in v5 (was round 2). No ease score: it is about curiosity, not effort. */
-const NEXT_STEP = ['het spel kopen', 'een workshop boeken', 'meer lezen over het spel', 'contact opnemen', 'niets', 'iets anders']
-const previewAsk: Q[] = [
-  { id: 'vervolg', q: 'Wat zou je nu doen?', kind: 'choice', options: NEXT_STEP, follow: 'Waarom?' },
-  { id: 'bij', q: 'Wat blijft je het meest bij van de preview?', kind: 'text' },
-]
-const PREVIEW_TASKS: Task[] = [
-  { text: 'Zoek op de website een korte preview van het spel Impact Imperium en speel die tot het einde.', codes: ['D9'], expect: 'Vindt de preview (onze spellen of spelpagina)? Snapt de deelnemer de onthulling? Noemt een volgende stap?', ask: previewAsk, noSeq: true },
-  { text: 'Zoek op de website een korte preview van het spel The Elemental Five en speel die tot het einde.', codes: ['D9'], expect: 'Vindt de preview? Ziet de deelnemer het voor zich met het team? Noemt een volgende stap?', ask: previewAsk, noSeq: true },
-  { text: 'Zoek op de website een korte preview van het spel Sociality en speel die tot het einde.', codes: ['D9'], expect: 'Vindt de preview? Snapt de deelnemer waar het spel over gaat? Noemt een volgende stap?', ask: previewAsk, noSeq: true },
-]
-const R1_PROTO_TASKS: Task[][] = R1_TASKS.map((ts, i) => [...ts, PREVIEW_TASKS[i]])
-
-const UMUX: Q[] = [
-  { id: 'umux1', q: 'Wat deze website kan, past bij wat ik nodig heb.', kind: 'scale7', low: '1 = helemaal oneens', high: '7 = helemaal eens' },
-  { id: 'umux2', q: 'Deze website is makkelijk te gebruiken.', kind: 'scale7', low: '1 = helemaal oneens', high: '7 = helemaal eens' },
-]
-
-const R1_CLOSING: Q[] = [
+const CLOSING_R1: Q[] = [
   ...UMUX,
-  { id: 'makkelijk_lastig', q: 'Als je terugdenkt aan de taken: wat ging makkelijk, en wat ging lastig?', kind: 'text', code: 'D1' },
-  { id: 'info_nodig', q: 'Welke informatie had je nodig om echt een keuze te maken?', kind: 'text', code: 'D3' },
-  { id: 'info_gevonden', q: 'Vond je die informatie op de site?', kind: 'choice', options: ['ja', 'deels', 'nee'], follow: 'Wat miste er?', followWhen: ['deels', 'nee'], code: 'D3' },
+  { id: 'makkelijk', q: 'Als je terugdenkt aan de taken: wat ging makkelijk, en wat ging lastig?', kind: 'text' },
+  { id: 'info', q: 'Welke informatie had je nodig om echt een keuze te maken?', kind: 'text' },
+  { id: 'gevonden', q: 'Vond je die informatie op de site?', kind: 'choice', options: ['ja', 'deels', 'nee'], follow: 'Wat miste er?', followWhen: ['deels', 'nee'] },
 ]
-const R1_PROFILE_Q: string[][] = [
-  ['Wie op jouw opleiding moet hier nog meer van vinden?', 'Wat zou die persoon op deze site willen zien?'],
-  ['Je leidinggevende moet dit goedkeuren. Wat zou die op deze site willen zien dat er nu niet staat?'],
-  ['Wat zou je nog willen weten of zien voordat je € 1.800 uitgeeft aan deze training?'],
+const PROFILE_R1: Q[][] = [
+  [text('profiel', 'Wie op jouw school moet hier nog meer van vinden?'), text('profiel2', 'Wat zou die persoon op deze site willen zien?')],
+  [text('profiel', 'Je leidinggevende moet dit goedkeuren. Wat zou die op deze site willen zien dat er nu niet staat?')],
+  [text('profiel', 'Wat zou je nog willen weten of zien voordat je € 1.800 uitgeeft aan deze training?')],
 ]
 
-/* Product reaction cards (Benedek & Miner): 9 positive, 7 negative, shown in random order. */
-export const WORDS = ['speels', 'professioneel', 'betrouwbaar', 'warm', 'creatief', 'rustig', 'duidelijk', 'uitnodigend', 'serieus', 'kinderachtig', 'rommelig', 'saai', 'druk', 'goedkoop', 'ouderwets', 'afstandelijk']
+const r2Tasks = (game: string, page: string, to: string, decide: string, would: string): Task[] => [
+  {
+    t: `Speel de preview van ${game} tot het einde.`,
+    code: 'D9',
+    ask: [
+      { id: 'nu', q: 'Wat zou je nu doen?', kind: 'choice', options: ['het spel kopen', 'een workshop boeken', 'meer lezen over het spel', 'contact opnemen', 'niets', 'iets anders'], follow: 'Waarom?' },
+      text('bij', 'Wat blijft je het meest bij van de preview?'),
+    ],
+  },
+  {
+    t: `Open de pagina ${page}${page.endsWith('!') ? '' : '.'} Stel, je stuurt deze pagina naar ${to}.`,
+    code: 'D10',
+    ask: [text('erbij', 'Wat schrijf je erbij?'), { id: 'door', q: 'Zou je deze pagina echt doorsturen?', kind: 'choice', options: YMN }],
+  },
+  {
+    t: `Stel, je kent InnerGames nog niet. Kijk maximaal 3 minuten rond tot je weet of je ${decide}. Vertel hardop wat je ziet.`,
+    code: 'D11',
+    ask: [{ id: 'zou', q: `Zou je ${would}?`, kind: 'choice', options: YMN }, text('hielp', 'Wat hielp je daarbij?'), text('tegen', 'Wat hield je tegen?')],
+  },
+]
 
 export const ROUNDS: Round[] = [
   {
-    name: 'ronde 0 · huidige site',
-    view: 'live',
-    after: 'seq',
-    tasks: R1_TASKS,
-    closing: R1_CLOSING,
-    profileQ: R1_PROFILE_Q,
+    name: 'ronde 0 · huidige site (baseline)',
+    view: 'huidige site',
+    warmup: true,
+    five: [],
+    menu: false,
+    tasks: TASKS_R1,
+    ease: true,
+    closing: CLOSING_R1,
+    profileQ: PROFILE_R1,
   },
   {
-    name: 'ronde 1 · prototype',
-    view: 'ontwerp',
-    // five-second test: what it is, who it is for, and the first words (fixed order)
-    impression: [
-      { q: 'Wat doet dit bedrijf?', code: 'D8' },
-      { q: 'Voor wie is deze website, denk je?', code: 'D8' },
-      { q: 'Noem de eerste drie woorden die bij je opkomen.', code: 'D10' },
+    name: 'ronde 1 · wireframe',
+    view: 'wireframe',
+    warmup: true,
+    five: [
+      { id: 'wat', q: 'Wat doet dit bedrijf?' },
+      { id: 'wie', q: 'Voor wie is deze website, denk je?' },
     ],
-    menu: ['sessies en workshops', 'onze spellen', 'projecten', 'train-de-trainer'],
-    after: 'seq',
-    tasks: R1_PROTO_TASKS,
-    // fixed order: effort first, then trust and image, the intended image only at the very end
+    menu: true,
+    tasks: TASKS_R1,
+    ease: true,
+    closing: CLOSING_R1,
+    profileQ: PROFILE_R1,
+  },
+  {
+    name: 'ronde 2 · ontwerp',
+    view: 'ontwerp',
+    warmup: false,
+    five: [{ id: 'woorden', q: 'Noem de eerste drie woorden die bij je opkomen.' }],
+    menu: false,
+    tasks: [
+      r2Tasks('Impact Imperium', 'van De Klimaat Collage', 'een collega', 'bij ze zou boeken', 'bij InnerGames boeken'),
+      r2Tasks('The Elemental Five', 'van Energiek team!', 'je leidinggevende', 'ze zou inhuren', 'InnerGames inhuren'),
+      r2Tasks('Sociality', 'train-de-trainer', 'een collega-trainer', 'met ze zou samenwerken', 'met InnerGames samenwerken'),
+    ],
+    ease: false,
     closing: [
+      { id: 'omschrijf', q: 'Hoe zou je InnerGames omschrijven aan iemand die het niet kent?', kind: 'text' },
+      { id: 'woorden', q: 'Kies de drie woorden die het beste bij deze website passen.', kind: 'words' },
+      { id: 'waarom', q: 'Waarom koos je juist deze drie woorden?', kind: 'text' },
+      { id: 'speels', q: 'Waar ligt de website: saai of speels?', kind: 'slider', low: 'saai', high: 'speels' },
+      { id: 'volwassen', q: 'Waar ligt de website: kinderachtig of volwassen?', kind: 'slider', low: 'kinderachtig', high: 'volwassen' },
+      { id: 'professioneel', q: 'Hoe komt InnerGames over: amateuristisch of professioneel?', kind: 'slider', low: 'amateuristisch', high: 'professioneel' },
+      { id: 'betrouwbaar', q: 'Hoe komt InnerGames over: onbetrouwbaar of betrouwbaar?', kind: 'slider', low: 'onbetrouwbaar', high: 'betrouwbaar' },
       ...UMUX,
-      { id: 'makkelijk_lastig', q: 'Als je terugdenkt aan de taken: wat ging makkelijk, en wat ging lastig?', kind: 'text', code: 'D1' },
-      { id: 'info_gevonden', q: 'Vond je de informatie die je nodig had om echt te kiezen?', kind: 'choice', options: ['ja', 'deels', 'nee'], follow: 'Wat miste er?', followWhen: ['deels', 'nee'], code: 'D3' },
-      { id: 'besluit', q: 'Stel dat dit echt was. Zou je bij InnerGames boeken of kopen?', kind: 'choice', options: ['ja', 'misschien', 'nee'], code: 'D11' },
-      { id: 'helpt', q: 'Wat op de website hielp je daarbij?', kind: 'text', code: 'D11' },
-      { id: 'tegen', q: 'Wat hield je tegen, of wat miste je om te vertrouwen?', kind: 'text', code: 'D11' },
-      { id: 'omschrijf', q: 'Hoe zou je InnerGames omschrijven aan iemand die het niet kent?', kind: 'text', code: 'D10' },
-      { id: 'woordkeuze', q: 'Kies de drie woorden die het beste bij deze website passen.', kind: 'pick3', code: 'D10' },
-      { id: 'woordkeuze_waarom', q: 'Waarom koos je juist deze drie woorden?', kind: 'text', code: 'D10' },
-      { id: 'speels', q: 'Waar ligt de website: saai of speels?', kind: 'scale7', low: '1 = saai', high: '7 = speels', code: 'D10' },
-      { id: 'volwassen', q: 'Waar ligt de website: kinderachtig of volwassen?', kind: 'scale7', low: '1 = kinderachtig', high: '7 = volwassen', code: 'D10' },
-      { id: 'professioneel', q: 'Hoe komt InnerGames over: amateuristisch of professioneel?', kind: 'scale7', low: '1 = amateuristisch', high: '7 = professioneel', code: 'D10' },
-      { id: 'betrouwbaar', q: 'Hoe komt InnerGames over: onbetrouwbaar of betrouwbaar?', kind: 'scale7', low: '1 = onbetrouwbaar', high: '7 = betrouwbaar', code: 'D11' },
-      { id: 'beoogd', q: 'InnerGames wil overkomen als een serieuze organisatie die speelse dingen doet. Herken je dat?', kind: 'choice', options: ['ja', 'deels', 'nee'], follow: 'Waar wel, en waar niet?', code: 'D10' },
+      { id: 'afleiding', q: 'Trok er iets je aandacht weg van wat je aan het doen was?', kind: 'choice', options: ['ja', 'nee'], follow: 'Wat?', followWhen: ['ja'] },
+      { id: 'vervolg', q: 'Wat zou je na dit bezoek doen?', kind: 'choice', options: ['contact opnemen', 'verder zoeken bij een andere aanbieder', 'niets', 'iets anders'], follow: 'Waarom?' },
+      { id: 'serieus', q: 'InnerGames wil overkomen als een serieuze organisatie die speelse dingen doet. Herken je dat?', kind: 'choice', options: ['ja', 'deels', 'nee'], follow: 'Waar wel, en waar niet?' },
     ],
     profileQ: [
-      ['Wie op jouw opleiding moet hier nog meer van vinden, en wat zou die persoon willen zien?'],
-      ['Je leidinggevende moet dit goedkeuren. Wat zou die op deze site willen zien dat er nu niet staat?'],
-      ['Wat zou je nog willen weten of zien voordat je € 1.800 uitgeeft aan de train-de-trainer?'],
+      [text('profiel', 'In hoeverre past deze stijl bij jouw school, en waarom?')],
+      [text('profiel', 'In hoeverre past deze stijl bij jouw organisatie, en waarom?')],
+      [text('profiel', 'Hoe zou het voelen om als trainer met deze uitstraling verbonden te zijn?')],
     ],
   },
 ]
 
-/* Neutral think-aloud prompts for the test leader. Never ask "is dit duidelijk?" or point at a button. */
-const PROBES = ['Wat denk je nu?', 'Wat verwacht je dat er gebeurt?', 'Wat zoek je op dit moment?', 'Kun je daar iets meer over vertellen?']
-const RETRO = 'Waar had je verwacht dit te vinden?'
-const CORRECT = ['klopt', 'deels', 'klopt niet'] as const
-const KNOWN = ['nooit van gehoord', 'van naam', 'eerder mee gewerkt'] as const
-const REC = ['ja, scherm en stem', 'alleen stem', 'nee, geen opname'] as const
-const QUOTE = ['ja, anoniem', 'nee'] as const
-
-type ModeId = 'r0' | 'r1' | 'retest'
-const MODES: { id: ModeId; name: string; note: string }[] = [
-  { id: 'r0', name: 'ronde 0 · huidige site (baseline)', note: 'Deelnemer gebruikt innergames.nl in een ander tabblad. Jij bedient dit scherm.' },
-  { id: 'r1', name: 'ronde 1 · prototype', note: 'Eerste indruk, menu, 4 taken, preview, vertrouwen en uitstraling. ± 40 minuten.' },
-  { id: 'retest', name: 'retest · verbeterde versie', note: 'Zelfde als ronde 1, met nieuwe mensen. Zet versie op v2.' },
-]
-type PartPlan = { round: number; impression: boolean; only: boolean }
-const PLAN: Record<ModeId, PartPlan[]> = {
-  r0: [{ round: 0, impression: false, only: false }],
-  r1: [{ round: 1, impression: true, only: false }],
-  retest: [{ round: 1, impression: true, only: false }],
-}
-
+const EASE_Q = 'Hoe makkelijk of moeilijk was deze taak?'
+const LEADER_ANSWER = 'Antwoord van de deelnemer (jij vult in)'
 const LEADER = ['zelf gelukt', 'met hulp', 'niet gelukt'] as const
+const VERDICT = ['klopt', 'deels', 'klopt niet'] as const
 
-type TaskRes = { start?: number; end?: number; pages: string[]; clicks: number; first?: string; stuck?: boolean; score?: number; sentence?: string; leader?: string; correct?: string; ans?: Record<string, Answer>; notes: string }
+type TaskRes = { start?: number; end?: number; pages: string[]; clicks: number; ease?: number; ans?: Record<string, Answer>; stuck?: boolean; leader?: string; verdict?: string; notes: string }
+/** n = schaal, t = open tekst, w = woorden, c = keuze, f = vervolgtekst bij een keuze */
 type Answer = { n?: number; t?: string; w?: string[]; c?: string; f?: string }
-type Part = PartPlan & { covered: boolean; impressionAns: string[]; menuAns: string[]; idx: number; step: 'ready' | 'running' | 'answer' | 'after'; tasks: TaskRes[]; answers: Record<string, Answer>; qi: number }
-type Phase = 'start' | 'intro' | 'warmup' | 'impression' | 'menu' | 'tasks' | 'closing' | 'results'
 type Session = {
   nr: string
-  mode: ModeId
+  round: number
   profile: number
   known: string
   rec: string
   quote: string
-  device: 'desktop' | 'mobiel'
-  version: string
-  pilot: boolean
   consent: boolean
-  warmNotes: string[]
-  warmDone: boolean
+  consentAt?: number
+  phase: 'start' | 'warmup' | 'impression' | 'menu' | 'tasks' | 'closing' | 'results'
+  look: 'intro' | 'look' | 'done'
+  warm: string[]
+  five: Record<string, string>
+  menu: Record<string, string>
+  idx: number
+  step: 'ready' | 'running' | 'answer' | 'ease'
+  tasks: TaskRes[]
+  qIdx: number
   words: string[]
-  parts: Part[]
-  pi: number
-  phase: Phase
-  date: string
-  saved: boolean
+  answers: Record<string, Answer>
 }
 
-const KEY = 'ig-test5:'
+const KEY = 'ig-test3:'
+const fresh = (keep: Partial<Session> = {}): Session => ({
+  nr: '', round: 1, profile: -1, known: '', rec: '', quote: '', consent: false, phase: 'start', look: 'intro', warm: [], five: {}, menu: {}, idx: 0, step: 'ready', tasks: [], qIdx: 0, words: [], answers: {}, ...keep,
+})
+const storeKey = (nr: string, round: number) => `${KEY}${nr}:r${round}`
+function read(k: string | null): Session | undefined {
+  try {
+    const raw = k && localStorage.getItem(k)
+    if (!raw) return undefined
+    const d = { ...fresh(), ...JSON.parse(raw) }
+    // sessies uit v3 kunnen nog op de oude stap 'after' staan
+    return d.step === 'after' ? { ...d, step: 'ease' } : d
+  } catch {
+    return undefined
+  }
+}
+const load = () => read(localStorage.getItem(KEY + 'current')) ?? fresh()
 const shuffle = <T,>(a: T[]) => {
   const b = [...a]
   for (let i = b.length - 1; i > 0; i--) {
@@ -231,127 +257,98 @@ const shuffle = <T,>(a: T[]) => {
   }
   return b
 }
-const fresh = (keep: Partial<Session> = {}): Session => ({
-  nr: '', mode: 'r1', profile: -1, known: '', rec: '', quote: '', device: 'desktop', version: 'v1', pilot: false, consent: false,
-  warmNotes: [], warmDone: false, words: [], parts: [], pi: 0, phase: 'start', date: '', saved: false, ...keep,
-})
-const storeKey = (s: Session) => `${KEY}${s.nr}:${s.mode}:${s.version}`
-function read(k: string | null): Session | undefined {
-  try {
-    const raw = k && localStorage.getItem(k)
-    return raw ? { ...fresh(), ...JSON.parse(raw) } : undefined
-  } catch {
-    return undefined
-  }
-}
-function allSessions(): Session[] {
-  const out: Session[] = []
-  try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (k && k.startsWith(KEY) && k !== KEY + 'current') {
-        const s = read(k)
-        if (s && s.phase !== 'start') out.push(s)
-      }
-    }
-  } catch {
-    /* storage blocked */
-  }
-  return out.sort((a, b) => a.nr.localeCompare(b.nr, undefined, { numeric: true }))
-}
-const load = () => {
-  try {
-    return read(localStorage.getItem(KEY + 'current')) ?? fresh()
-  } catch {
-    return fresh()
-  }
-}
 
 const secs = (t?: TaskRes) => (t?.start && t.end ? Math.round((t.end - t.start) / 1000) : undefined)
-const closingQs = (part: Part, profile: number): Q[] => {
-  const r = ROUNDS[part.round]
-  return [...r.closing, ...(r.profileQ[profile] ?? []).map((q, i): Q => ({ id: `profiel${i + 1}`, q, kind: 'text' }))]
-}
-const umux = (a: Record<string, Answer>) => {
-  const x = a.umux1?.n
-  const y = a.umux2?.n
-  return x && y ? Math.round((((x - 1) + (y - 1)) / 12) * 100) : undefined
-}
+const allQs = (r: Round, profile: number): Q[] => [...r.closing, ...(r.profileQ[profile] ?? [])]
+const followOn = (q: Q, a?: Answer) => !!a?.c && !!q.follow && (!q.followWhen || q.followWhen.includes(a.c))
 const fmtA = (q: Q, a?: Answer) => {
-  if (q.kind === 'scale7') return a?.n ? `${a.n}/7` : '-'
-  if (q.kind === 'pick3') return a?.w?.join(', ') || '-'
-  if (q.kind === 'choice') return [a?.c || '-', a?.f].filter(Boolean).join(' · ')
-  return a?.t || '-'
+  if (q.kind === 'words') return a?.w?.join(', ') || '-'
+  if (q.kind === 'text') return a?.t || '-'
+  if (q.kind === 'choice') return [a?.c || '-', followOn(q, a) ? a?.f || '-' : ''].filter(Boolean).join(' · ')
+  return `${a?.n ?? '-'}/7`
 }
-const modeName = (m: ModeId) => MODES.find((x) => x.id === m)?.name ?? m
+// UMUX-Lite: twee items op 1-7, omgerekend naar 0-100
+const umux = (s: Session) => {
+  const a = s.answers.umux1?.n
+  const b = s.answers.umux2?.n
+  return a && b ? Math.round(((a - 1 + (b - 1)) / 12) * 100) : undefined
+}
 
-function report(s: Session) {
-  const L = [
-    'gebruikerstest InnerGames website',
-    `deelnemer: ${s.nr} · sessie: ${modeName(s.mode)} · versie: ${s.version}${s.pilot ? ' · PILOT (telt niet mee)' : ''}`,
-    `profiel: ${PROFILES[s.profile]?.name} · kent InnerGames: ${s.known || '-'} · opname: ${s.rec || '-'} · citaat: ${s.quote || '-'} · apparaat: ${s.device} · datum: ${s.date}`,
-  ]
-  if (s.warmNotes.some(Boolean)) {
-    L.push('', 'opwarmvragen:')
-    PROFILES[s.profile]?.warm.forEach((w, i) => L.push(`  ${w}`, `    ${s.warmNotes[i] || '-'}`))
-  }
-  for (const part of s.parts) {
-    const r = ROUNDS[part.round]
-    L.push('', `===== ${r.name}${part.only ? ' (alleen eerste indruk)' : ''} =====`)
-    if (part.impression && r.impression) r.impression.forEach((q, i) => L.push(`5 seconden [${q.code}] · ${q.q}`, `  ${part.impressionAns[i] || '-'}`))
-    if (part.only) continue
-    if (part.round === 1 && r.menu) {
-      L.push('', 'menu-verwachting [D2]:')
-      r.menu.forEach((m, i) => L.push(`  ${m}: ${part.menuAns[i] || '-'}`))
+function report(nr: string, sessions: Session[]) {
+  const L = ['gebruikerstest InnerGames website', `deelnemer: ${nr}`, `kent InnerGames: ${sessions[0]?.known || '-'}`, `opname: ${sessions[0]?.rec || '-'}`, `anoniem citeren: ${sessions[0]?.quote || '-'}`]
+  for (const s of sessions) {
+    const r = ROUNDS[s.round]
+    const prof = PROFILES[s.profile]
+    L.push('', `===== ${r.name} =====`, `profiel: ${prof?.name}`, `toestemming: ${s.consent ? 'ja' : 'nee'}`)
+    if (r.warmup) {
+      L.push('', 'opwarminterview:')
+      prof?.warm.forEach((q, i) => L.push(`  ${q}`, `    ${s.warm[i] || '-'}`))
+    }
+    if (r.five.length) {
+      L.push('', 'vijfsecondentest:')
+      r.five.forEach((f) => L.push(`  ${f.q}`, `    ${s.five[f.id] || '-'}`))
+    }
+    if (r.menu) {
+      L.push('', 'menuverwachting (D2):')
+      MENU.forEach((m) => L.push(`  ${m}`, `    ${s.menu[m] || '-'}`))
     }
     L.push('')
     ;(r.tasks[s.profile] ?? []).forEach((t, i) => {
-      const x = part.tasks[i]
+      const x = s.tasks[i]
       L.push(
-        `taak ${i + 1} [${t.codes.join(', ')}]: ${t.text}`,
+        `taak ${i + 1} [${t.code}]: ${t.t}`,
+        ...(t.expect ? [`  verwacht: ${t.expect}`] : []),
         `  tijd: ${secs(x) ?? '-'} s${x?.stuck ? ' (ik kom er niet uit)' : ''}`,
-        `  eerste klik: ${x?.first || '-'}`,
         `  pagina's: ${x?.pages.join(' > ') || '-'}`,
         `  klikken: ${x?.clicks ?? 0}`,
         ...(t.ask ?? []).map((q) => `  ${q.q} ${fmtA(q, x?.ans?.[q.id])}`),
-        r.after === 'seq' && !t.noSeq ? `  SEQ (1-7): ${x?.score ?? '-'}` : '',
-        `  testleider: ${x?.leader ?? '-'} · antwoord: ${x?.correct ?? '-'}`,
+        ...(r.ease ? [`  score (${EASE_Q}): ${x?.ease ?? '-'}/7`] : []),
+        `  testleider: ${x?.leader ?? '-'}`,
+        ...(t.expect ? [`  antwoord klopt: ${x?.verdict ?? '-'}`] : []),
         `  notities: ${x?.notes || '-'}`,
         '',
       )
     })
     L.push('afsluitende vragen:')
-    closingQs(part, s.profile).forEach((q) => L.push(`  ${q.code ? `[${q.code}] ` : ''}${q.q}`, `    ${fmtA(q, part.answers[q.id])}`))
-    L.push(`  UMUX-Lite score: ${umux(part.answers) ?? '-'} / 100`)
+    allQs(r, s.profile).forEach((q) => L.push(`  ${q.q}`, `    ${fmtA(q, s.answers[q.id])}`))
+    L.push(`  UMUX-Lite score (0-100): ${umux(s) ?? '-'}`)
   }
   return L.join('\n')
 }
 
+const COLS = ['deelnemer', 'kent_innergames', 'opname', 'citaat', 'toestemming', 'ronde', 'profiel', 'onderdeel', 'nr', 'code', 'vraag', 'verwacht', 'tijd_s', 'klikken', 'paginas', 'score', 'vastgelopen', 'testleider', 'antwoord_klopt', 'keuze', 'antwoord', 'notities'] as const
+type Row = Partial<Record<(typeof COLS)[number], string | number>>
+
+// keuze en vervolgtekst in aparte kolommen, zodat keuzes te tellen zijn
+const cells = (q: Q, a?: Answer): Row => {
+  if (q.kind === 'choice') return { keuze: a?.c, antwoord: followOn(q, a) ? a?.f : '' }
+  if (q.kind === 'words') return { antwoord: a?.w?.join(', ') }
+  if (q.kind === 'text') return { antwoord: a?.t }
+  return { score: a?.n }
+}
+
 function csv(sessions: Session[]) {
   const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
-  const rows = [['deelnemer', 'sessie', 'versie', 'pilot', 'apparaat', 'profiel', 'kent_innergames', 'opname', 'citaat', 'datum', 'ronde', 'item', 'code', 'vraag', 'tijd_s', 'eerste_klik', 'klikken', 'paginas', 'score', 'vastgelopen', 'testleider', 'antwoord_klopt', 'antwoord']]
+  const rows: Row[] = []
   for (const s of sessions) {
-    const base = [s.nr, modeName(s.mode), s.version, s.pilot ? 'ja' : 'nee', s.device, PROFILES[s.profile]?.name ?? '', s.known, s.rec, s.quote, s.date]
-    PROFILES[s.profile]?.warm.forEach((w, i) => rows.push([...base, '', 'opwarm', '', w, '', '', '', '', '', '', '', '', s.warmNotes[i] ?? '']))
-    for (const part of s.parts) {
-      const r = ROUNDS[part.round]
-      const b = [...base, r.name]
-      if (part.impression && r.impression) r.impression.forEach((q, i) => rows.push([...b, '5 sec', q.code, q.q, '', '', '', '', '', '', '', '', part.impressionAns[i] ?? '']))
-      if (part.only) continue
-      if (part.round === 1 && r.menu) r.menu.forEach((m, i) => rows.push([...b, 'menu', 'D2', `Wat verwacht je achter: ${m}`, '', '', '', '', '', '', '', '', part.menuAns[i] ?? '']))
-      ;(r.tasks[s.profile] ?? []).forEach((t, i) => {
-        const x = part.tasks[i]
-        rows.push([...b, String(i + 1), t.codes.join(' '), t.text, String(secs(x) ?? ''), x?.first ?? '', String(x?.clicks ?? 0), x?.pages.join(' > ') ?? '', String(x?.score ?? ''), x?.stuck ? 'ja' : 'nee', x?.leader ?? '', x?.correct ?? '', x?.notes ?? ''])
-        ;(t.ask ?? []).forEach((q) => rows.push([...b, `${i + 1} antwoord`, t.codes.join(' '), q.q, '', '', '', '', '', '', '', '', fmtA(q, x?.ans?.[q.id])]))
+    const r = ROUNDS[s.round]
+    const prof = PROFILES[s.profile]
+    const base: Row = { deelnemer: s.nr, kent_innergames: s.known, opname: s.rec, citaat: s.quote, toestemming: s.consent ? 'ja' : 'nee', ronde: r.name, profiel: prof?.name }
+    if (r.warmup) prof?.warm.forEach((q, i) => rows.push({ ...base, onderdeel: 'opwarmen', nr: i + 1, vraag: q, notities: s.warm[i] }))
+    r.five.forEach((f, i) => rows.push({ ...base, onderdeel: 'vijf seconden', nr: i + 1, vraag: f.q, antwoord: s.five[f.id] }))
+    if (r.menu) MENU.forEach((m, i) => rows.push({ ...base, onderdeel: 'menu', nr: i + 1, code: 'D2', vraag: m, antwoord: s.menu[m] }))
+    ;(r.tasks[s.profile] ?? []).forEach((t, i) => {
+      const x = s.tasks[i]
+      rows.push({
+        ...base, onderdeel: 'taak', nr: i + 1, code: t.code, vraag: t.t, verwacht: t.expect, tijd_s: secs(x), klikken: x?.clicks ?? 0, paginas: x?.pages.join(' > '),
+        score: x?.ease, vastgelopen: x?.stuck ? 'ja' : 'nee', testleider: x?.leader, antwoord_klopt: x?.verdict, notities: x?.notes,
       })
-      closingQs(part, s.profile).forEach((q) => {
-        const a = part.answers[q.id]
-        rows.push([...b, 'afsluiting', q.code ?? '', q.q, '', '', '', '', q.kind === 'scale7' ? String(a?.n ?? '') : '', '', '', '', q.kind === 'pick3' ? a?.w?.join(', ') ?? '' : q.kind === 'choice' ? fmtA(q, a) : a?.t ?? ''])
-      })
-      rows.push([...b, 'UMUX-Lite', '', 'score 0-100', '', '', '', '', String(umux(part.answers) ?? ''), '', '', '', ''])
-    }
+      ;(t.ask ?? []).forEach((q) => rows.push({ ...base, onderdeel: 'taak antwoord', nr: i + 1, code: t.code, vraag: q.q, ...cells(q, x?.ans?.[q.id]) }))
+    })
+    allQs(r, s.profile).forEach((q, i) => rows.push({ ...base, onderdeel: 'afsluiting', nr: i + 1, vraag: q.q, ...cells(q, s.answers[q.id]) }))
+    rows.push({ ...base, onderdeel: 'umux-lite', vraag: 'UMUX-Lite score (0-100)', score: umux(s) })
   }
-  return '﻿' + rows.map((r) => r.map(esc).join(';')).join('\n')
+  return '\ufeff' + [COLS.map(esc).join(';'), ...rows.map((row) => COLS.map((c) => esc(row[c])).join(';'))].join('\n')
 }
 
 function download(name: string, body: string, type: string) {
@@ -366,174 +363,208 @@ function download(name: string, body: string, type: string) {
 const panelBtn = 'border-2 border-ig-ink px-3 py-2 text-sm font-bold lowercase transition'
 const field = 'w-full border-2 border-ig-ink bg-white px-3 py-2 text-base text-ig-ink outline-none focus:border-ig-orange'
 const kicker = 'font-mono text-xs uppercase tracking-widest'
+const leaderLabel = 'font-mono text-[11px] uppercase tracking-wide text-neutral-600'
 
 function Scale({ value, onPick, low, high }: { value?: number; onPick: (n: number) => void; low?: string; high?: string }) {
   return (
     <div>
-      <div className="flex gap-1">
+      <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-          <button key={n} type="button" onClick={() => onPick(n)} aria-pressed={value === n} className={`h-10 flex-1 ${panelBtn} px-0! ${value === n ? 'bg-ig-ink text-white' : 'bg-white hover:bg-ig-yellow'}`}>
+          <button key={n} type="button" onClick={() => onPick(n)} aria-pressed={value === n} className={`h-10 min-w-0 flex-1 px-0! ${panelBtn} ${value === n ? 'bg-ig-ink text-white' : 'bg-white hover:bg-ig-yellow'}`}>
             {n}
           </button>
         ))}
       </div>
       {low && (
-        <div className="mt-1 flex justify-between text-[11px] text-neutral-600">
+        <div className="mt-1 flex justify-between gap-4 text-[11px] text-neutral-600">
           <span>{low}</span>
-          <span>{high}</span>
+          <span className="text-right">{high}</span>
         </div>
       )}
     </div>
   )
 }
 
-function QInput({ q, a, set, words = [], compact = false }: { q: Q; a?: Answer; set: (v: Answer) => void; words?: string[]; compact?: boolean }) {
-  const small = compact ? 'text-sm!' : ''
-  if (q.kind === 'scale7') return <Scale value={a?.n} low={q.low} high={q.high} onPick={(n) => set({ n })} />
-  if (q.kind === 'text') return <textarea value={a?.t ?? ''} onChange={(e) => set({ t: e.target.value })} rows={compact ? 2 : 4} aria-label={q.q} className={`${field} ${small}`} />
-  if (q.kind === 'choice') {
-    const opts = q.options ?? []
-    const showFollow = !!q.follow && !!a?.c && (!q.followWhen || q.followWhen.includes(a.c))
-    return (
-      <div>
-        {opts.length > 6 ? (
-          <select value={a?.c ?? ''} onChange={(e) => set({ c: e.target.value })} aria-label={q.q} className={`${field} ${small}`}>
-            <option value="" disabled>kies…</option>
-            {opts.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        ) : (
-          <div className="flex flex-wrap gap-1.5">
-            {opts.map((o) => (
-              <button key={o} type="button" aria-pressed={a?.c === o} onClick={() => set({ c: o })} className={`${panelBtn} ${compact ? 'px-2! py-1! text-xs!' : ''} ${a?.c === o ? 'bg-ig-ink text-white' : 'bg-white hover:bg-ig-yellow'}`}>
-                {o}
-              </button>
-            ))}
-          </div>
-        )}
-        {showFollow && (
-          <label className="mt-2 block">
-            <span className={`${compact ? 'text-xs' : 'text-sm'} font-semibold`}>{q.follow}</span>
-            <textarea value={a?.f ?? ''} onChange={(e) => set({ f: e.target.value })} rows={2} className={`${field} mt-1 ${small}`} />
-          </label>
-        )}
-      </div>
-    )
-  }
+function Slider({ value, onPick, low, high, label }: { value?: number; onPick: (n: number) => void; low?: string; high?: string; label: string }) {
+  const set = value !== undefined
+  // een schuif heeft altijd een waarde; pas na aanraken telt het als antwoord
+  const pick = (e: { currentTarget: HTMLInputElement }) => onPick(Number(e.currentTarget.value))
   return (
-    <div className="flex flex-wrap gap-2">
-      {words.map((w) => {
-        const on = a?.w?.includes(w) ?? false
-        const full = (a?.w?.length ?? 0) >= 3
-        return (
-          <button
-            key={w}
-            type="button"
-            aria-pressed={on}
-            disabled={!on && full}
-            onClick={() => set({ w: on ? (a?.w ?? []).filter((x) => x !== w) : [...(a?.w ?? []), w] })}
-            className={`${panelBtn} ${on ? 'bg-ig-ink text-white' : 'bg-white hover:bg-ig-yellow'} disabled:opacity-30`}
-          >
-            {w}
-          </button>
-        )
-      })}
-      <p className="w-full text-sm text-neutral-600">{a?.w?.length ?? 0} van 3 gekozen</p>
+    <div>
+      <div className="flex items-center justify-between text-sm font-semibold">
+        <span>1 · {low}</span>
+        <span>{high} · 7</span>
+      </div>
+      <input
+        type="range"
+        min={1}
+        max={7}
+        step={1}
+        value={value ?? 4}
+        onChange={pick}
+        onPointerUp={pick}
+        onKeyUp={pick}
+        aria-label={label}
+        aria-valuetext={set ? String(value) : 'nog niet gekozen'}
+        className={`mt-3 h-2 w-full cursor-pointer accent-[#EA561F] ${set ? '' : 'opacity-40'}`}
+      />
+      <div className="mt-1 flex justify-between px-1 font-mono text-[11px] text-neutral-600" aria-hidden>
+        {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+          <span key={n} className={value === n ? 'font-bold text-ig-ink' : ''}>{n}</span>
+        ))}
+      </div>
+      <p className="mt-2 text-xs text-neutral-600">{set ? `gekozen: ${value}` : 'schuif of klik om te kiezen'}</p>
+    </div>
+  )
+}
+
+function WordPick({ words, value, onPick }: { words: string[]; value: string[]; onPick: (w: string[]) => void }) {
+  const full = value.length >= 3
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {words.map((w) => {
+          const on = value.includes(w)
+          return (
+            <button
+              key={w}
+              type="button"
+              aria-pressed={on}
+              disabled={!on && full}
+              onClick={() => onPick(on ? value.filter((x) => x !== w) : [...value, w])}
+              className={`${panelBtn} ${on ? 'bg-ig-ink text-white' : 'bg-white hover:bg-ig-yellow'} disabled:opacity-35 disabled:hover:bg-white`}
+            >
+              {w}
+            </button>
+          )
+        })}
+      </div>
+      <p className="mt-3 text-sm" aria-live="polite">{value.length} van 3 gekozen</p>
+    </div>
+  )
+}
+
+function Choice({ q, a, onChange, small }: { q: Q; a?: Answer; onChange: (v: Answer) => void; small?: boolean }) {
+  const opts = q.options ?? []
+  const btn = small ? 'px-2! py-1! text-xs!' : ''
+  return (
+    <div>
+      {opts.length > 6 ? (
+        <select value={a?.c ?? ''} onChange={(e) => onChange({ c: e.target.value })} aria-label={q.q} className={`${field} ${small ? 'text-sm!' : ''}`}>
+          <option value="" disabled>
+            kies…
+          </option>
+          {opts.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={q.q}>
+          {opts.map((o) => (
+            <button key={o} type="button" onClick={() => onChange({ c: o })} aria-pressed={a?.c === o} className={`${panelBtn} ${btn} ${a?.c === o ? 'bg-ig-ink text-white' : 'bg-white hover:bg-ig-yellow'}`}>
+              {o}
+            </button>
+          ))}
+        </div>
+      )}
+      {followOn(q, a) && (
+        <label className="mt-3 block">
+          <span className={`${small ? 'text-xs' : 'text-sm'} font-semibold`}>{q.follow}</span>
+          <textarea value={a?.f ?? ''} onChange={(e) => onChange({ f: e.target.value })} rows={small ? 2 : 3} className={`${field} mt-1 ${small ? 'text-sm!' : ''}`} />
+        </label>
+      )}
+    </div>
+  )
+}
+
+/** antwoordvragen na een taak: keuze of open tekst */
+function AskFields({ qs, ans, onChange }: { qs: Q[]; ans?: Record<string, Answer>; onChange: (id: string, v: Answer) => void }) {
+  return (
+    <div className="space-y-4">
+      {qs.map((q) => (
+        <div key={q.id}>
+          <p className="mb-1.5 text-sm font-semibold">{q.q}</p>
+          {q.kind === 'choice' ? (
+            <Choice q={q} a={ans?.[q.id]} small onChange={(v) => onChange(q.id, v)} />
+          ) : (
+            <textarea value={ans?.[q.id]?.t ?? ''} onChange={(e) => onChange(q.id, { t: e.target.value })} rows={2} aria-label={q.q} className={`${field} text-sm!`} />
+          )}
+        </div>
+      ))}
     </div>
   )
 }
 
 function Screen({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <div data-test-ui className="fixed inset-0 z-[60] overflow-y-auto bg-ig-cream text-ig-ink" role="dialog" aria-label={label}>
+    <div className="fixed inset-0 z-[60] overflow-y-auto bg-ig-cream text-ig-ink" role="dialog" aria-label={label}>
       <div className="mx-auto max-w-2xl px-5 pb-28 pt-10 @container">{children}</div>
     </div>
   )
 }
 
-function Choice<T extends string | number>({ legend, options, value, onPick }: { legend: string; options: { v: T; label: string; note?: string }[]; value: T; onPick: (v: T) => void }) {
+function Dl({ items }: { items: [string, ReactNode][] }) {
   return (
-    <fieldset>
-      <legend className="text-sm font-semibold">{legend}</legend>
-      <div className="mt-2 grid gap-2 @xl:grid-cols-2">
-        {options.map((o) => (
-          <label key={String(o.v)} className={`flex cursor-pointer items-start gap-3 border-2 border-ig-ink px-4 py-3 ${value === o.v ? 'bg-ig-yellow' : 'bg-white'}`}>
-            <input type="radio" checked={value === o.v} onChange={() => onPick(o.v)} className="mt-1 accent-current" />
-            <span>
-              {o.label}
-              {o.note && <span className="mt-0.5 block text-xs text-neutral-600">{o.note}</span>}
-            </span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+      {items.map(([k, v]) => (
+        <div key={k} className="contents">
+          <dt className="text-neutral-600">{k}</dt>
+          <dd className="whitespace-pre-wrap">{v}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
-export default function TestMode({
-  pageKey,
-  go,
-  bus,
-  setWire,
-  setMobile,
-}: {
-  pageKey: string
-  go: (p: PageId) => void
-  bus: MutableRefObject<(() => void) | undefined>
-  setWire?: (w: boolean) => void
-  setMobile?: (m: boolean) => void
-}) {
+function QA({ title, items }: { title: string; items: [string, string][] }) {
+  return (
+    <div className="mt-4 border-2 border-ig-ink bg-white p-4 text-sm">
+      <p className="text-base font-semibold">{title}</p>
+      <ul className="mt-2 space-y-2">
+        {items.map(([q, a]) => (
+          <li key={q}>
+            <span className="text-neutral-600">{q}</span>
+            <br />
+            <span className="whitespace-pre-wrap">{a || '-'}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: string; go: (p: PageId) => void; bus: MutableRefObject<(() => void) | undefined>; setWire: (w: boolean) => void }) {
   const [s, setS] = useState<Session>(load)
   const [leader, setLeader] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [toast, setToast] = useState('')
   const taps = useRef<number[]>([])
-  const part = s.parts[s.pi] as Part | undefined
-  const r = part ? ROUNDS[part.round] : undefined
-  const prof = PROFILES[s.profile]
-  const tasks = (r && r.tasks[s.profile]) || []
-  const cur = part?.tasks[part.idx]
-  const isLive = part?.round === 0
+  const r = ROUNDS[s.round] ?? ROUNDS[1]
+  const p = PROFILES[s.profile]
+  const tasks = r.tasks[s.profile] ?? []
+  const task = tasks[s.idx]
+  const cur = s.tasks[s.idx]
 
   const upd = (f: (d: Session) => Session) => setS((d) => f(d))
-  const updPart = (f: (p: Part) => Part) => upd((d) => ({ ...d, parts: d.parts.map((p, i) => (i === d.pi ? f(p) : p)) }))
-  const updTask = (f: (t: TaskRes) => TaskRes) => updPart((p) => ({ ...p, tasks: p.tasks.map((t, i) => (i === p.idx ? f(t) : t)) }))
-  const setTaskAns = (id: string, v: Answer) => updTask((t) => ({ ...t, ans: { ...t.ans, [id]: { ...t.ans?.[id], ...v } } }))
-  const setAns = (id: string, v: Answer) => updPart((p) => ({ ...p, answers: { ...p.answers, [id]: { ...p.answers[id], ...v } } }))
-  const flash = (m: string) => {
-    setToast(m)
-    setTimeout(() => setToast(''), 2500)
-  }
+  const updTask = (f: (t: TaskRes) => TaskRes) => upd((d) => ({ ...d, tasks: d.tasks.map((t, i) => (i === d.idx ? f(t) : t)) }))
+  const setAns = (id: string, v: Answer) => upd((d) => ({ ...d, answers: { ...d.answers, [id]: { ...d.answers[id], ...v } } }))
 
-  // v5: there is only the design view, so make sure the wireframe view is off
+  // ronde bepaalt de weergave
   useEffect(() => {
-    setWire?.(false)
+    if (r.view !== 'huidige site') setWire(r.view === 'wireframe')
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [s.round])
 
-  // save per participant + session + version
+  // opslaan per deelnemer en ronde
   useEffect(() => {
     if (!s.nr || s.phase === 'start') return
-    try {
-      localStorage.setItem(storeKey(s), JSON.stringify(s))
-      localStorage.setItem(KEY + 'current', storeKey(s))
-    } catch {
-      /* storage blocked */
-    }
+    localStorage.setItem(storeKey(s.nr, s.round), JSON.stringify(s))
+    localStorage.setItem(KEY + 'current', storeKey(s.nr, s.round))
   }, [s])
 
-  // auto-download JSON once when a participant finishes
-  useEffect(() => {
-    if (s.phase === 'results' && !s.saved) {
-      download(`innergames-test-${s.nr}-${s.mode}-${s.version}.json`, JSON.stringify(s, null, 2), 'application/json')
-      upd((d) => ({ ...d, saved: true }))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.phase])
-
-  // test leader: press T three times
+  // testleider: druk 3x op T
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName
@@ -549,352 +580,309 @@ export default function TestMode({
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const running = s.phase === 'tasks' && part?.step === 'running' && !isLive
-
-  // log pages during a running task
+  // pagina's en klikken loggen tijdens een lopende taak (niet bij de huidige site: die staat in een ander tabblad)
+  const running = s.phase === 'tasks' && s.step === 'running' && r.view !== 'huidige site'
   useEffect(() => {
-    if (running) updTask((t) => (t.pages[t.pages.length - 1] === pageKey ? t : { ...t, pages: [...t.pages, pageKey] }))
+    if (running) updTask((t) => (t.pages.at(-1) === pageKey ? t : { ...t, pages: [...t.pages, pageKey] }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageKey, running])
-
-  // clicks + first click (old bus not used anymore)
   useEffect(() => {
-    bus.current = undefined
-    if (!running) return
-    const onClick = (e: MouseEvent) => {
-      const el = e.target as HTMLElement | null
-      if (!el || el.closest('[data-test-ui]') || el.closest('[aria-label="Prototype-opties"]')) return
-      const hit = (el.closest('a,button,input,select,textarea,label,[role="button"]') as HTMLElement | null) ?? el
-      const label = (hit.getAttribute('aria-label') || hit.innerText || hit.textContent || hit.tagName).replace(/\s+/g, ' ').trim().slice(0, 60)
-      updTask((t) => ({ ...t, clicks: t.clicks + 1, first: t.first ?? `${label} (${pageKey})` }))
+    bus.current = running ? () => updTask((t) => ({ ...t, clicks: t.clicks + 1 })) : undefined
+    return () => {
+      bus.current = undefined
     }
-    document.addEventListener('click', onClick, true)
-    return () => document.removeEventListener('click', onClick, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, pageKey])
+  }, [running])
 
-  // dead ends: outside links never leave the test
+  // vijfsecondentest: 5 seconden kijken, dan afdekken
   useEffect(() => {
-    if (s.phase === 'start' || s.phase === 'results') return
-    const onClick = (e: MouseEvent) => {
-      const a = (e.target as HTMLElement | null)?.closest('a') as HTMLAnchorElement | null
-      if (!a) return
-      const href = a.getAttribute('href') ?? ''
-      if (/^(https?:|mailto:|tel:|\/\/)/i.test(href)) {
-        e.preventDefault()
-        flash('deze link werkt niet in de test')
-      }
-    }
-    document.addEventListener('click', onClick, true)
-    return () => document.removeEventListener('click', onClick, true)
-  }, [s.phase])
-
-  // first impression: 5 seconds, then cover
-  useEffect(() => {
-    if (s.phase !== 'impression' || !part || part.covered) return
-    const t = setTimeout(() => updPart((p) => ({ ...p, covered: true })), 5000)
+    if (s.phase !== 'impression' || s.look !== 'look') return
+    const t = setTimeout(() => upd((d) => ({ ...d, look: 'done' })), 5000)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.phase, s.pi, part?.covered])
+  }, [s.phase, s.look])
 
-  // which phase comes first for a part
-  const enterPart = (d: Session, pi: number): Session => {
-    const p = d.parts[pi]
-    if (!p) return { ...d, phase: 'results' }
-    if (!d.warmDone) return { ...d, pi, phase: 'warmup' }
-    return { ...d, pi, phase: p.impression ? 'impression' : 'tasks' }
-  }
-  const nextPart = () => {
+  const afterWarmup = (ro: Round): Session['phase'] => (ro.five.length ? 'impression' : 'tasks')
+  const begin = (base: Session) => {
+    const ro = ROUNDS[base.round]
     go('home')
-    upd((d) => enterPart(d, d.pi + 1))
-  }
-
-  const begin = () => {
-    const nr = s.nr.trim()
-    const parts: Part[] = PLAN[s.mode].map((pl) => ({
-      ...pl, covered: false, impressionAns: [], menuAns: [], idx: 0, step: 'ready', qi: 0, answers: {},
-      tasks: ROUNDS[pl.round].tasks[s.profile].map(() => ({ pages: [], clicks: 0, notes: '' })),
-    }))
-    setMobile?.(s.device === 'mobiel')
-    setS({ ...fresh({ nr, mode: s.mode, profile: s.profile, known: s.known, rec: s.rec, quote: s.quote, device: s.device, version: s.version.trim() || 'v1', pilot: s.pilot, consent: true }), parts, words: shuffle(WORDS), date: new Date().toISOString().slice(0, 10), phase: 'intro' })
-  }
-
-  const afterTask = () => {
-    upd((d) => {
-      const p = d.parts[d.pi]
-      if (p.idx + 1 < ROUNDS[p.round].tasks[d.profile].length) return { ...d, parts: d.parts.map((x, i) => (i === d.pi ? { ...x, idx: x.idx + 1, step: 'ready' } : x)) }
-      return { ...d, phase: 'closing' }
+    setS({
+      ...fresh({ nr: base.nr.trim(), round: base.round, profile: base.profile, known: base.known, rec: base.rec, quote: base.quote, consent: base.consent, consentAt: base.consentAt ?? Date.now() }),
+      phase: ro.warmup ? 'warmup' : afterWarmup(ro),
+      words: shuffle(WORDS),
+      tasks: ro.tasks[base.profile].map(() => ({ pages: [], clicks: 0, notes: '' })),
     })
-    if (!isLive) go('home')
   }
+  const canStart = !!s.nr.trim() && s.profile >= 0 && !!s.known && !!s.rec && !!s.quote && s.consent
 
-  const resultBtns = cur && (
-    <div className="mt-2 flex flex-wrap gap-1.5">
-      {LEADER.map((l) => (
-        <button key={l} onClick={() => updTask((t) => ({ ...t, leader: l }))} aria-pressed={cur.leader === l} className={`px-2! py-1! text-xs! ${panelBtn} ${cur.leader === l ? 'bg-ig-ink text-white' : 'bg-white'}`}>
-          {l}
-        </button>
-      ))}
+  // herinnering voor de testleider; het prototype neemt zelf niets op
+  const recording = !!s.rec && !s.rec.startsWith('nee')
+  const recBox = (
+    <div className="mt-5 border-2 border-dashed border-ig-ink bg-white p-4" role="note">
+      <p className={leaderLabel}>testleider · opname</p>
+      <p className="mt-1 text-sm leading-snug">
+        {recording
+          ? `Start nu de opname (${s.rec}), bijvoorbeeld met Teams, OBS of QuickTime. Zeg hardop: deelnemer ${s.nr}, ${new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}. Stop de opname na de laatste vraag.`
+          : 'Geen opname. Maak extra notities van wat de deelnemer zegt.'}
+      </p>
     </div>
   )
-  const correctBtns = cur && (
-    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-      <span className="text-[11px] text-neutral-600">antwoord:</span>
-      {CORRECT.map((c) => (
-        <button key={c} onClick={() => updTask((t) => ({ ...t, correct: c }))} aria-pressed={cur.correct === c} className={`px-2! py-1! text-xs! ${panelBtn} ${cur.correct === c ? 'bg-ig-ink text-white' : 'bg-white'}`}>
-          {c}
-        </button>
-      ))}
-    </div>
+  const radios = (name: string, legend: string, opts: readonly string[], value: string, set: (v: string) => void, cols = '@xl:grid-cols-3') => (
+    <fieldset>
+      <legend className="text-sm font-semibold">{legend}</legend>
+      <div className={`mt-2 grid gap-2 ${cols}`}>
+        {opts.map((k) => (
+          <label key={k} className={`flex cursor-pointer items-center gap-3 border-2 border-ig-ink px-4 py-3 ${value === k ? 'bg-ig-yellow' : 'bg-white'}`}>
+            <input type="radio" name={name} checked={value === k} onChange={() => set(k)} className="accent-current" required />
+            <span>{k}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   )
-  const leaderBox = leader && cur && (
-    <div className="mt-3 border-t-2 border-dashed border-ig-ink/40 pt-3">
-      <p className="font-mono text-[11px] uppercase tracking-wide text-neutral-600">testleider · {tasks[part!.idx]?.codes.join(', ')}</p>
-      <p className="mt-1 text-xs leading-snug"><span className="font-semibold">verwacht: </span>{tasks[part!.idx]?.expect}</p>
-      {resultBtns}
-      {correctBtns}
-      <p className="mt-2 text-[11px] leading-snug text-neutral-600">neutraal doorvragen: {PROBES.join(' · ')}{cur.leader && cur.leader !== 'zelf gelukt' ? ` · achteraf: ${RETRO}` : ''}</p>
+
+  const leaderBox = leader && cur && task && (
+    <div className="mt-3 border-t-2 border-dashed border-ig-ink/40 pt-3 text-left">
+      <p className={leaderLabel}>testleider · {task.code}</p>
+      {task.expect && (
+        <p className="mt-1 text-sm leading-snug">
+          <span className="font-semibold">verwacht: </span>
+          {task.expect}
+        </p>
+      )}
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {LEADER.map((l) => (
+          <button key={l} onClick={() => updTask((t) => ({ ...t, leader: l }))} aria-pressed={cur.leader === l} className={`px-2! py-1! text-xs! ${panelBtn} ${cur.leader === l ? 'bg-ig-ink text-white' : 'bg-white'}`}>
+            {l}
+          </button>
+        ))}
+      </div>
+      {task.expect && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-semibold">antwoord:</span>
+          {VERDICT.map((v) => (
+            <button key={v} onClick={() => updTask((t) => ({ ...t, verdict: v }))} aria-pressed={cur.verdict === v} className={`px-2! py-1! text-xs! ${panelBtn} ${cur.verdict === v ? 'bg-ig-ink text-white' : 'bg-white'}`}>
+              {v}
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="mt-2 text-xs leading-snug text-neutral-700">{PROBE}</p>
+      {cur.leader && cur.leader !== 'zelf gelukt' && <p className="mt-1 text-xs font-semibold leading-snug">{AFTERWARDS}</p>}
       <textarea value={cur.notes} onChange={(e) => updTask((t) => ({ ...t, notes: e.target.value }))} rows={2} placeholder="notities" aria-label="Notities testleider" className={`${field} mt-2 text-sm!`} />
     </div>
   )
-  const toastEl = toast && (
-    <div data-test-ui role="status" className="fixed left-1/2 top-4 z-[80] -translate-x-1/2 border-2 border-ig-ink bg-ig-yellow px-4 py-2 text-sm font-bold">
-      {toast}
-    </div>
-  )
 
-  /* ---------- start screen (test leader) ---------- */
-  if (s.phase === 'start') {
-    const ok = !!s.nr.trim() && s.profile >= 0 && !!s.known && !!s.rec && !!s.quote && s.consent
+  if (s.phase === 'start')
     return (
       <Screen label="Startscherm gebruikerstest">
-        <p className={kicker}>innergames · testleider</p>
-        <h1 className="mt-3 text-4xl font-extrabold lowercase leading-none @xl:text-6xl">gebruikerstest instellen</h1>
+        <p className={kicker}>innergames · prototype</p>
+        <h1 className="mt-3 text-4xl font-extrabold lowercase leading-none @xl:text-6xl">gebruikerstest InnerGames website</h1>
+        <p className="mt-5 text-lg leading-snug">Je test een website. Je kunt niets fout doen. Zeg hardop wat je ziet en denkt.</p>
         <form
           className="mt-8 space-y-6"
           onSubmit={(e) => {
             e.preventDefault()
-            if (ok) begin()
+            if (canStart) begin(s)
           }}
         >
-          <div className="grid gap-4 @xl:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-semibold">deelnemer nr.</span>
-              <input value={s.nr} onChange={(e) => setS({ ...s, nr: e.target.value })} inputMode="numeric" className={`${field} mt-1`} required />
-              <span className="mt-1 block text-xs text-neutral-600">Nooit een naam invullen.</span>
-            </label>
-            <label className="block">
-              <span className="text-sm font-semibold">versie</span>
-              <input value={s.version} onChange={(e) => setS({ ...s, version: e.target.value })} className={`${field} mt-1`} />
-              <span className="mt-1 block text-xs text-neutral-600">v1 nu, v2 voor de hertest na aanpassingen.</span>
-            </label>
-          </div>
-          <Choice legend="sessie" value={s.mode} onPick={(mode) => setS({ ...s, mode })} options={MODES.map((m) => ({ v: m.id, label: m.name, note: m.note }))} />
-          <Choice legend="profiel" value={s.profile} onPick={(profile) => setS({ ...s, profile })} options={PROFILES.map((p, i) => ({ v: i, label: p.name }))} />
-          <Choice legend="kent de deelnemer InnerGames?" value={s.known} onPick={(known) => setS({ ...s, known })} options={KNOWN.map((k) => ({ v: k as string, label: k }))} />
-          <Choice legend="opname (vraag het, de deelnemer mag nee zeggen)" value={s.rec} onPick={(rec) => setS({ ...s, rec })} options={REC.map((k) => ({ v: k as string, label: k }))} />
-          <Choice legend="anoniem citeren in mijn verslag" value={s.quote} onPick={(quote) => setS({ ...s, quote })} options={QUOTE.map((k) => ({ v: k as string, label: k }))} />
-          <Choice legend="apparaat" value={s.device} onPick={(device) => setS({ ...s, device })} options={[{ v: 'desktop' as const, label: 'desktop' }, { v: 'mobiel' as const, label: 'mobiel', note: setMobile ? 'Zet de weergave op mobiel 390.' : 'Zet zelf "mobiel 390" aan in de balk onderaan.' }]} />
-          <div className="space-y-2">
-            <label className="flex items-center gap-3">
-              <input type="checkbox" checked={s.pilot} onChange={(e) => setS({ ...s, pilot: e.target.checked })} className="h-5 w-5 accent-current" />
-              <span>pilot (telt niet mee)</span>
-            </label>
-            <label className="flex items-center gap-3 font-semibold">
-              <input type="checkbox" checked={s.consent} onChange={(e) => setS({ ...s, consent: e.target.checked })} className="h-5 w-5 accent-current" />
-              <span>toestemmingsformulier getekend</span>
-            </label>
-          </div>
-          <button type="submit" disabled={!ok} className={`${panelBtn} bg-ig-orange px-6! py-3! text-base! disabled:opacity-40`}>
-            start
-          </button>
-          {!s.consent && <p className="text-sm">Start werkt pas als het toestemmingsformulier getekend is.</p>}
-          <p className="text-xs text-neutral-600">Resultaten blijven in deze browser. Na elke deelnemer wordt automatisch een JSON-bestand gedownload.</p>
-        </form>
-        {allSessions().length > 0 && (
-          <div className="mt-10 border-t-2 border-ig-ink pt-4">
-            <p className="text-sm">{allSessions().length} opgeslagen sessie(s) in deze browser.</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <button className={`${panelBtn} bg-white`} onClick={() => download('innergames-test-alle-resultaten.csv', csv(allSessions()), 'text/csv;charset=utf-8')}>
-                download alle resultaten (.csv)
-              </button>
-              {leader && (
-                <button
-                  className={`${panelBtn} bg-white`}
-                  onClick={() => {
-                    if (window.confirm('Alle testresultaten in deze browser wissen?') && window.confirm('Echt zeker? Dit kan niet ongedaan worden.')) {
-                      try {
-                        Object.keys(localStorage).filter((k) => k.startsWith(KEY)).forEach((k) => localStorage.removeItem(k))
-                      } catch {
-                        /* storage blocked */
-                      }
-                      setS(fresh())
-                    }
-                  }}
-                >
-                  alles wissen
-                </button>
-              )}
+          <label className="block">
+            <span className="text-sm font-semibold">deelnemer nr.</span>
+            <input value={s.nr} onChange={(e) => setS({ ...s, nr: e.target.value })} inputMode="numeric" className={`${field} mt-1 max-w-40`} required />
+          </label>
+          <fieldset>
+            <legend className="text-sm font-semibold">ronde</legend>
+            <div className="mt-2 grid gap-2">
+              {ROUNDS.map((ro, i) => (
+                <label key={ro.name} className={`flex cursor-pointer items-center gap-3 border-2 border-ig-ink px-4 py-3 ${s.round === i ? 'bg-ig-yellow' : 'bg-white'}`}>
+                  <input type="radio" name="ronde" checked={s.round === i} onChange={() => setS({ ...s, round: i })} className="accent-current" />
+                  <span>{ro.name}</span>
+                </label>
+              ))}
             </div>
-          </div>
-        )}
+          </fieldset>
+          <fieldset>
+            <legend className="text-sm font-semibold">wie ben je?</legend>
+            <div className="mt-2 grid gap-2">
+              {PROFILES.map((pr, i) => (
+                <label key={pr.name} className={`flex cursor-pointer items-center gap-3 border-2 border-ig-ink px-4 py-3 ${s.profile === i ? 'bg-ig-yellow' : 'bg-white'}`}>
+                  <input type="radio" name="profiel" checked={s.profile === i} onChange={() => setS({ ...s, profile: i })} className="accent-current" />
+                  <span>{pr.name}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          {radios('kent', 'kent de deelnemer InnerGames?', KNOWN, s.known, (known) => setS({ ...s, known }))}
+          {radios('opname', 'opname (vraag het, de deelnemer mag nee zeggen)', REC, s.rec, (rec) => setS({ ...s, rec }))}
+          {radios('citaat', 'anoniem citeren in mijn verslag', QUOTE_OK, s.quote, (quote) => setS({ ...s, quote }), '@xl:grid-cols-2')}
+          <fieldset className="border-2 border-ig-ink bg-white p-4">
+            <legend className="px-1 text-sm font-semibold">toestemming</legend>
+            <ul className="list-disc space-y-1 pl-5 text-sm leading-snug">
+              <li>We testen de website, niet jou.</li>
+              <li>We noteren je antwoorden, de tijd per taak en waar je klikt.</li>
+              <li>We nemen alleen scherm of stem op als je daar ja op zegt. Opnames bewaren we onder je nummer, nooit met je naam, en we verwijderen ze uiterlijk 31 januari 2027.</li>
+              <li>Je resultaten worden anoniem verwerkt, onder een nummer en zonder naam.</li>
+              <li>Je mag altijd stoppen, zonder reden.</li>
+            </ul>
+            <label className="mt-4 flex cursor-pointer items-start gap-3">
+              <input type="checkbox" checked={s.consent} onChange={(e) => setS({ ...s, consent: e.target.checked, consentAt: e.target.checked ? Date.now() : undefined })} className="mt-1 size-4 accent-current" required />
+              <span className="text-sm font-semibold">Ik heb dit gelezen en doe mee.</span>
+            </label>
+          </fieldset>
+          <button type="submit" disabled={!canStart} className={`${panelBtn} bg-ig-orange px-6! py-3! text-base! disabled:opacity-40`}>
+            start de test
+          </button>
+          <p className="text-xs text-neutral-600">Weergave: {r.view}. Resultaten blijven alleen in deze browser.</p>
+        </form>
+      </Screen>
+    )
+
+  if (s.phase === 'warmup')
+    return (
+      <Screen label="Opwarminterview">
+        <p className={kicker}>{r.name} · opwarmen</p>
+        <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">opwarminterview</h2>
+        <p className="mt-1 text-sm">{p?.name}</p>
+        {recBox}
+        <div className="mt-3 border-2 border-dashed border-ig-ink bg-white p-4">
+          <p className={leaderLabel}>testleider</p>
+          <p className="mt-1 text-sm leading-snug">{WARM_HINT}</p>
+        </div>
+        <ol className="mt-6 space-y-5">
+          {p?.warm.map((q, i) => (
+            <li key={q}>
+              <p className="mb-2 font-semibold">
+                {i + 1}. {q}
+              </p>
+              <textarea
+                value={s.warm[i] ?? ''}
+                onChange={(e) => upd((d) => ({ ...d, warm: p.warm.map((_, j) => (j === i ? e.target.value : d.warm[j] ?? '')) }))}
+                rows={3}
+                placeholder="notities"
+                aria-label={`Notities bij vraag ${i + 1}`}
+                className={field}
+              />
+            </li>
+          ))}
+        </ol>
+        <button onClick={() => upd((d) => ({ ...d, phase: afterWarmup(r) }))} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
+          {r.five.length ? 'verder naar de website' : 'verder naar de taken'}
+        </button>
+      </Screen>
+    )
+
+  if (s.phase === 'impression') {
+    if (s.look === 'intro')
+      return (
+        <Screen label="Vijfsecondentest">
+          <p className={kicker}>{r.name} · eerste indruk</p>
+          <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">kijk 5 seconden</h2>
+          <p className="mt-4 text-lg leading-snug">Je ziet zo 5 seconden een website. Kijk rustig rond. Daarna stellen we je een paar vragen.</p>
+          {!r.warmup && recBox}
+          <button onClick={() => upd((d) => ({ ...d, look: 'look' }))} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
+            toon de website
+          </button>
+        </Screen>
+      )
+    if (s.look === 'look')
+      return (
+        <div role="status" className="fixed left-1/2 top-4 z-[60] -translate-x-1/2 border-2 border-ig-ink bg-ig-yellow px-4 py-2 text-sm font-bold">
+          kijk 5 seconden naar de homepage…
+        </div>
+      )
+    return (
+      <Screen label="Eerste indruk">
+        <p className={kicker}>{r.name} · eerste indruk</p>
+        <div className="mt-3 space-y-6">
+          {r.five.map((f, i) => (
+            <label key={f.id} className="block">
+              <span className="block text-2xl font-extrabold lowercase leading-tight">{f.q}</span>
+              <textarea value={s.five[f.id] ?? ''} onChange={(e) => upd((d) => ({ ...d, five: { ...d.five, [f.id]: e.target.value } }))} rows={3} autoFocus={i === 0} className={`${field} mt-3`} />
+            </label>
+          ))}
+        </div>
+        <button onClick={() => upd((d) => ({ ...d, phase: r.menu ? 'menu' : 'tasks', step: 'ready' }))} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
+          verder
+        </button>
       </Screen>
     )
   }
 
-  /* ---------- participant intro ---------- */
-  if (s.phase === 'intro')
+  if (s.phase === 'menu')
     return (
-      <Screen label="Uitleg voor de deelnemer">
-        <p className={kicker}>gebruikerstest innergames website</p>
-        <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">welkom, en bedankt</h2>
-        <p className="mt-5 text-lg leading-snug">
-          Je test een vroege versie van een website. Je kunt niets fout doen, ik test de website, niet jou. Zeg hardop wat je ziet, denkt en verwacht. Ik help je niet tijdens de taken, dat hoort bij de test.
-        </p>
-        {s.mode === 'r0' && <p className="mt-4 text-lg leading-snug">Je gebruikt in deze test de huidige website van InnerGames.</p>}
-        <div className="mt-5 border-2 border-dashed border-ig-ink/50 bg-white p-4 text-sm">
-          <p className="font-mono text-[11px] uppercase tracking-wide text-neutral-600">testleider</p>
-          {s.rec.startsWith('nee') ? (
-            <p className="mt-1">Geen opname. Maak extra notities van wat de deelnemer zegt.</p>
-          ) : (
-            <p className="mt-1">Start nu de opname ({s.rec}), bijvoorbeeld met Teams, OBS of QuickTime. Zeg hardop: deelnemer {s.nr}, {s.date}. Stop de opname na de laatste vraag.</p>
-          )}
-        </div>
-        <button onClick={() => { go('home'); upd((d) => enterPart(d, 0)) }} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
-          ik ben er klaar voor
-        </button>
-      </Screen>
-    )
-
-  /* ---------- warm-up (before the participant sees the site) ---------- */
-  if (s.phase === 'warmup')
-    return (
-      <Screen label="Opwarmvragen">
-        <p className={kicker}>testleider · opwarmvragen · {prof?.name}</p>
-        <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">eerst even praten</h2>
-        <p className="mt-2 text-sm text-neutral-600">Stel deze vragen voordat de deelnemer de site ziet. Vraag naar de laatste echte keer, niet naar "meestal". Geen voorbeeld? Vraag hoe ze het zouden doen en schrijf "hypothetisch" erbij.</p>
-        <div className="mt-6 space-y-5">
-          {prof?.warm.map((w, i) => (
-            <label key={w} className="block">
-              <span className="font-semibold">{w}</span>
-              <textarea value={s.warmNotes[i] ?? ''} onChange={(e) => upd((d) => { const n = [...d.warmNotes]; n[i] = e.target.value; return { ...d, warmNotes: n } })} rows={2} className={`${field} mt-1`} />
-            </label>
-          ))}
-        </div>
-        <button
-          onClick={() => {
-            go('home')
-            upd((d) => ({ ...d, warmDone: true, phase: d.parts[d.pi].impression ? 'impression' : 'tasks' }))
-          }}
-          className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}
-        >
-          verder
-        </button>
-      </Screen>
-    )
-
-  /* ---------- five-second test ---------- */
-  if (s.phase === 'impression' && part && r?.impression)
-    return part.covered ? (
-      <Screen label="Eerste indruk">
-        <p className={kicker}>{r.name} · eerste indruk</p>
-        <div className="mt-4 space-y-6">
-          {r.impression.map((q, i) => (
-            <label key={q.q} className="block">
-              <span className="block text-2xl font-extrabold leading-tight">{q.q}</span>
-              <textarea
-                value={part.impressionAns[i] ?? ''}
-                onChange={(e) => updPart((p) => { const a = [...p.impressionAns]; a[i] = e.target.value; return { ...p, impressionAns: a } })}
-                rows={3}
-                autoFocus={i === 0}
-                className={`${field} mt-2`}
-              />
-            </label>
-          ))}
-        </div>
-        <button onClick={() => (part.only ? nextPart() : upd((d) => ({ ...d, phase: part.round === 1 && r.menu ? 'menu' : 'tasks' })))} className={`${panelBtn} mt-4 bg-ig-orange px-6! py-3!`}>
-          verder
-        </button>
-        {leader && <p className="mt-4 font-mono text-[11px] uppercase text-neutral-600">testleider · {r.impression[0].code} · five-second test</p>}
-      </Screen>
-    ) : (
-      <div data-test-ui role="status" className="fixed left-1/2 top-4 z-[60] -translate-x-1/2 border-2 border-ig-ink bg-ig-yellow px-4 py-2 text-sm font-bold">
-        kijk 5 seconden naar deze pagina…
-      </div>
-    )
-
-  /* ---------- menu expectation test (round 1, before the tasks) ---------- */
-  if (s.phase === 'menu' && part && r?.menu)
-    return (
-      <Screen label="Wat verwacht je">
-        <p className={kicker}>{r.name} · voordat je begint</p>
+      <Screen label="Menuverwachting">
+        <p className={kicker}>{r.name} · menu</p>
         <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">wat verwacht je te vinden achter deze woorden?</h2>
-        <p className="mt-2 text-sm text-neutral-600">Je hoeft niet te klikken. Schrijf kort op wat je denkt dat er op die pagina staat.</p>
+        <p className="mt-3 text-lg leading-snug">Je hoeft niet te klikken. Schrijf kort op wat je denkt dat er op die pagina staat.</p>
+        {leader && <p className={`${leaderLabel} mt-3`}>testleider · D2</p>}
         <div className="mt-6 space-y-5">
-          {r.menu.map((m, i) => (
+          {MENU.map((m, i) => (
             <label key={m} className="block">
-              <span className="inline-block border-2 border-ig-ink bg-white px-3 py-1 font-semibold">{m}</span>
-              <textarea
-                value={part.menuAns[i] ?? ''}
-                onChange={(e) => updPart((p) => { const a = [...p.menuAns]; a[i] = e.target.value; return { ...p, menuAns: a } })}
-                rows={2}
-                className={`${field} mt-2`}
-              />
+              <span className="inline-block border-2 border-ig-ink bg-white px-3 py-1 text-lg font-bold lowercase">{m}</span>
+              <textarea value={s.menu[m] ?? ''} onChange={(e) => upd((d) => ({ ...d, menu: { ...d.menu, [m]: e.target.value } }))} rows={2} autoFocus={i === 0} className={`${field} mt-2`} />
             </label>
           ))}
         </div>
-        <button onClick={() => { go('home'); upd((d) => ({ ...d, phase: 'tasks' })) }} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
+        <button onClick={() => upd((d) => ({ ...d, phase: 'tasks', step: 'ready' }))} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
           verder naar de taken
         </button>
-        {leader && <p className="mt-4 font-mono text-[11px] uppercase text-neutral-600">testleider · D2 · verwachtingstest menu</p>}
       </Screen>
     )
 
-  /* ---------- closing questions, one at a time, fixed order ---------- */
-  if (s.phase === 'closing' && part) {
-    const qs = closingQs(part, s.profile)
-    const q = qs[part.qi]
-    const a = part.answers[q.id]
-    const last = part.qi + 1 >= qs.length
+  if (s.phase === 'closing') {
+    const qs = allQs(r, s.profile)
+    const i = Math.min(s.qIdx, qs.length - 1)
+    const q = qs[i]
+    const a = s.answers[q.id]
+    const last = i === qs.length - 1
+    const blocked = q.kind === 'words' && (a?.w?.length ?? 0) !== 3
     return (
       <Screen label="Afsluitende vragen">
         <p className={kicker}>
-          {r?.name} · vraag {part.qi + 1} van {qs.length}
+          {r.name} · vraag {i + 1} van {qs.length}
         </p>
-        <h2 className="mt-3 text-2xl font-extrabold leading-tight">{q.q}</h2>
-        <div className="mt-5">
-          <QInput key={q.id} q={q} a={a} set={(v) => setAns(q.id, v)} words={s.words} />
+        <div className="mt-3 h-2 border-2 border-ig-ink bg-white" aria-hidden>
+          <div className="h-full bg-ig-orange transition-all" style={{ width: `${((i + 1) / qs.length) * 100}%` }} />
         </div>
-        <div className="mt-6 flex gap-2">
-          {part.qi > 0 && (
-            <button onClick={() => updPart((p) => ({ ...p, qi: p.qi - 1 }))} className={`${panelBtn} bg-white`}>
-              terug
+        <div key={q.id} className="mt-8">
+          <h2 className="text-2xl font-extrabold leading-tight @xl:text-3xl">{q.q}</h2>
+          {q.kind === 'words' && <p className="mt-2 text-sm">Kies er precies drie.</p>}
+          <div className="mt-6">
+            {q.kind === 'scale' && <Scale value={a?.n} low={q.low} high={q.high} onPick={(n) => setAns(q.id, { n })} />}
+            {q.kind === 'slider' && <Slider value={a?.n} low={q.low} high={q.high} label={q.q} onPick={(n) => setAns(q.id, { n })} />}
+            {q.kind === 'words' && <WordPick words={s.words.length ? s.words : WORDS} value={a?.w ?? []} onPick={(w) => setAns(q.id, { w })} />}
+            {q.kind === 'choice' && <Choice q={q} a={a} onChange={(v) => setAns(q.id, v)} />}
+            {q.kind === 'text' && <textarea value={a?.t ?? ''} onChange={(e) => setAns(q.id, { t: e.target.value })} rows={5} autoFocus aria-label={q.q} className={field} />}
+          </div>
+        </div>
+        <div className="mt-8 flex gap-2">
+          {i > 0 && (
+            <button onClick={() => upd((d) => ({ ...d, qIdx: i - 1 }))} className={`${panelBtn} bg-white px-6! py-3!`}>
+              vorige
             </button>
           )}
-          <button onClick={() => (last ? nextPart() : updPart((p) => ({ ...p, qi: p.qi + 1 })))} className={`${panelBtn} bg-ig-orange px-6!`}>
+          <button disabled={blocked} onClick={() => upd((d) => (last ? { ...d, phase: 'results' } : { ...d, qIdx: i + 1 }))} className={`${panelBtn} bg-ig-orange px-6! py-3! disabled:opacity-40`}>
             {last ? 'afronden' : 'volgende'}
           </button>
         </div>
-        {leader && q.code && <p className="mt-4 font-mono text-[11px] uppercase text-neutral-600">testleider · {q.code}</p>}
       </Screen>
     )
   }
 
-  /* ---------- results ---------- */
-  if (s.phase === 'results')
+  if (s.phase === 'results') {
+    const sessions = ROUNDS.map((_, i) => (i === s.round ? s : read(storeKey(s.nr, i)))).filter((x): x is Session => !!x && x.phase !== 'start')
+    const todo = ROUNDS.map((_, i) => i).filter((i) => !sessions.some((x) => x.round === i))
     return (
       <Screen label="Resultaten">
         <p className={kicker}>bedankt voor het meedoen!</p>
         <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">resultaten deelnemer {s.nr}</h2>
         <p className="mt-2 text-sm">
-          {modeName(s.mode)} · {prof?.name} · {s.device} · {s.version}
-          {s.pilot ? ' · pilot' : ''}
+          {p?.name} · kent InnerGames: {s.known || '-'} · opname: {s.rec || '-'} · anoniem citeren: {s.quote || '-'}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             className={`${panelBtn} bg-ig-orange`}
             onClick={async () => {
-              const txt = report(s)
+              const txt = report(s.nr, sessions)
               try {
                 await navigator.clipboard.writeText(txt)
               } catch {
@@ -911,174 +899,173 @@ export default function TestMode({
           >
             {copied ? 'gekopieerd' : 'kopieer resultaten'}
           </button>
-          <button className={`${panelBtn} bg-white`} onClick={() => download(`innergames-test-${s.nr}-${s.mode}-${s.version}.json`, JSON.stringify(s, null, 2), 'application/json')}>
-            download deze deelnemer (.json)
+          <button className={`${panelBtn} bg-white`} onClick={() => download(`innergames-test-${s.nr}.csv`, csv(sessions), 'text/csv;charset=utf-8')}>
+            download csv
           </button>
-          <button className={`${panelBtn} bg-white`} onClick={() => download('innergames-test-alle-resultaten.csv', csv(allSessions()), 'text/csv;charset=utf-8')}>
-            download alle resultaten (.csv)
+          <button className={`${panelBtn} bg-white`} onClick={() => download(`innergames-test-${s.nr}.json`, JSON.stringify(sessions, null, 2), 'application/json')}>
+            download json
           </button>
+          {todo.map((i) => (
+            <button key={i} className={`${panelBtn} bg-white`} onClick={() => begin({ ...s, round: i })}>
+              start {ROUNDS[i].name} met deelnemer {s.nr}
+            </button>
+          ))}
           <button
             className={`${panelBtn} bg-white`}
             onClick={() => {
-              try {
-                localStorage.removeItem(KEY + 'current')
-              } catch {
-                /* storage blocked */
-              }
+              localStorage.removeItem(KEY + 'current')
               go('home')
-              setS(fresh({ mode: s.mode, version: s.version, device: s.device }))
+              setS(fresh())
             }}
           >
             nieuwe deelnemer
           </button>
         </div>
-        <pre className="mt-6 whitespace-pre-wrap border-2 border-ig-ink bg-white p-4 font-mono text-xs leading-relaxed">{report(s)}</pre>
-      </Screen>
-    )
-
-  if (!part || !r) return null
-
-  /* ---------- round 0: test leader screen, participant uses innergames.nl ---------- */
-  if (isLive && cur) {
-    const t = tasks[part.idx]
-    return (
-      <Screen label="Ronde 0 testleider">
-        <p className={kicker}>
-          {r.name} · taak {part.idx + 1} van {tasks.length} · {t.codes.join(', ')}
-        </p>
-        <p className="mt-2 text-sm text-neutral-600">Deelnemer werkt op innergames.nl. Lees de taak voor.</p>
-        <h2 className="mt-3 text-2xl font-extrabold leading-tight">{t.text}</h2>
-        {part.step === 'ready' && (
-          <button onClick={() => { updTask((x) => ({ ...x, start: Date.now() })); updPart((p) => ({ ...p, step: 'running' })) }} className={`${panelBtn} mt-5 bg-ig-orange px-6! py-3!`}>
-            start timer
-          </button>
-        )}
-        {part.step === 'running' && (
-          <div className="mt-5 flex gap-2">
-            <button onClick={() => { updTask((x) => ({ ...x, end: Date.now() })); updPart((p) => ({ ...p, step: 'after' })) }} className={`${panelBtn} bg-ig-ink px-6! py-3! text-white`}>
-              stop: klaar
-            </button>
-            <button onClick={() => { updTask((x) => ({ ...x, end: Date.now(), stuck: true })); updPart((p) => ({ ...p, step: 'after' })) }} className={`${panelBtn} bg-white`}>
-              komt er niet uit
-            </button>
-          </div>
-        )}
-        <div className="mt-6 space-y-4">
-          <label className="block">
-            <span className="text-sm font-semibold">eerste klik</span>
-            <input value={cur.first ?? ''} onChange={(e) => updTask((x) => ({ ...x, first: e.target.value }))} className={`${field} mt-1`} />
-          </label>
-          <div className="border-2 border-dashed border-ig-ink/40 bg-white p-3 text-sm">
-            <span className="font-semibold">verwacht: </span>{t.expect}
-          </div>
-          <div>
-            <span className="text-sm font-semibold">resultaat</span>
-            {resultBtns}
-            {correctBtns}
-          </div>
-          <label className="block">
-            <span className="text-sm font-semibold">notities</span>
-            <textarea value={cur.notes} onChange={(e) => updTask((x) => ({ ...x, notes: e.target.value }))} rows={3} className={`${field} mt-1`} />
-          </label>
-          {part.step === 'after' && (t.ask ?? []).length > 0 && (
-            <div className="space-y-3 border-2 border-ig-ink bg-white p-3">
-              <p className="text-sm font-semibold">Antwoord van de deelnemer (jij vult in):</p>
-              {(t.ask ?? []).map((q) => (
-                <div key={q.id}>
-                  <p className="text-sm font-semibold">{q.q}</p>
-                  <div className="mt-1">
-                    <QInput compact q={q} a={cur.ans?.[q.id]} set={(v) => setTaskAns(q.id, v)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {part.step === 'after' && (
-            <div>
-              <p className="font-semibold">Vraag aan de deelnemer: hoe makkelijk of moeilijk was deze taak?</p>
-              <div className="mt-2">
-                <Scale value={cur.score} low="1 = heel moeilijk" high="7 = heel makkelijk" onPick={(n) => updTask((x) => ({ ...x, score: n }))} />
-              </div>
-              <button disabled={!cur.score} onClick={afterTask} className={`${panelBtn} mt-4 bg-ig-orange px-6! disabled:opacity-40`}>
-                volgende
-              </button>
-            </div>
-          )}
-        </div>
+        {sessions.map((x) => {
+          const ro = ROUNDS[x.round]
+          const prof = PROFILES[x.profile]
+          return (
+            <section key={x.round} className="mt-8">
+              <h3 className="border-b-2 border-ig-ink pb-1 text-2xl font-extrabold lowercase">{ro.name}</h3>
+              <p className="mt-1 text-sm">
+                profiel: {prof?.name} · kent InnerGames: {x.known || '-'} · toestemming: {x.consent ? 'ja' : 'nee'}
+              </p>
+              {ro.warmup && <QA title="opwarminterview" items={(prof?.warm ?? []).map((q, i) => [q, x.warm[i]])} />}
+              {ro.five.length > 0 && <QA title="vijfsecondentest" items={ro.five.map((f) => [f.q, x.five[f.id]])} />}
+              {ro.menu && <QA title="menuverwachting · D2" items={MENU.map((m) => [m, x.menu[m]])} />}
+              <ol className="mt-4 space-y-4">
+                {(ro.tasks[x.profile] ?? []).map((t, i) => {
+                  const res = x.tasks[i]
+                  return (
+                    <li key={t.t} className="border-2 border-ig-ink bg-white p-4">
+                      <p className="font-semibold">
+                        taak {i + 1}. {t.t}
+                      </p>
+                      <Dl
+                        items={[
+                          ['code', t.code],
+                          ...(t.expect ? ([['verwacht', t.expect]] as [string, ReactNode][]) : []),
+                          ['tijd', `${secs(res) !== undefined ? `${secs(res)} s` : '-'}${res?.stuck ? ' · ik kom er niet uit' : ''}`],
+                          ['pagina’s', ro.view === 'huidige site' ? 'n.v.t. (huidige site)' : res?.pages.join(' › ') || '-'],
+                          ['klikken', ro.view === 'huidige site' ? 'n.v.t.' : res?.clicks ?? 0],
+                          ...(t.ask ?? []).map((q) => [q.q, fmtA(q, res?.ans?.[q.id])] as [string, ReactNode]),
+                          ...(ro.ease ? ([['score', `${res?.ease ?? '-'} / 7`]] as [string, ReactNode][]) : []),
+                          ['testleider', res?.leader ?? '-'],
+                          ...(t.expect ? ([['antwoord klopt', res?.verdict ?? '-']] as [string, ReactNode][]) : []),
+                          ['notities', res?.notes || '-'],
+                        ]}
+                      />
+                    </li>
+                  )
+                })}
+              </ol>
+              <QA title="afsluitende vragen" items={[...allQs(ro, x.profile).map((q) => [q.q, fmtA(q, x.answers[q.id])] as [string, string]), ['UMUX-Lite score (0-100)', String(umux(x) ?? '-')]]} />
+            </section>
+          )
+        })}
       </Screen>
     )
   }
 
-  /* ---------- task panel (rounds 1 and 2) ---------- */
+  // taken
+  const external = r.view === 'huidige site'
+  const ask = task?.ask ?? []
+  const next = () => upd((d) => (d.idx + 1 < tasks.length ? { ...d, idx: d.idx + 1, step: 'ready' } : { ...d, phase: 'closing', qIdx: 0 }))
   const finish = (stuck = false) => {
     updTask((t) => ({ ...t, end: Date.now(), stuck }))
-    updPart((p) => ({ ...p, step: tasks[p.idx]?.ask?.length ? 'answer' : 'after' }))
+    // huidige site: de testleider vult het antwoord in boven de gemakscore
+    if (external) upd((d) => ({ ...d, step: 'ease' }))
+    else if (ask.length) upd((d) => ({ ...d, step: 'answer' }))
+    else if (r.ease) upd((d) => ({ ...d, step: 'ease' }))
+    else next()
   }
-  return (
+  const setTaskAns = (id: string, v: Answer) => updTask((t) => ({ ...t, ans: { ...t.ans, [id]: { ...t.ans?.[id], ...v } } }))
+  const lastLabel = s.idx + 1 < tasks.length ? 'volgende taak' : 'naar de laatste vragen'
+  const smallTask = <p className="mb-3 border-l-2 border-ig-ink/40 pl-2 text-xs leading-snug text-neutral-600">{task?.t}</p>
+
+  const body = (
     <>
-      {toastEl}
-      <aside data-test-ui className="fixed inset-x-2 bottom-20 z-50 max-h-[70vh] overflow-y-auto border-2 border-ig-ink bg-white p-4 text-ig-ink shadow-[6px_6px_0_#1f1a17] sm:inset-x-auto sm:right-4 sm:w-[19rem]" aria-label="Testtaak">
-        <p className="font-mono text-[11px] uppercase tracking-wide text-neutral-600">{r.name}</p>
-        <button onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed} className="mt-1 flex w-full items-center justify-between text-left text-sm font-semibold">
-          <span>
-            taak {part.idx + 1} van {tasks.length}
-            {part.step === 'running' ? ' · bezig' : ''}
-          </span>
-          <span aria-hidden>{collapsed ? '+' : '–'}</span>
-        </button>
-        {!collapsed && (
-          <div className="mt-3">
-            {part.step === 'answer' ? (
-              <>
-                <p className="text-[13px] leading-snug text-neutral-600">{tasks[part.idx]?.text}</p>
-                {(tasks[part.idx]?.ask ?? []).map((q) => (
-                  <div key={q.id} className="mt-3">
-                    <p className="text-sm font-semibold leading-snug">{q.q}</p>
-                    <div className="mt-1">
-                      <QInput compact q={q} a={cur?.ans?.[q.id]} set={(v) => setTaskAns(q.id, v)} />
-                    </div>
-                  </div>
-                ))}
-                <button onClick={() => (r.after === 'seq' && !tasks[part.idx]?.noSeq ? updPart((p) => ({ ...p, step: 'after' })) : afterTask())} className={`${panelBtn} mt-3 w-full bg-ig-orange`}>
-                  verder
-                </button>
-              </>
-            ) : part.step === 'after' ? (
-              r.after === 'seq' && !tasks[part.idx]?.noSeq ? (
-                <>
-                  <p className="text-sm font-semibold">Hoe makkelijk of moeilijk was deze taak?</p>
-                  <div className="mt-2">
-                    <Scale value={cur?.score} low="1 = heel moeilijk" high="7 = heel makkelijk" onPick={(n) => { updTask((t) => ({ ...t, score: n })); afterTask() }} />
-                  </div>
-                </>
-              ) : (
-                <button onClick={afterTask} className={`${panelBtn} mt-2 w-full bg-ig-orange`}>
-                  volgende
-                </button>
-              )
-            ) : (
-              <>
-                <p className="text-[15px] leading-snug">{tasks[part.idx]?.text}</p>
-                {part.step === 'ready' ? (
-                  <button onClick={() => { updTask((t) => ({ ...t, start: Date.now(), pages: [], clicks: 0, first: undefined })); updPart((p) => ({ ...p, step: 'running' })) }} className={`${panelBtn} mt-3 w-full bg-ig-orange`}>
-                    start
-                  </button>
-                ) : (
-                  <>
-                    <button onClick={() => finish()} className={`${panelBtn} mt-3 w-full bg-ig-ink text-white`}>
-                      ik ben klaar
-                    </button>
-                    <button onClick={() => finish(true)} className="mt-2 w-full text-center text-xs underline underline-offset-2">
-                      ik kom er niet uit
-                    </button>
-                  </>
-                )}
-              </>
-            )}
-            {leaderBox}
+      {s.step === 'answer' && (
+        <>
+          {smallTask}
+          <AskFields qs={ask} ans={cur?.ans} onChange={setTaskAns} />
+          <button onClick={() => (r.ease ? upd((d) => ({ ...d, step: 'ease' })) : next())} className={`${panelBtn} mt-4 w-full bg-ig-orange`}>
+            {r.ease ? 'verder' : lastLabel}
+          </button>
+        </>
+      )}
+      {s.step === 'ease' && (
+        <>
+          {smallTask}
+          {external && ask.length > 0 && (
+            <div className="mb-5 border-2 border-dashed border-ig-ink bg-white p-3">
+              <p className={`${leaderLabel} mb-3`}>{LEADER_ANSWER}</p>
+              <AskFields qs={ask} ans={cur?.ans} onChange={setTaskAns} />
+            </div>
+          )}
+          <p className="text-sm font-semibold">{EASE_Q}</p>
+          <div className="mt-2">
+            <Scale value={cur?.ease} low="1 = heel moeilijk" high="7 = heel makkelijk" onPick={(n) => updTask((t) => ({ ...t, ease: n }))} />
           </div>
-        )}
-      </aside>
+          <button onClick={next} className={`${panelBtn} mt-4 w-full bg-ig-orange`}>
+            {lastLabel}
+          </button>
+        </>
+      )}
+      {(s.step === 'ready' || s.step === 'running') && <p className={external ? 'text-xl font-semibold leading-snug' : 'text-[15px] leading-snug'}>{task?.t}</p>}
+      {s.step === 'ready' && (
+        <button
+          onClick={() => {
+            updTask((t) => ({ ...t, start: Date.now(), pages: [], clicks: 0 }))
+            upd((d) => ({ ...d, step: 'running' }))
+          }}
+          className={`${panelBtn} mt-3 w-full bg-ig-orange`}
+        >
+          start
+        </button>
+      )}
+      {s.step === 'running' && (
+        <>
+          <button onClick={() => finish()} className={`${panelBtn} mt-3 w-full bg-ig-ink text-white`}>
+            ik ben klaar
+          </button>
+          <button onClick={() => finish(true)} className="mt-2 w-full text-center text-xs underline underline-offset-2">
+            ik kom er niet uit
+          </button>
+        </>
+      )}
+      {leaderBox}
     </>
+  )
+
+  if (external)
+    return (
+      <Screen label="Testtaak">
+        <p className={kicker}>
+          {r.name} · taak {s.idx + 1} van {tasks.length}
+          {s.step === 'running' ? ' · bezig' : ''}
+        </p>
+        <p className="mt-3 text-sm">
+          Gebruik de huidige website in het andere tabblad:{' '}
+          <a href="https://www.innergames.nl" target="_blank" rel="noreferrer" className="font-semibold underline underline-offset-2">
+            innergames.nl
+          </a>
+        </p>
+        <div className="mt-6 max-w-md">{body}</div>
+      </Screen>
+    )
+
+  return (
+    <aside className={`fixed bottom-20 right-4 z-50 border-2 border-ig-ink bg-white p-4 text-ig-ink shadow-[6px_6px_0_#1f1a17] max-h-[70vh] overflow-y-auto ${leader || s.step === 'answer' ? 'w-[min(24rem,calc(100vw-2rem))]' : 'w-[min(19rem,calc(100vw-2rem))]'}`} aria-label="Testtaak">
+      <p className="font-mono text-[11px] uppercase tracking-wide text-neutral-600">{r.name}</p>
+      <button onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed} className="mt-1 flex w-full items-center justify-between text-left text-sm font-semibold">
+        <span>
+          taak {s.idx + 1} van {tasks.length}
+          {s.step === 'running' ? ' · bezig' : ''}
+        </span>
+        <span aria-hidden>{collapsed ? '+' : '–'}</span>
+      </button>
+      {!collapsed && <div className="mt-3">{body}</div>}
+    </aside>
   )
 }
