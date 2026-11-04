@@ -38,6 +38,11 @@ export type Workshop = {
   story: string[]
   gets: [string, string][]
   who: string[]
+  // only filled in when innergames.nl says it, otherwise left out (see docs/INNERGAMES_CONTENT.md)
+  program?: [string, string][]
+  method?: string
+  madeBy?: string
+  host?: string
 }
 
 export const WORKSHOPS: Workshop[] = [
@@ -52,9 +57,16 @@ export const WORKSHOPS: Workshop[] = [
     photo: PHOTOS.notes,
     gameSlug: 'elemental-five-compleet',
     story: [
-      'Een teamworkshop met The Elemental Five. Je ontdekt hoe je werkt, wat je energie geeft en hoe je dat inzet in je teamrol.',
-      'Samen bepaal je de richting en verdeel je de rollen. De workshop loopt over drie sessies van vier uur.',
+      'Iedereen in een team werkt op een eigen manier. Met The Elemental Five ontdek je wat die van jou is: hoe je je gedraagt, wat je gewoontes zijn en wat je eigenlijk liever zou doen.',
+      'In drie dagdelen werk je van jezelf naar het hele team. Jullie kijken wat jullie samen drijft en kiezen een richting die past bij de organisatie én bij de mensen die er werken.',
+      'Daarna maken jullie het concreet. Wie doet wat, waar en met wie? Zo benut je elkaars krachten en haal je energie uit het samenwerken.',
     ],
+    program: [
+      ['jezelf leren kennen', 'Je ontdekt je eigen gedrag en gewoontes, op het werk en thuis, en wat je liever zou doen.'],
+      ['samen richting kiezen', 'Het team onderzoekt wat jullie samen energie geeft en kiest een richting die past bij de organisatie en de teamleden.'],
+      ['het concreet maken', 'Jullie verdelen werkplekken, activiteiten, rollen en taken, zodat iedereen zijn kracht kan inzetten.'],
+    ],
+    method: 'The Elemental Five',
     gets: [
       ['Zicht op wat energie geeft', 'Je ontdekt hoe je werkt en waar jij energie van krijgt.'],
       ['Een passende teamrol', 'Je zet je eigen manier van werken in binnen het team.'],
@@ -72,8 +84,14 @@ export const WORKSHOPS: Workshop[] = [
     price: '€ 1.800',
     photo: PHOTOS.globe,
     story: [
-      'Met 42 informatiekaarten ontdek je hoe klimaatvraagstukken met elkaar samenhangen.',
-      'Daarna bedenk je samen oplossingen door te tekenen, te praten en te schrijven. Voor onderwijs en NGO’s is korting mogelijk.',
+      'Klimaatverandering is groot en ingewikkeld. In deze workshop maak je het samen overzichtelijk: met 42 informatiekaarten ontdekt de groep hoe de onderdelen van het klimaatprobleem met elkaar samenhangen.',
+      'Je praat, tekent, brainstormt en schrijft. Zo ontstaat stap voor stap een gedeeld beeld, en eindig je met oplossingen die de groep zelf bedenkt.',
+      'De workshop wordt begeleid door een workshopleider, maar een leraar of docent kan hem ook zelf geven. Voor onderwijs en NGO’s is korting mogelijk, vraag er gerust naar.',
+    ],
+    program: [
+      ['de kaarten leggen', 'Met 42 informatiekaarten ontdekt de groep hoe de onderdelen van het klimaatprobleem samenhangen.'],
+      ['samen begrijpen', 'Door te praten, tekenen en schrijven krijgt iedereen hetzelfde beeld.'],
+      ['oplossingen bedenken', 'De groep brainstormt over oplossingen voor een groene toekomst.'],
     ],
     gets: [
       ['Een gedeeld beeld', 'Iedereen ziet hoe de vraagstukken samenhangen.'],
@@ -92,9 +110,11 @@ export const WORKSHOPS: Workshop[] = [
     price: '€ 350',
     photo: PHOTOS.class,
     story: [
-      'Hoezo Raar?! is een speelse, veilige ruimte om iets “raars” over jezelf te delen. Voor mensen van 12 tot 99 jaar, ook voor neurodivergente mensen.',
-      'De workshop bouwt verbinding en zelfacceptatie. Hij is ontwikkeld met WAVE (Fontys en ASML).',
+      'Iedereen heeft wel iets wat hij zelf een beetje raar vindt. Iets aan je lijf, aan hoe je denkt of aan hoe je dingen doet. In Hoezo Raar?! deel je dat, op een speelse en veilige manier.',
+      'Al snel merk je dat je niet de enige bent. Dat maakt het gesprek open en brengt mensen dichter bij elkaar, en dichter bij zichzelf. Het werkt in groepen die elkaar al kennen en in groepen die elkaar nog nooit hebben gezien.',
+      'De workshop is voor iedereen van 12 tot 99 jaar, ook voor neurodivergente mensen.',
     ],
+    madeBy: 'een ontwerpteam van Wave (Fontys en ASML)',
     gets: [
       ['Verbinding', 'Je deelt iets over jezelf en ontdekt dat anderen dat herkennen.'],
       ['Zelfacceptatie', 'Wat “raar” lijkt, mag er zijn.'],
@@ -112,8 +132,9 @@ export const WORKSHOPS: Workshop[] = [
     price: '€ 350',
     photo: PHOTOS.circle,
     story: [
-      'Voor jongens en jonge mannen: wat betekent man zijn, voorbij sterk, dominant of succesvol?',
-      'Er is ruimte voor emoties en kwetsbaarheid. Voor individuen zijn er open dagen in Eindhoven.',
+      'Wat betekent het om een man te zijn? Via social media, school en de samenleving krijgen jongens vaak één beeld mee: sterk, dominant en succesvol.',
+      'In deze workshop praten jongens en jonge mannen daar samen over. Ze ontdekken dat er meer is: dat je emoties mag delen, je eigen pad mag kiezen en kwetsbaar mag zijn.',
+      'Groepen boeken de workshop en geven een voorkeursdatum door. Kom je alleen? Dan kun je meedoen op een open workshopdag op ons kantoor in Eindhoven. Mail daarvoor naar info@innergames.nl.',
     ],
     gets: [
       ['Een veilige groep', 'Een klein gezelschap van 3 tot 12 deelnemers.'],
@@ -133,9 +154,11 @@ export const WORKSHOPS: Workshop[] = [
     photo: PHOTOS.notes3,
     gameSlug: 'kansen-keren',
     story: [
-      'Kansen Keren maakt ongelijke kansen voelbaar en opent het gesprek over levenspaden. Voor teams, klassen en trainingen.',
-      'De workshop is ontwikkeld door Carinda Jansen (buro KAN).',
+      'Niet iedereen krijgt dezelfde kansen mee. Kansen Keren maakt dat voelbaar: je ervaart hoe achterstand en privilege iemands levenspad beïnvloeden, in plaats van er alleen over te praten.',
+      'Dat opent het gesprek over levenspaden, over wat je meekrijgt en over hoe je een achterstand kunt keren. In een kleine groep is er meer ruimte voor diepgang en persoonlijke uitwisseling. Grotere groepen kunnen ook, in een andere opzet.',
+      'De workshop bestaat ook in het Engels, als TurningPoints.',
     ],
+    madeBy: 'Carinda Jansen (buro KAN)',
     gets: [
       ['Ongelijkheid voelen', 'Deelnemers ervaren het verschil in kansen in plaats van er alleen over te praten.'],
       ['Gesprek over levenspaden', 'Het opent het gesprek over wat je meekrijgt en wat niet.'],
@@ -154,9 +177,11 @@ export const WORKSHOPS: Workshop[] = [
     photo: PHOTOS.notes2,
     gameSlug: 'elemental-five-compleet',
     story: [
-      'Met The Elemental Five ontdek je je gewoontegedrag en wat je eigenlijk liever doet.',
-      'Je ontdekt ook hoe je dat in je dagelijks leven brengt.',
+      'Wat geeft jou de meeste energie? In deze speelse workshop ontdek je het met The Elemental Five.',
+      'Je leert jezelf en je medespelers beter kennen. Je ziet welk gedrag en welke strategieën je meestal gebruikt, thuis en op het werk, en wat je eigenlijk liever zou doen.',
+      'Daarna kijk je hoe je dat in je dagelijks leven brengt. De workshop duurt een ochtend of een middag en is in kleine groepen. Wil je dit met je hele team doen? Kijk dan ook naar Energiek team!.',
     ],
+    method: 'The Elemental Five',
     gets: [
       ['Inzicht in gewoontegedrag', 'Je ziet wat je automatisch doet.'],
       ['Wat je liever doet', 'Je ontdekt wat jou echt past.'],
@@ -175,9 +200,17 @@ export const WORKSHOPS: Workshop[] = [
     photo: PHOTOS.move,
     gameSlug: 'elemental-five-compleet',
     story: [
-      'The Elemental Five gecombineerd met adem- en lichaamsoefeningen.',
-      'Het geeft meer focus, veerkracht, energie en balans onder druk. De sessie duurt ongeveer 4 uur, een halve of hele dag is mogelijk.',
+      'Werkdruk en stress zitten niet alleen in je hoofd. Volgens TNO heeft één op de zes werknemers burn-outklachten, en werkstress is de beroepsziekte nummer één.',
+      'In deze workshop werk je aan balans tussen hoofd en lichaam. The Elemental Five is de rode draad: je ontdekt zonder oordeel wat je drijft en welk gedrag je energie geeft. Met lichaamsgerichte oefeningen en ademoefeningen kom je tot rust en voel je beter wat je lichaam je vertelt.',
+      'Je gaat naar huis met meer focus, veerkracht en energie, en je weet hoe je sneller stress loslaat. Een hele dag kan ook (twee dagdelen), en verdiepingsdagen in overleg.',
     ],
+    program: [
+      ['the elemental five', 'Een speels, actief spel als rode draad. Je ontdekt wat je drijft en wat je energie geeft, zonder oordeel.'],
+      ['lichaamsgerichte oefeningen', 'Je wordt je bewuster van je lijf en je omgeving, en verdiept wat het spel je liet zien.'],
+      ['ademoefeningen', 'Je komt tot rust, laat spanning los en voelt beter wat er in je lichaam gebeurt.'],
+    ],
+    method: 'The Elemental Five, met adem- en lichaamswerk',
+    host: 'Wies van Beek en Ariën Kingma',
     gets: [
       ['Meer focus', 'Je blijft scherp wanneer het druk wordt.'],
       ['Veerkracht en energie', 'Adem- en lichaamsoefeningen geven je energie terug.'],
@@ -196,9 +229,16 @@ export const WORKSHOPS: Workshop[] = [
     photo: PHOTOS.play2,
     gameSlug: 'impact-imperium',
     story: [
-      'Teams verzamelen grondstoffen, energie en water met dobbelstenen en zien de verborgen kosten van productie.',
-      'Een competitief teamspel over circulaire economie. CJP-geaccrediteerd voor mbo en vo.',
+      'Hoeveel water, energie en grondstoffen kost het eigenlijk om iets te maken? In Het Impact Imperium ontdekken leerlingen en studenten het door te spelen.',
+      'De groep speelt in kleine teams tegen elkaar. Met dobbelstenen verzamel je grondstoffen, energie en water, en daarmee maak je zoveel mogelijk producten. Door de competitie is iedereen meteen betrokken, en zie je de verborgen kosten van productie en consumptie. Daarna gaan de teams als innovators aan de slag met ideeën voor een betere wereld.',
+      'Voor mbo en vo is de workshop officieel CJP-acceptant, dus kun je hem met CJP betalen.',
     ],
+    program: [
+      ['strijden om grondstoffen', 'In kleine teams verzamel je met dobbelstenen grondstoffen, energie en water.'],
+      ['producten maken', 'Je maakt zoveel mogelijk producten en ontdekt wat productie echt kost.'],
+      ['zelf innoveren', 'Daarna bedenken de teams ideeën voor een betere wereld.'],
+    ],
+    madeBy: 'Duurzaamheid in de Klas',
     gets: [
       ['De verborgen kosten zien', 'Teams ontdekken wat productie echt kost.'],
       ['Samen spelen en bespreken', 'Competitie levert gesprek op over circulaire economie.'],
@@ -216,9 +256,16 @@ export const WORKSHOPS: Workshop[] = [
     price: '€ 423,50',
     photo: PHOTOS.cards2,
     story: [
-      'Deelnemers maken zelf memorykaarten met tekeningen, foto’s, video of geluid en spelen ermee.',
-      'Zo open je het gesprek over groei, veerkracht en samenwerking. Ontwikkeld met Paper2Play.',
+      'Teken een kaart, maak een video, neem een geluid op en vind het paar. In MemoryStory maken deelnemers zelf de tegels van een memoryspel, rond een thema dat bij de groep past.',
+      'Dat kan met tekeningen, schilderingen, foto’s, video of geluid. De tegels komen op een groot scherm of digibord, en dan speel je samen memory. Bij elk paar praat je over wat de tegel betekent.',
+      'Een paar kan ook bestaan uit oorzaak en gevolg, of uit probleem, gevoel en oplossing. Daardoor werkt het voor luchtige onderwerpen, en als gespreksopener bij gevoelige thema’s.',
     ],
+    program: [
+      ['tegels maken', 'Iedereen maakt tegels rond het thema: een tekening, foto, video of geluid.'],
+      ['samen spelen', 'De tegels komen op een groot scherm en de groep speelt memory.'],
+      ['erover praten', 'Bij elk paar bespreek je wat de tegel betekent.'],
+    ],
+    madeBy: 'InnerGames samen met Paper2Play',
     gets: [
       ['Eigen verhalen op kaart', 'Tekeningen, foto’s, video of geluid worden een spel.'],
       ['Gesprek over groei', 'Over veerkracht en samenwerking.'],

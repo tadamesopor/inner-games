@@ -200,7 +200,12 @@ export function Workshop() {
     ['groepsgrootte', w.group],
     ['prijs', w.price],
     ['locatie', LOCATION],
+    // extra facts only show up when we know them (no "n.t.b.")
+    ...(w.method ? [['methode', w.method]] : []),
+    ...(w.host ? [['begeleid door', w.host]] : []),
+    ...(w.madeBy ? [['ontwikkeld door', w.madeBy]] : []),
   ]
+  const wide = ['locatie', 'methode', 'begeleid door', 'ontwikkeld door']
   return (
     <>
       <Header active="workshop" />
@@ -213,7 +218,7 @@ export function Workshop() {
             <p className="mt-5 max-w-xl text-xl leading-snug">{w.tagline}</p>
             <dl className="mt-6 grid grid-cols-2 gap-3 bg-ig-cream p-4 text-sm">
               {facts.map(([k, v]) => (
-                <div key={k} className={k === 'locatie' ? 'col-span-2' : ''}>
+                <div key={k} className={wide.includes(k) ? 'col-span-2' : ''}>
                   <dt className="text-neutral-600">{k}</dt>
                   <dd className="text-base font-semibold">{v}</dd>
                 </div>
@@ -245,7 +250,25 @@ export function Workshop() {
         </div>
       </Section>
 
-      <Section id="C" label="wat het oplevert" className="bg-white" note="drie kaarten">
+      {/* WP: icon list element, one item per step. Only for workshops where innergames.nl describes the programme */}
+      {w.program && (
+        <Section id="B2" label="programma" className="bg-white" note="de workshop in stappen">
+          <H2>zo ziet de workshop eruit</H2>
+          <ol className="mt-10 grid gap-7 @3xl:grid-cols-3">
+            {w.program.map(([t, d], i) => (
+              <li key={t} className="flex gap-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ig-orange font-bold text-ig-ink">{i + 1}</span>
+                <div>
+                  <h3 className="text-xl font-semibold leading-tight">{t}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+      )}
+
+      <Section id="C" label="wat het oplevert" className={`bg-white ${w.program ? 'border-t border-ig-ink/10' : ''}`} note="drie kaarten">
         <H2>wat levert het op?</H2>
         <div className="mt-10 grid gap-7 @3xl:grid-cols-3">
           {w.gets.map(([t, d], i) => (
