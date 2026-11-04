@@ -1,0 +1,487 @@
+import { useContext, useState } from 'react'
+import { AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
+import { MEMBERS } from './team'
+import { Pic, AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag } from './wf'
+
+function AudTags({ aud }: { aud: Aud[] }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {aud.map((a) => (
+        <Tag key={a} tone="cream">{AUD_LABEL[a]}</Tag>
+      ))}
+    </div>
+  )
+}
+
+function WorkshopCard({ w }: { w: WS }) {
+  const { go } = useContext(Ctx)
+  return (
+    <article className={`${card} group flex cursor-pointer flex-col`} onClick={() => go('workshop', w.slug)}>
+      <Photo src={w.photo} alt={w.title} className="aspect-[4/3] w-full" />
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <AudTags aud={w.aud} />
+        <h3 className="text-2xl font-semibold leading-tight tracking-tight">{w.title}</h3>
+        <p className="text-[15px] text-neutral-700">{w.tagline}</p>
+        <div className="mt-auto flex items-end justify-between gap-3 pt-2">
+          <div className="text-sm text-neutral-600">
+            <p>{w.duration} · {w.group}</p>
+            <p className="mt-0.5 text-base font-semibold text-ig-ink">{w.price}</p>
+          </div>
+          <button
+            className="shrink-0 border-b-2 border-ig-orange pb-0.5 text-sm font-semibold text-ig-ink"
+            onClick={(e) => { e.stopPropagation(); go('workshop', w.slug) }}
+          >
+            bekijk →
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+export function Home() {
+  const { go } = useContext(Ctx)
+  const audCards: { key: Aud; text: string; cta: string; act: () => void }[] = [
+    { key: 'onderwijs', text: 'Spellen en lessen die je zo in de klas inzet, met een handleiding erbij.', cta: 'workshops voor onderwijs', act: () => go('workshops', 'onderwijs') },
+    { key: 'organisaties', text: 'Workshops voor teams die dichter bij elkaar en bij zichzelf willen komen.', cta: 'workshops voor organisaties', act: () => go('workshops', 'organisaties') },
+    { key: 'zorg', text: 'Spel maakt zorg effectiever en prettiger.', cta: 'workshops voor zorg', act: () => go('workshops', 'zorg') },
+    { key: 'trainers', text: 'Leer zelf spel-workshops geven en werk met onze methodes.', cta: 'train-de-trainer', act: () => go('trainer') },
+  ]
+  return (
+    <>
+      <Header active="home" />
+      <Section id="A" label="hero" className="relative overflow-hidden bg-ig-orange py-0! text-white" note="FULL-WIDTH ACHTERGRONDFOTO met oranje overlay">
+        <Pic src={PHOTOS.play} alt="Mensen spelen samen een bordspel" label="foto: mensen spelen samen" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-ig-orange/80" />
+        <div className="relative flex min-h-[560px] flex-col justify-center py-16 @3xl:min-h-[720px]">
+          <p className="mb-5 text-base font-medium">spelen om te leren · spelen om te groeien</p>
+          <H1 className="max-w-4xl">inner growth for outer change.</H1>
+          <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">
+            Spelen is een mooie manier om te leren, te veranderen, om jezelf te ontwikkelen, om jezelf te leren kennen en te groeien.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Btn variant="dark" onClick={() => go('workshops')}>boek een workshop</Btn>
+            <Btn variant="light" onClick={() => go('preview', 'elemental-five-compleet')}>speel een preview</Btn>
+          </div>
+        </div>
+      </Section>
+
+      <Marquee text="ontdek de kracht van spelen" />
+      <Section id="B" label="vier doelgroepen" className="bg-ig-cream" note="onderwijs · organisaties · zorg · trainers">
+        <H2 className="max-w-2xl">waar kom jij voor?</H2>
+        <div className="mt-10 grid gap-6 @3xl:grid-cols-4">
+          {audCards.map((c) => (
+            <div key={c.key} className={`${cardStatic} flex flex-col gap-4 p-6`}>
+              <AudIcon aud={c.key} />
+              <h3 className="text-3xl font-semibold tracking-tight">{AUD_LABEL[c.key]}</h3>
+              <p className="text-[15px] leading-relaxed text-neutral-700">{c.text}</p>
+              <Btn variant="ghost" className="mt-auto" onClick={c.act}>{c.cta} →</Btn>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section id="C" label="uitgelichte workshops" className="bg-white" note="3 van 9 · link naar overzicht">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <H2>uit onze sessies</H2>
+          <Btn variant="ghost" onClick={() => go('workshops')}>alle 9 workshops →</Btn>
+        </div>
+        <div className="grid gap-7 @3xl:grid-cols-3">
+          {[WORKSHOPS[0], WORKSHOPS[3], WORKSHOPS[7]].map((w) => <WorkshopCard key={w.slug} w={w} />)}
+        </div>
+      </Section>
+
+      <Section id="D" label="uitgelicht spel" className="bg-ig-yellow" note="enige gele sectie op deze pagina">
+        <div className="grid items-center gap-10 @3xl:grid-cols-2">
+          <div>
+            <p className="mb-3 text-sm font-medium">uitgelicht spel</p>
+            <H2>the elemental five</H2>
+            <p className="mt-5 max-w-lg text-lg leading-snug">Vijf elementen, vijf manieren om naar jezelf en elkaar te kijken. Speel eerst 30 seconden en voel het verschil.</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Btn variant="dark" onClick={() => go('preview', 'elemental-five-compleet')}>speel de preview</Btn>
+              <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
+            </div>
+          </div>
+          <Photo src={PHOTOS.cards} alt="Kaartspel op tafel" className="aspect-[5/4] w-full" />
+        </div>
+      </Section>
+
+      <Section id="E" label="quote" className="bg-white" note={QUOTE.note}>
+        <blockquote className="mx-auto max-w-3xl text-center">
+          <p className="text-3xl font-normal leading-tight tracking-tight @3xl:text-5xl">“{QUOTE.text}”</p>
+          <footer className="mt-6 text-sm font-medium text-ig-orange">{QUOTE.who}</footer>
+        </blockquote>
+      </Section>
+
+      <ClientStrip />
+      <PartnerStrip />
+
+      <Section id="F" label="team-teaser" className="bg-white" note="verwijst naar ons team">
+        <div className="grid items-center gap-10 @3xl:grid-cols-[1fr_1.3fr]">
+          <div>
+            <H2>vijf spelers, één idee</H2>
+            <p className="mt-4 max-w-md text-lg">Een serieuze organisatie die speelse dingen doet, vanuit Eindhoven.</p>
+            <Btn variant="dark" className="mt-7" onClick={() => go('team')}>ontmoet het team →</Btn>
+          </div>
+          <div className="flex gap-4">
+            {MEMBERS.slice(0, 3).map((m) => (
+              <div key={m.first} className="flex-1 overflow-hidden bg-ig-cream">
+                <div className="aspect-[3/4] overflow-hidden">
+                  {m.photo ? (
+                    <Pic src={m.photo} alt={m.first} label={`portret ${m.first}`} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-ig-cream text-xs text-neutral-500">foto volgt</div>
+                  )}
+                </div>
+                <p className="px-3 py-2 text-sm font-semibold">{m.first}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <ContactCta />
+      <Footer />
+    </>
+  )
+}
+
+const TABS: ('alle' | Aud)[] = ['alle', ...AUDS]
+
+export function Workshops() {
+  const { sel } = useContext(Ctx)
+  const [f, setF] = useState<'alle' | Aud>((AUDS as string[]).includes(sel) ? (sel as Aud) : 'alle')
+  const list = WORKSHOPS.filter((w) => f === 'alle' || w.aud.includes(f))
+  return (
+    <>
+      <Header active="workshops" />
+      <PageHero
+        id="A"
+        label="paginakop"
+        kicker="sessies en workshops"
+        title="sessies en workshops"
+        sub="Negen sessies waarin je speelt, reflecteert en beweegt. Voor teams, klassen, zorg en trainers."
+        photo={PHOTOS.notes}
+        alt="Mensen werken met notities aan tafel"
+        tone="cream"
+      />
+      <Section id="B" label="overzicht + filter" className="bg-white" note="filter op doelgroep · kaart → detailpagina">
+        <div className="mb-8 flex flex-wrap items-center gap-2" role="tablist" aria-label="Filter op doelgroep">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={f === t}
+              onClick={() => setF(t)}
+              className={`rounded-full px-4 py-1.5 text-[15px] transition ${f === t ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow'}`}
+            >
+              {t}
+            </button>
+          ))}
+          <span className="ml-auto text-sm text-neutral-500">{list.length} van {WORKSHOPS.length}</span>
+        </div>
+        <div className="grid gap-7 @3xl:grid-cols-3">
+          {list.map((w) => <WorkshopCard key={w.slug} w={w} />)}
+        </div>
+      </Section>
+      <ContactCta />
+      <Footer />
+    </>
+  )
+}
+
+export function Workshop() {
+  const { sel, go } = useContext(Ctx)
+  const w = WORKSHOPS.find((x) => x.slug === sel) ?? WORKSHOPS[0]
+  const game = GAMES.find((g) => g.slug === w.gameSlug)
+  const others = WORKSHOPS.filter((x) => x.slug !== w.slug && x.aud.some((a) => w.aud.includes(a))).slice(0, 3)
+  const facts = [
+    ['duur', w.duration],
+    ['groepsgrootte', w.group],
+    ['prijs', w.price],
+    ['locatie', LOCATION],
+  ]
+  return (
+    <>
+      <Header active="workshop" />
+      <Section id="A" label="workshop-kop" className="bg-white py-10! @3xl:py-16!" note="titel + feiten + boekknop boven de vouw">
+        <button onClick={() => go('workshops')} className="mb-6 text-sm underline">← alle workshops</button>
+        <div className="grid items-center gap-8 @3xl:grid-cols-[1.2fr_1fr] @3xl:gap-14">
+          <div>
+            <AudTags aud={w.aud} />
+            <H1 className="mt-5 text-[2.5rem]! @3xl:text-[4.5rem]!">{w.title}</H1>
+            <p className="mt-5 max-w-xl text-xl leading-snug">{w.tagline}</p>
+            <dl className="mt-6 grid grid-cols-2 gap-3 bg-ig-cream p-4 text-sm">
+              {facts.map(([k, v]) => (
+                <div key={k} className={k === 'locatie' ? 'col-span-2' : ''}>
+                  <dt className="text-neutral-600">{k}</dt>
+                  <dd className="text-base font-semibold">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Btn variant="primary" onClick={() => go('contact')}>boek of vraag aan</Btn>
+              {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
+            </div>
+          </div>
+          <Photo src={w.photo} alt={w.title} className="h-64 w-full @3xl:h-[460px]" />
+        </div>
+      </Section>
+
+      <Section id="B" label="verhaal" className="bg-ig-cream" note="lopende tekst + voor wie">
+        <div className="grid gap-12 @3xl:grid-cols-[1.2fr_1fr]">
+          <div className="space-y-5 text-lg leading-relaxed">
+            <H2 className="mb-6">waar gaat het over?</H2>
+            {w.story.map((p, i) => <p key={i}>{p}</p>)}
+          </div>
+          <aside className={`${cardStatic} self-start p-6`}>
+            <p className="text-sm font-medium text-ig-orange">voor wie</p>
+            <ul className="mt-4 space-y-3">
+              {w.who.map((x) => (
+                <li key={x} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{x}</li>
+              ))}
+            </ul>
+          </aside>
+        </div>
+      </Section>
+
+      <Section id="C" label="wat het oplevert" className="bg-white" note="drie kaarten">
+        <H2>wat levert het op?</H2>
+        <div className="mt-10 grid gap-7 @3xl:grid-cols-3">
+          {w.gets.map(([t, d], i) => (
+            <div key={t} className={`${cardStatic} bg-ig-cream p-6 shadow-none`}>
+              <p className="text-3xl text-ig-orange">0{i + 1}</p>
+              <h3 className="mt-3 text-2xl font-semibold leading-tight">{t}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section id="D" label="gerelateerd" className="bg-ig-cream" note="het bijbehorende spel + andere sessies">
+        <div className="grid gap-12 @3xl:grid-cols-2">
+          <div>
+            <h3 className="text-2xl font-semibold">{game ? 'speel het zelf' : 'bij elkaar horend'}</h3>
+            <div className="mt-5 space-y-4">
+              {game ? (
+                <button onClick={() => go('game', game.slug)} className={`${card} flex w-full items-center gap-4 p-3 text-left`}>
+                  <Photo src={game.photo} alt="" className="h-20 w-20 shrink-0" />
+                  <span className="font-semibold">{game.title}</span>
+                  <span className="ml-auto pr-2">→</span>
+                </button>
+              ) : (
+                <p className="text-[15px] text-neutral-700">Voor deze workshop is geen apart spel. Bekijk onze andere spellen.</p>
+              )}
+              <Btn variant="ghost" onClick={() => go('games')}>alle spellen</Btn>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-2xl font-semibold">ook interessant</h3>
+            <ul className="mt-5 divide-y divide-ig-ink/15 border-y border-ig-ink/15">
+              {others.map((o) => (
+                <li key={o.slug}>
+                  <button onClick={() => go('workshop', o.slug)} className="flex w-full items-center justify-between px-1 py-4 text-left text-lg font-semibold hover:bg-white">
+                    {o.title}<span>→</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </Section>
+      <ContactCta />
+      <Footer />
+    </>
+  )
+}
+
+export function Projects() {
+  return (
+    <>
+      <Header active="projects" />
+      <PageHero
+        id="A"
+        label="paginakop"
+        kicker="projecten"
+        title="projecten"
+        sub="Waar we nu aan werken. Alles op deze pagina is nog in ontwikkeling."
+        photo={PHOTOS.notes2}
+        alt="Notities en schetsen op tafel"
+        tone="white"
+      />
+      <Section id="B" label="projectkaarten" className="bg-ig-cream" note="elke kaart: ‘in ontwikkeling’-label">
+        <div className="grid gap-7 @3xl:grid-cols-3">
+          {PROJECTS.map((p) => (
+            <article key={p.title} className={`${cardStatic} flex flex-col`}>
+              <Photo src={p.photo} alt="" className="aspect-[4/3] w-full" />
+              <div className="flex flex-1 flex-col gap-3 p-5">
+                <div className="flex flex-wrap gap-1.5">
+                  <Tag tone="yellow">in ontwikkeling</Tag>
+                </div>
+                <h3 className="text-2xl font-semibold leading-tight">{p.title}</h3>
+                <p className="text-[15px] leading-relaxed text-neutral-700">{p.text}</p>
+                <p className="mt-auto pt-2 text-sm font-semibold text-ig-orange">{p.when}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </Section>
+      <ContactCta />
+      <Footer />
+    </>
+  )
+}
+
+const TRAIN = [
+  ['spelen', 'Je ervaart zelf hoe een spel werkt, vanuit de stoel van de deelnemer.'],
+  ['begeleiden', 'Je leert groepen voorbereiden, leiden en veilig afsluiten.'],
+  ['ontwerpen', 'Je past een werkvorm aan op jouw doelgroep en bouwt je eigen sessie.'],
+]
+
+const TRAIN_GAMES: [string, string, 'game' | 'workshop', string][] = [
+  ['The Elemental Five', 'Vijf elementen als taal voor gedrag en energie.', 'game', 'elemental-five-compleet'],
+  ['Sociality', 'Het model Sociale Kwaliteit met praktijkcasussen.', 'game', 'sociality'],
+  ['Kansen Keren', 'Een gesprekspel over ongelijke kansen.', 'game', 'kansen-keren'],
+  ['Hoezo Raar?!', 'Een veilige ruimte om iets “raars” te delen.', 'workshop', 'hoezo-raar'],
+]
+
+export function Trainer() {
+  const { go } = useContext(Ctx)
+  const [open, setOpen] = useState<number | null>(0)
+  const faq = [
+    ['Wat kost het?', '€ 1.800 per persoon voor 8 uur.'],
+    ['Hoe is het opgebouwd?', '4 uur theorie, individueel of in groepen tot 10, en 4 uur praktijk, begeleid in je eigen setting.'],
+    ['Voor wie is het?', 'Voor trainers, coaches, docenten en hulpverleners die spel willen inzetten in hun werk.'],
+  ]
+  return (
+    <>
+      <Header active="trainer" />
+      <PageHero
+        id="A"
+        label="paginakop"
+        kicker="train-de-trainer"
+        title="train-de-trainer"
+        sub="Leer spel-workshops geven. Van zelf spelen tot zelf begeleiden."
+        photo={PHOTOS.circle}
+        alt="Groep zit in een kring"
+        tone="cream"
+      />
+      <Section id="B" label="het aanbod" className="bg-white py-10! @3xl:py-14!" note="echt aanbod: € 1.800 · 8 uur">
+        <div className="grid gap-4 @3xl:grid-cols-3">
+          {[
+            ['prijs', '€ 1.800 per persoon'],
+            ['duur', '8 uur'],
+            ['opbouw', '4 uur theorie (individueel of in groepen tot 10) en 4 uur praktijk, begeleid in je eigen setting'],
+          ].map(([k, v]) => (
+            <div key={k} className=" bg-ig-cream p-6">
+              <p className="text-sm text-neutral-600">{k}</p>
+              <p className={`mt-1 ${k === 'opbouw' ? 'text-base' : 'text-3xl'} font-semibold leading-snug`}>{v}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex"><Btn variant="primary" onClick={() => go('contact')}>vraag de training aan</Btn></div>
+      </Section>
+      <Section id="C" label="drie stappen" className="bg-ig-cream" note="spelen · begeleiden · ontwerpen">
+        <H2>zo word je spelleider</H2>
+        <div className="mt-10 grid gap-7 @3xl:grid-cols-3">
+          {TRAIN.map(([t, d], i) => (
+            <div key={t} className={`${cardStatic} p-6`}>
+              <p className="text-3xl text-ig-orange">0{i + 1}</p>
+              <h3 className="mt-3 text-3xl font-semibold">{t}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+      <Section id="D" label="welke spellen leer je" className="bg-white" note="vier spellen">
+        <H2>welke spellen leer je</H2>
+        <div className="mt-10 grid gap-5 @3xl:grid-cols-4">
+          {TRAIN_GAMES.map(([t, d, kind, slug]) => (
+            <button key={t} onClick={() => go(kind, slug)} className={`${card} p-6 text-left`}>
+              <h3 className="text-2xl font-semibold leading-tight">{t}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+              <p className="mt-4 text-sm font-semibold text-ig-orange">meer lezen →</p>
+            </button>
+          ))}
+        </div>
+      </Section>
+      <Section id="E" label="veelgestelde vragen" className="bg-ig-yellow" note="accordeon · enige gele sectie">
+        <div className="grid gap-10 @3xl:grid-cols-[1fr_2fr]">
+          <H2>vragen?</H2>
+          <div className="border-y border-ig-ink/30">
+            {faq.map(([q, a], i) => (
+              <div key={q} className="border-b border-ig-ink/20 last:border-0">
+                <button onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i} className="flex w-full items-center justify-between py-5 text-left text-xl font-semibold">
+                  {q}<span className="text-2xl">{open === i ? '–' : '+'}</span>
+                </button>
+                {open === i && <p className="pb-5 pr-8 text-lg leading-relaxed">{a}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+      <ContactCta />
+      <Footer />
+    </>
+  )
+}
+
+export function Contact() {
+  const [sent, setSent] = useState(false)
+  const input = 'w-full bg-ig-cream px-4 py-3 text-base outline-none focus:ring-2 focus:ring-ig-orange'
+  return (
+    <>
+      <Header active="contact" />
+      <Section id="A" label="contactformulier" className="bg-white" note="formulier · straks via WordPress-formulier">
+        <div className="grid gap-12 @3xl:grid-cols-[1fr_1.1fr]">
+          <div>
+            <H1>contact</H1>
+            <p className="mt-6 max-w-md text-xl leading-snug">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
+            <div className="mt-8 space-y-1 text-lg">
+              <p className="font-semibold">InnerGames</p>
+              <p>Bezoekadres: Kronehoefstraat 87, 5612 HL Eindhoven</p>
+              <p>Postadres: Westrik 3, 5629 CE Eindhoven</p>
+              <p>+31 (0)6 – 215 27 855</p>
+              <p><a className="underline" href="mailto:info@innergames.nl">info@innergames.nl</a></p>
+            </div>
+            <a
+              href="https://wa.me/31621527855"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 bg-ig-orange px-6 py-3 text-[15px] font-semibold text-ig-ink hover:brightness-95 @3xl:w-auto"
+            >
+              app ons op whatsapp
+            </a>
+          </div>
+          {sent ? (
+            <div role="status" className={`${cardStatic} self-start bg-ig-cream p-8 shadow-none`}>
+              <h2 className="text-3xl font-semibold">verstuurd</h2>
+              <p className="mt-3 text-lg">(dit is een test, er is niets verzonden)</p>
+            </div>
+          ) : (
+            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 bg-white p-6 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
+              <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
+              <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
+              <label className="block text-sm font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
+              <label className="block text-sm font-semibold">Waar kunnen we je mee helpen?
+                <select className={`${input} mt-1`}>
+                  <option>een workshop voor mijn team</option>
+                  <option>een les of spel voor mijn klas</option>
+                  <option>iets voor mijn cliënten of zorgteam</option>
+                  <option>train-de-trainer</option>
+                  <option>iets anders</option>
+                </select>
+              </label>
+              <label className="block text-sm font-semibold">Bericht<textarea required rows={5} className={`${input} mt-1`} /></label>
+              <Btn type="submit" variant="dark">verstuur</Btn>
+            </form>
+          )}
+        </div>
+      </Section>
+      <Section id="B" label="werkplek" className="p-0!" note="FULL-WIDTH · werkplek Eindhoven">
+        <Photo src={PHOTOS.plant} alt="Werkplek in Eindhoven" className="h-64 w-full @3xl:h-96" />
+      </Section>
+      <Footer />
+    </>
+  )
+}
