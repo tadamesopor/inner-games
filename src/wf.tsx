@@ -37,7 +37,8 @@ export function Pic({ label, wfClassName, className = '', alt, ...rest }: ImgHTM
 
 export const Ctx = createContext<CtxT>({ ann: false, sel: '', cart: [], go: () => {}, toggleCart: () => {} })
 
-const SOFT = ' bg-white border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]'
+// rounded corners on every card, so the site feels friendlier
+const SOFT = ' rounded-2xl bg-white border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]'
 export const cardStatic = `${SOFT} overflow-hidden`
 export const card = `${cardStatic} transition duration-200 hover:-translate-y-1 hover:shadow-[8px_10px_0_#1f1a17]`
 
@@ -147,7 +148,7 @@ export function Btn({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex w-full items-center justify-center gap-2 border-2 border-ig-ink px-5 py-3 text-sm font-bold lowercase transition disabled:opacity-50 @3xl:w-auto ${VARIANT[variant]} ${variant.startsWith('ghost') ? '' : 'shadow-[3px_3px_0_#1f1a17] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#1f1a17] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'} ${className}`}
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-ig-ink px-5 py-3 text-sm font-bold lowercase transition disabled:opacity-50 @3xl:w-auto ${VARIANT[variant]} ${variant.startsWith('ghost') ? '' : 'shadow-[3px_3px_0_#1f1a17] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#1f1a17] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'} ${className}`}
     >
       {children}
     </button>
@@ -186,7 +187,7 @@ export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string 
     trainers: 'bg-ig-ink text-ig-yellow',
   }
   return (
-    <span className={`flex h-14 w-14 items-center justify-center border-2 border-ig-ink ${bg[aud]} ${className}`}>
+    <span className={`flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-ig-ink ${bg[aud]} ${className}`}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d={paths[aud]} />
       </svg>
@@ -228,7 +229,7 @@ export function PageHero({
           <H1>{title}</H1>
           <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">{sub}</p>
         </div>
-        <Photo src={photo} alt={alt} className="h-60 w-full border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:h-[400px]" />
+        <Photo src={photo} alt={alt} className="h-60 w-full rounded-2xl border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:h-[400px]" />
       </div>
     </Section>
   )
@@ -262,7 +263,7 @@ export function ContactCta({ id = 'CTA' }: { id?: string }) {
   const { go } = useContext(Ctx)
   return (
     <Section id={id} label="contact-cta" className="bg-white py-10! @3xl:py-16!" note="gewone knop, geen handjes-afbeelding">
-      <div className="flex flex-col items-start justify-between gap-8 border-2 border-ig-ink bg-ig-orange p-7 text-ig-ink shadow-[8px_8px_0_#1f1a17] @3xl:flex-row @3xl:items-center @3xl:p-14">
+      <div className="flex flex-col items-start justify-between gap-8 rounded-3xl border-2 border-ig-ink bg-ig-orange p-7 text-ig-ink shadow-[8px_8px_0_#1f1a17] @3xl:flex-row @3xl:items-center @3xl:p-14">
         <div>
           <H2 className="max-w-2xl">benieuwd wat spelen voor jou doet?</H2>
           <p className="mt-4 max-w-lg text-lg">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
@@ -298,7 +299,7 @@ const GROUP: Record<PageId, PageId> = {
   contact: 'contact',
 }
 
-const iconBtn = 'flex h-10 items-center justify-center gap-2 border-2 border-ig-ink bg-white px-3 text-sm font-semibold transition hover:bg-ig-yellow'
+const iconBtn = 'flex h-10 items-center justify-center gap-2 rounded-full border-2 border-ig-ink bg-white px-3 text-sm font-semibold transition hover:bg-ig-yellow'
 
 /** Zoekt op titels van workshops en spellen. */
 export function Search({ placeholder, autoFocus }: { placeholder: string; autoFocus?: boolean }) {
@@ -314,11 +315,11 @@ export function Search({ placeholder, autoFocus }: { placeholder: string; autoFo
   return (
     <form onSubmit={(e) => { e.preventDefault(); hits[0]?.to() }} role="search" className="relative">
       <div className="flex gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 border-2 border-ig-ink bg-white px-4 text-base outline-none" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 rounded-full border-2 border-ig-ink bg-white px-4 text-base outline-none" />
         <Btn type="submit" variant="dark" className="w-auto! py-2!">zoek</Btn>
       </div>
       {term && (
-        <ul className="mt-2 border-2 border-ig-ink bg-white text-sm text-ig-ink" aria-label="Zoekresultaten">
+        <ul className="mt-2 overflow-hidden rounded-2xl border-2 border-ig-ink bg-white text-sm text-ig-ink" aria-label="Zoekresultaten">
           {hits.length === 0 && <li className="px-4 py-3 text-neutral-600">Niets gevonden voor “{q.trim()}”.</li>}
           {hits.map((h) => (
             <li key={h.key} className="border-b border-ig-ink/10 last:border-0">
@@ -392,7 +393,7 @@ export function Header({ active }: { active: PageId }) {
             onClick={() => setOpen(!open)}
             aria-expanded={open}
             aria-label="Menu"
-            className="flex h-10 w-10 flex-col items-center justify-center gap-1 border-2 border-ig-ink @6xl:hidden"
+            className="flex h-10 w-10 flex-col items-center justify-center gap-1 rounded-full border-2 border-ig-ink @6xl:hidden"
           >
             <i className={`block h-0.5 w-5 bg-ig-ink transition ${open ? 'translate-y-1.5 rotate-45' : ''}`} />
             <i className={`block h-0.5 w-5 bg-ig-ink transition ${open ? 'opacity-0' : ''}`} />
@@ -423,7 +424,7 @@ export function Header({ active }: { active: PageId }) {
         </nav>
       )}
       {cartOpen && (
-        <div className="absolute right-5 top-full z-50 mt-2 w-[min(20rem,calc(100%-2.5rem))] bg-white p-4 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:right-16">
+        <div className="absolute right-5 top-full z-50 mt-2 w-[min(20rem,calc(100%-2.5rem))] rounded-2xl bg-white p-4 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:right-16">
           <p className="text-sm font-medium text-neutral-600">winkelmand</p>
           {items.length === 0 ? (
             <p className="mt-3 text-sm">Je mand is nog leeg. Speel eerst een preview!</p>

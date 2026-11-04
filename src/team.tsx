@@ -66,7 +66,7 @@ function MemberCard({ m }: { m: Member }) {
     <article
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="group flex flex-col overflow-hidden bg-white border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]"
+      className="group flex flex-col overflow-hidden rounded-2xl bg-white border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]"
     >
       <div className={`relative aspect-[4/5] overflow-hidden transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
         {m.photo && (
@@ -128,10 +128,10 @@ export function Team() {
               Ontdek de kracht van spelen, met jouw team, jouw klas, jouw cliënten. Of gewoon voor jezelf!
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <button onClick={() => document.getElementById('leden')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-ig-ink px-6 py-3 text-[15px] font-semibold lowercase text-white hover:bg-ig-ink/90 @3xl:w-auto">
+              <button onClick={() => document.getElementById('leden')?.scrollIntoView({ behavior: 'smooth' })} className="w-full rounded-full bg-ig-ink px-6 py-3 text-[15px] font-semibold lowercase text-white hover:bg-ig-ink/90 @3xl:w-auto">
                 ontmoet de vijf
               </button>
-              <button onClick={() => go('contact')} className="w-full border border-white/70 px-6 py-3 text-[15px] font-semibold lowercase text-white hover:bg-white hover:text-ig-ink @3xl:w-auto">
+              <button onClick={() => go('contact')} className="w-full rounded-full border border-white/70 px-6 py-3 text-[15px] font-semibold lowercase text-white hover:bg-white hover:text-ig-ink @3xl:w-auto">
                 neem contact op
               </button>
             </div>
@@ -186,7 +186,7 @@ export function Team() {
           </div>
           <div className="grid gap-4 @3xl:grid-cols-3">
             {PILLARS.map(([t, d], i) => (
-              <div key={t} className=" bg-white p-5 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]">
+              <div key={t} className="rounded-2xl bg-white p-5 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]">
                 <p className="text-3xl text-ig-orange">0{i + 1}</p>
                 <h3 className="mt-3 text-2xl font-semibold lowercase">{t}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-700">{d}</p>

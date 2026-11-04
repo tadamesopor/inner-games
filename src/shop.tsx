@@ -99,13 +99,13 @@ function Teaser({ game }: { game: G }) {
   if (!s) return null
 
   return (
-    <div className=" bg-ig-cream p-5 text-ig-ink border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
+    <div className="rounded-2xl bg-ig-cream p-5 text-ig-ink border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
       <div className="mb-6 flex items-center gap-1.5" aria-label={`Stap ${Math.min(i + 1, steps.length)} van ${steps.length}`}>
         {steps.map((_, k) => <span key={k} className={`h-1.5 flex-1 rounded-full ${k < i ? 'bg-ig-orange' : k === i && !done ? 'bg-ig-yellow' : 'bg-white'}`} />)}
       </div>
       {!done ? (
         <div className="[perspective:1000px]">
-          <div key={i} className="animate-[flipIn_.5s_ease-out] bg-white p-6 text-center @3xl:p-10">
+          <div key={i} className="animate-[flipIn_.5s_ease-out] rounded-2xl bg-white p-6 text-center @3xl:p-10">
             <p className="text-sm font-medium text-ig-orange">{s.kind}</p>
             <p className="mx-auto mt-4 max-w-xl text-2xl font-semibold leading-tight @3xl:text-4xl">{s.prompt}</p>
             {s.body && <p className="mx-auto mt-4 max-w-lg text-lg leading-snug text-neutral-700">{s.body}</p>}
@@ -137,7 +137,7 @@ function Teaser({ game }: { game: G }) {
                 <button
                   key={o}
                   onClick={() => next(o)}
-                  className={` px-5 py-2.5 text-base font-semibold transition hover:-translate-y-0.5 hover:bg-ig-yellow ${picked === o ? 'bg-ig-orange' : 'bg-ig-cream'}`}
+                  className={`rounded-full px-5 py-2.5 text-base font-semibold transition hover:-translate-y-0.5 hover:bg-ig-yellow ${picked === o ? 'bg-ig-orange' : 'bg-ig-cream'}`}
                 >
                   {o}
                 </button>
@@ -146,7 +146,7 @@ function Teaser({ game }: { game: G }) {
           </div>
         </div>
       ) : (
-        <div className=" bg-white p-6 text-center @3xl:p-10" role="status">
+        <div className="rounded-2xl bg-white p-6 text-center @3xl:p-10" role="status">
           <Pic src="/assets/meeple.png" alt="" aria-hidden className="mx-auto h-14 w-14 object-contain mix-blend-multiply" />
           <p className="mt-3 text-2xl font-semibold lowercase @3xl:text-4xl">dat was een voorproefje.</p>
           <p className="mx-auto mt-3 max-w-md text-lg">Wil je het hele spel met je team of klas spelen?</p>
@@ -180,10 +180,10 @@ export function Game() {
         <button onClick={() => go('games')} className="mb-6 text-sm underline">← alle spellen</button>
         <div className="grid gap-10 @3xl:grid-cols-2 @3xl:gap-14">
           <div>
-            <Photo src={g.gallery[img]} alt={g.title} className="aspect-[4/3] w-full" />
+            <Photo src={g.gallery[img]} alt={g.title} className="aspect-[4/3] w-full rounded-2xl" />
             <div className="mt-5 flex gap-3">
               {g.gallery.map((p, k) => (
-                <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden ${img === k ? 'ring-4 ring-ig-orange' : ''}`}>
+                <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-xl ${img === k ? 'ring-4 ring-ig-orange' : ''}`}>
                   <Photo src={p} alt="" className="h-16 w-20" />
                 </button>
               ))}
@@ -198,7 +198,7 @@ export function Game() {
             <p className="mt-5 text-xl leading-snug">{g.short}</p>
             <dl className="mt-6 grid grid-cols-1 gap-3 text-sm @3xl:grid-cols-2">
               {facts.map(([k, v]) => (
-                <div key={k} className=" bg-white p-3">
+                <div key={k} className="rounded-xl bg-white p-3">
                   <dt className="text-neutral-600">{k}</dt>
                   <dd className="mt-1 font-semibold">{v}</dd>
                 </div>

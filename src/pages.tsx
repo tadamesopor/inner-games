@@ -102,7 +102,7 @@ export function Home() {
               <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
             </div>
           </div>
-          <Photo src={PHOTOS.cards} alt="Kaartspel op tafel" className="aspect-[5/4] w-full" />
+          <Photo src={PHOTOS.cards} alt="Kaartspel op tafel" className="aspect-[5/4] w-full rounded-2xl" />
         </div>
       </Section>
 
@@ -125,7 +125,7 @@ export function Home() {
           </div>
           <div className="flex gap-4">
             {MEMBERS.slice(0, 3).map((m) => (
-              <div key={m.first} className="flex-1 overflow-hidden bg-ig-cream">
+              <div key={m.first} className="flex-1 overflow-hidden rounded-2xl bg-ig-cream">
                 <div className="aspect-[3/4] overflow-hidden">
                   {m.photo ? (
                     <Pic src={m.photo} alt={m.first} label={`portret ${m.first}`} className="h-full w-full object-cover" />
@@ -216,7 +216,7 @@ export function Workshop() {
             <AudTags aud={w.aud} />
             <H1 className="mt-5 text-[2.5rem]! @3xl:text-[4.5rem]!">{w.title}</H1>
             <p className="mt-5 max-w-xl text-xl leading-snug">{w.tagline}</p>
-            <dl className="mt-6 grid grid-cols-2 gap-3 bg-ig-cream p-4 text-sm">
+            <dl className="mt-6 grid grid-cols-2 gap-3 rounded-2xl bg-ig-cream p-4 text-sm">
               {facts.map(([k, v]) => (
                 <div key={k} className={wide.includes(k) ? 'col-span-2' : ''}>
                   <dt className="text-neutral-600">{k}</dt>
@@ -229,7 +229,7 @@ export function Workshop() {
               {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
             </div>
           </div>
-          <Photo src={w.photo} alt={w.title} className="h-64 w-full @3xl:h-[460px]" />
+          <Photo src={w.photo} alt={w.title} className="h-64 w-full rounded-2xl @3xl:h-[460px]" />
         </div>
       </Section>
 
@@ -288,7 +288,7 @@ export function Workshop() {
             <div className="mt-5 space-y-4">
               {game ? (
                 <button onClick={() => go('game', game.slug)} className={`${card} flex w-full items-center gap-4 p-3 text-left`}>
-                  <Photo src={game.photo} alt="" className="h-20 w-20 shrink-0" />
+                  <Photo src={game.photo} alt="" className="h-20 w-20 shrink-0 rounded-xl" />
                   <span className="font-semibold">{game.title}</span>
                   <span className="ml-auto pr-2">→</span>
                 </button>
@@ -396,7 +396,7 @@ export function Trainer() {
             ['duur', '8 uur'],
             ['opbouw', '4 uur theorie (individueel of in groepen tot 10) en 4 uur praktijk, begeleid in je eigen setting'],
           ].map(([k, v]) => (
-            <div key={k} className=" bg-ig-cream p-6">
+            <div key={k} className="rounded-2xl bg-ig-cream p-6">
               <p className="text-sm text-neutral-600">{k}</p>
               <p className={`mt-1 ${k === 'opbouw' ? 'text-base' : 'text-3xl'} font-semibold leading-snug`}>{v}</p>
             </div>
@@ -451,7 +451,7 @@ export function Trainer() {
 
 export function Contact() {
   const [sent, setSent] = useState(false)
-  const input = 'w-full bg-ig-cream px-4 py-3 text-base outline-none focus:ring-2 focus:ring-ig-orange'
+  const input = 'w-full rounded-xl bg-ig-cream px-4 py-3 text-base outline-none focus:ring-2 focus:ring-ig-orange'
   return (
     <>
       <Header active="contact" />
@@ -482,7 +482,7 @@ export function Contact() {
               <p className="mt-3 text-lg">(dit is een test, er is niets verzonden)</p>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 bg-white p-6 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
+            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 rounded-2xl bg-white p-6 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
               <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
               <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
               <label className="block text-sm font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
