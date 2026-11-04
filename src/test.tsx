@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from 'react'
 import type { PageId } from './wf'
 
+// how long people see the homepage before the first impression questions (was 5, 10 gives them time to actually look)
+const LOOK_SECONDS = 10
+
 type Q = {
   id: string
   q: string
@@ -285,7 +288,7 @@ function report(nr: string, sessions: Session[]) {
       prof?.warm.forEach((q, i) => L.push(`  ${q}`, `    ${s.warm[i] || '-'}`))
     }
     if (r.five.length) {
-      L.push('', 'vijfsecondentest:')
+      L.push('', `eerste indruk (${LOOK_SECONDS} sec):`)
       r.five.forEach((f) => L.push(`  ${f.q}`, `    ${s.five[f.id] || '-'}`))
     }
     if (r.menu) {
@@ -335,7 +338,7 @@ function csv(sessions: Session[]) {
     const prof = PROFILES[s.profile]
     const base: Row = { deelnemer: s.nr, kent_innergames: s.known, opname: s.rec, citaat: s.quote, toestemming: s.consent ? 'ja' : 'nee', ronde: r.name, profiel: prof?.name }
     if (r.warmup) prof?.warm.forEach((q, i) => rows.push({ ...base, onderdeel: 'opwarmen', nr: i + 1, vraag: q, notities: s.warm[i] }))
-    r.five.forEach((f, i) => rows.push({ ...base, onderdeel: 'vijf seconden', nr: i + 1, vraag: f.q, antwoord: s.five[f.id] }))
+    r.five.forEach((f, i) => rows.push({ ...base, onderdeel: `eerste indruk ${LOOK_SECONDS} sec`, nr: i + 1, vraag: f.q, antwoord: s.five[f.id] }))
     if (r.menu) MENU.forEach((m, i) => rows.push({ ...base, onderdeel: 'menu', nr: i + 1, code: 'D2', vraag: m, antwoord: s.menu[m] }))
     ;(r.tasks[s.profile] ?? []).forEach((t, i) => {
       const x = s.tasks[i]
@@ -594,10 +597,10 @@ export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running])
 
-  // vijfsecondentest: 5 seconden kijken, dan afdekken
+  // eerste indruk: LOOK_SECONDS kijken, dan afdekken
   useEffect(() => {
     if (s.phase !== 'impression' || s.look !== 'look') return
-    const t = setTimeout(() => upd((d) => ({ ...d, look: 'done' })), 5000)
+    const t = setTimeout(() => upd((d) => ({ ...d, look: 'done' })), LOOK_SECONDS * 1000)
     return () => clearTimeout(t)
   }, [s.phase, s.look])
 
@@ -773,10 +776,10 @@ export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: strin
   if (s.phase === 'impression') {
     if (s.look === 'intro')
       return (
-        <Screen label="Vijfsecondentest">
+        <Screen label="Eerste indruk">
           <p className={kicker}>{r.name} · eerste indruk</p>
-          <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">kijk 5 seconden</h2>
-          <p className="mt-4 text-lg leading-snug">Je ziet zo 5 seconden een website. Kijk rustig rond. Daarna stellen we je een paar vragen.</p>
+          <h2 className="mt-3 text-3xl font-extrabold lowercase leading-tight">kijk {LOOK_SECONDS} seconden</h2>
+          <p className="mt-4 text-lg leading-snug">Je ziet zo {LOOK_SECONDS} seconden een website. Kijk rustig rond. Daarna stellen we je een paar vragen.</p>
           {!r.warmup && recBox}
           <button onClick={() => upd((d) => ({ ...d, look: 'look' }))} className={`${panelBtn} mt-6 bg-ig-orange px-6! py-3!`}>
             toon de website
@@ -786,7 +789,7 @@ export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: strin
     if (s.look === 'look')
       return (
         <div role="status" className="fixed left-1/2 top-4 z-[60] -translate-x-1/2 border-2 border-ig-ink bg-ig-yellow px-4 py-2 text-sm font-bold">
-          kijk 5 seconden naar de homepage…
+          kijk {LOOK_SECONDS} seconden naar de homepage…
         </div>
       )
     return (
@@ -931,7 +934,7 @@ export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: strin
                 profiel: {prof?.name} · kent InnerGames: {x.known || '-'} · toestemming: {x.consent ? 'ja' : 'nee'}
               </p>
               {ro.warmup && <QA title="opwarminterview" items={(prof?.warm ?? []).map((q, i) => [q, x.warm[i]])} />}
-              {ro.five.length > 0 && <QA title="vijfsecondentest" items={ro.five.map((f) => [f.q, x.five[f.id]])} />}
+              {ro.five.length > 0 && <QA title={`eerste indruk (${LOOK_SECONDS} sec)`}items={ro.five.map((f) => [f.q, x.five[f.id]])} />}
               {ro.menu && <QA title="menuverwachting · D2" items={MENU.map((m) => [m, x.menu[m]])} />}
               <ol className="mt-4 space-y-4">
                 {(ro.tasks[x.profile] ?? []).map((t, i) => {
