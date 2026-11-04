@@ -1,0 +1,3 @@
+Zet hier de bestanden uit Figma Make neer: wf.tsx, pages.tsx, shop.tsx, team.tsx, data.ts
+(en alles wat die importeren). Overschrijf App.tsx, index.css en test.tsx NIET: dat zijn de nieuwe versies (v5).
+Daarna mag dit bestand weg.

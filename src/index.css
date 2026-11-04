@@ -1,0 +1,132 @@
+/* InnerGames prototype · v5
+   - brand font: Gill Sans (brand guide). Gill Sans is not a web font: Mac has it, Windows with Office has
+     Gill Sans MT. Cabin (Google Fonts) is the closest free fallback, so every test laptop looks almost the same.
+   - no wireframe view any more (removed from the test in v5)
+   - calm style: no hard black offset shadows or thick black borders (Ariën's feedback) */
+@import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme static {
+  --font-sans: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, system-ui, sans-serif;
+  --font-mono: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, system-ui, sans-serif;
+  --color-ig-orange: #ea561f;
+  --color-ig-orange-dark: #c84413; /* small orange text on light backgrounds, 4.6:1 (WCAG AA). Ariën decides. */
+  --color-ig-yellow: #fab512;
+  --color-ig-ink: #2a1810;
+  --color-ig-cream: #fff6e6;
+  --color-ig-line: rgb(42 24 16 / 0.12);
+}
+
+html,
+body {
+  color: #2a1810;
+  background: #ffffff;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: #2a1810;
+  color: #fab512;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+:focus-visible {
+  outline: 3px solid #2a1810;
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+@keyframes flipIn {
+  from {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+}
+
+/* brand guide: titles always lowercase */
+h1,
+h2,
+h3 {
+  text-transform: lowercase;
+}
+
+/* ---------- calm style (v5). Unlayered, so it wins over the Tailwind classes in the page components. ---------- */
+
+/* 1. hard black offset shadows → one soft shadow */
+[class*='shadow-['] {
+  box-shadow: 0 1px 2px rgb(42 24 16 / 0.06), 0 12px 32px -14px rgb(42 24 16 / 0.22) !important;
+}
+[class*='hover:shadow-[']:hover {
+  box-shadow: 0 2px 4px rgb(42 24 16 / 0.08), 0 18px 40px -16px rgb(42 24 16 / 0.28) !important;
+}
+[class*='hover:-translate']:hover,
+[class*='active:translate']:active {
+  transform: none !important;
+}
+
+/* 2. thick black borders → thin, light lines (form fields keep a clear border) */
+:is(.border-2, .border-4, [class*='border-[3'], [class*='border-[4']):not(input):not(textarea):not(select) {
+  border-width: 1px !important;
+  border-color: var(--color-ig-line) !important;
+}
+input,
+textarea,
+select {
+  border-color: rgb(42 24 16 / 0.35) !important;
+}
+
+/* 3. rounder, friendlier boxes */
+:is(article, figure, .border, .border-2, [class*='shadow-[']):not(button):not(a):not([data-test-ui] *) {
+  border-radius: 14px;
+}
+article img,
+figure img {
+  border-radius: inherit;
+}
+
+/* 4. headings: Gill Sans bold instead of extra-black display type */
+h1,
+h2,
+h3,
+.font-extrabold,
+.font-black {
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* 5. labels and tags: lowercase like the rest of the brand, no monospace caps */
+.uppercase {
+  text-transform: lowercase !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* 6. small orange text on light backgrounds fails WCAG (3.4:1). Darker orange = 4.6:1. */
+.text-ig-orange {
+  color: var(--color-ig-orange-dark) !important;
+}
+
+/* 7. no moving marquee band: it distracts during the tasks and can't be paused (WCAG 2.2.2) */
+div:has(> [class*='animate-[marquee']) {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
