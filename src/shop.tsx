@@ -168,10 +168,11 @@ export function Game() {
   const inCart = cart.includes(g.slug)
   const more = GAMES.filter((x) => x.slug !== g.slug).slice(0, 3)
   const matching = WORKSHOPS.filter((w) => w.gameSlug === g.slug)
+  // unknown facts are left out instead of showing "n.t.b."
   const facts = [
     ['voor wie', g.forWhom],
     ['aantal spelers', g.players],
-  ]
+  ].filter((f): f is [string, string] => !!f[1])
   return (
     <>
       <Header active="game" />

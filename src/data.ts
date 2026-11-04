@@ -286,8 +286,9 @@ export type Game = {
   photo: string
   gallery: string[]
   previewKey: PreviewKey | null
-  forWhom: string
-  players: string
+  // leave these out when innergames.nl doesn't say it, the page then hides the box
+  forWhom?: string
+  players?: string
   story: string[]
   contents: string[]
   status?: string
@@ -304,12 +305,12 @@ export const GAMES: Game[] = [
     gallery: [PHOTOS.cards, PHOTOS.cards2, PHOTOS.board],
     previewKey: 'the elemental five',
     forWhom: 'coaches, trainers, teams en studie- en loopbaanbegeleiding',
-    players: 'n.t.b.',
     story: [
-      'The Elemental Five is gebaseerd op het Big Five-model en werkt via vijf elementen: water, vuur, aarde, lucht en ether.',
-      'In de doos zit alles om met een groep te beginnen, inclusief een presentatie voor groepsworkshops.',
+      'The Elemental Five is gebaseerd op het Big Five-persoonlijkheidsmodel. Zo’n test is nauwkeurig en goed onderzocht, maar ook erg cognitief: hij vraagt niet hoe iets voelt of waar je naartoe wilt groeien.',
+      'Dat voegt The Elemental Five toe. Via vijf elementen (water, vuur, aarde, lucht en ether) werk je met spel, beweging, verbeelding, opstellingen, ademhaling en meditatie. Zonder hokjes, en je eindigt met heldere punten om aan te werken.',
+      'Je zet het op veel manieren in, van persoonlijke reflectie tot teamcoaching. Het past ook goed in het onderwijs, bijvoorbeeld bij studieloopbaanbegeleiding (SLB). In de complete set zit alles om met een groep te beginnen.',
     ],
-    contents: ['Kaartspel', 'Grondankers', 'Digitale handleiding', 'Presentatie voor groepsworkshops'],
+    contents: ['Het kaartspel', 'Een set grondankers', 'Uitgebreide digitale handleiding', 'PowerPoint voor groepsworkshops'],
   },
   {
     slug: 'elemental-five-grondankers',
@@ -320,9 +321,11 @@ export const GAMES: Game[] = [
     photo: PHOTOS.board,
     gallery: [PHOTOS.board, PHOTOS.cards, PHOTOS.play],
     previewKey: 'the elemental five',
-    forWhom: 'n.t.b.',
     players: 'individuele en groepsopstellingen',
-    story: ['36 ronde vloerkaarten (210 mm) voor individuele en groepsopstellingen, om de elementen fysiek te ervaren.'],
+    story: [
+      '36 ronde vloerkaarten (210 mm) voor individuele en groepsopstellingen. Je legt de elementen op de vloer en ervaart ze met je lijf, in plaats van er alleen over na te denken.',
+      'The Elemental Five is gebaseerd op het Big Five-model en werkt met vijf elementen: water, vuur, aarde, lucht en ether. De grondankers brengen het spel in beweging.',
+    ],
     contents: ['36 ronde vloerkaarten (210 mm)'],
   },
   {
@@ -334,10 +337,12 @@ export const GAMES: Game[] = [
     photo: PHOTOS.cards2,
     gallery: [PHOTOS.cards2, PHOTOS.cards, PHOTOS.notes],
     previewKey: 'the elemental five',
-    forWhom: 'n.t.b.',
     players: 'alleen of in groepen',
-    story: ['36 grote kaarten (148 x 105 mm), de basis van de serie. Te gebruiken alleen of in groepen.'],
-    contents: ['36 grote kaarten (148 x 105 mm)'],
+    story: [
+      '36 grote, stevige kaarten (148 × 105 mm). Dit is de basis van de hele serie: met deze kaarten ontdek je via vijf elementen (water, vuur, aarde, lucht en ether) hoe je in elkaar zit.',
+      'Je werkt er alleen mee, voor persoonlijke reflectie, of samen in een groep. The Elemental Five is gebaseerd op het Big Five-model, maar dan zonder hokjes.',
+    ],
+    contents: ['36 grote, stevige kaarten (148 × 105 mm)'],
   },
   {
     slug: 'sociality',
@@ -348,10 +353,14 @@ export const GAMES: Game[] = [
     photo: PHOTOS.chairs,
     gallery: [PHOTOS.chairs, PHOTOS.circle, PHOTOS.notes2],
     previewKey: 'Sociality',
-    forWhom: 'sociaal werkers en studenten',
-    players: '3 tot 6 spelers per set',
-    story: ['Een bordspel van HAN en InnerGames over het model Sociale Kwaliteit, met praktijkcasussen.'],
-    contents: ['Speelbord', 'Blik', '2 casussets van 21 kaarten', '10 theoriekaarten', 'Boekje met regels en theorie', 'Pion'],
+    forWhom: 'mensen die werken of studeren in het sociaal werk, en iedereen die meer wil weten over Sociale Kwaliteit',
+    players: 'ongeveer 3 tot 6 per set (meer sets voor grotere groepen)',
+    story: [
+      'Het model Sociale Kwaliteit is waardevol, maar ook abstract. Met Sociality oefen je het in echte situaties: je speelt praktijkcasussen en leert zo het model toe te passen.',
+      'Het spel is gemaakt door het lectoraat Versterken van Sociale Kwaliteit van de HAN (Robin Smits, Nicole Moorman, Lisbeth Verharen en Carinda Jansen), samen met Ariën Kingma.',
+      'Er komen nog meer casussen bij, op micro-, meso- en macroniveau. In Nederland heb je het spel binnen 2 tot 3 werkdagen in huis.',
+    ],
+    contents: ['Speeldoos', 'Speelbord', '2 kaartsets van 21 kaarten met verschillende casussen', '1 set van 10 kaarten over sociale kwaliteit', 'Boekje met handleiding en theorie', 'Pion'],
   },
   {
     slug: 'impact-imperium',
@@ -362,10 +371,14 @@ export const GAMES: Game[] = [
     photo: PHOTOS.play2,
     gallery: [PHOTOS.play2, PHOTOS.board, PHOTOS.play],
     previewKey: 'Impact Imperium',
-    forWhom: 'klassen',
+    forWhom: 'klassen: leerlingen en studenten',
     players: '4 tot 40 personen (8 exemplaren)',
-    story: ['Verzamel water, energie en grondstoffen om alledaagse producten te maken zonder te veel afval en plastic.'],
-    contents: ['8 exemplaren van het spel', 'Dobbelstenen', 'Docentenhandleiding met vervolgopdrachten', 'Uitdagingskaarten', 'Gratis extra spel'],
+    story: [
+      'Een spel om fanatiek te spelen. Verzamel genoeg water, stroom en grondstoffen om alledaagse producten te maken, zonder te veel schadelijke stoffen en plastic te produceren.',
+      'Zo ontdekken leerlingen en studenten hoeveel er nodig is om iets te maken. Ze baseren hun keuzes daarop, en vertalen het daarna naar concrete stappen voor hun eigen gedrag.',
+      'Gemaakt door Duurzaamheid in de klas. De prijs is inclusief verzending, en je hebt de set binnen 10 werkdagen na bevestiging.',
+    ],
+    contents: ['8 Impact Imperium-spellen', 'Gespreksstarter Kansen(on)gelijkheid (gratis)', '10 uitdagingskaarten (voor de verliezers)', 'Docentenhandleiding met vervolgopdrachten', 'Kaartsets', 'Dobbelstenen'],
   },
   {
     slug: 'kansen-keren',
@@ -377,11 +390,14 @@ export const GAMES: Game[] = [
     gallery: [PHOTOS.notes3, PHOTOS.notes, PHOTOS.class],
     // preview staat uit tot Ariën en Carinda Jansen akkoord geven; aanzetten: previewKey: 'Kansen Keren' en status weghalen
     previewKey: null,
-    forWhom: 'n.t.b.',
-    players: 'n.t.b.',
     status: 'wordt herzien',
-    story: ['66 levenssituaties in een niet-competitief gesprekspel.', 'Het spel wordt op dit moment herzien. Een preview is daarom nog niet beschikbaar.'],
-    contents: ['66 levenssituaties'],
+    story: [
+      'Een coöperatief spel over kansenongelijkheid. Winnen kan niet: het gaat om het gesprek.',
+      'De groep geeft een pion een identiteit en zet hem midden op een levensweg. De dobbelsteen bepaalt welk van de 11 levensmomenten er gebeurt, met in totaal 66 levensgebeurtenissen. Bij elke gebeurtenis bespreek je samen hoeveel stappen de pion omhoog of omlaag gaat.',
+      'Thema’s zijn onder andere woonomgeving, gezondheid, sociale steun, onderwijs en geloof. In het boekje staan varianten, bijvoorbeeld met 15 stoelen in plaats van het bord en een deelnemer als pion. Gemaakt door Carinda Jansen (buro KAN).',
+      'Het spel wordt op dit moment herzien. Een preview is daarom nog niet beschikbaar.',
+    ],
+    contents: ['Spelbord met levensweg', '66 levensgebeurtenissen', 'Boekje met spelvarianten'],
   },
 ]
 
