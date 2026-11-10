@@ -1,11 +1,11 @@
 /* the footer reveal: the last section (cream, rounded bottom) slides up off the footer, which sits
-   underneath (sticky at the bottom). a big game box rises from the bottom edge, tilted about -15deg,
-   cut off by the edge, and turns 4deg while the footer comes into view. one drawn underline.
+   underneath (sticky at the bottom). something about InnerGames as a company rises from the bottom edge:
+   option A the big hand (waves once), option B the team photo. one drawn underline.
    footer.js sets --p (0 = hidden, 1 = fully revealed).
 
    markup:
    <section class="ig-reveal-cover ig-section--rounded">...the last section...</section>
-   <footer class="ig-footer ig-footer--ink">...<img class="ig-footer-box">...</footer>
+   <footer class="ig-footer ig-footer--ink">...<span class="ig-footer-hand"></span>...</footer>
    in Enfold: the last color section gets ig-reveal-cover, the footer section ig-footer. */
 
 .ig-reveal-cover {
@@ -31,16 +31,63 @@
   --footer-fg: var(--ig-ink);
 }
 
-.ig-footer-box {
+/* option A: the InnerGames hand, big and cream, rising from the bottom edge. tilted -10deg and cut off
+   by the edge. it waves once when the footer is revealed: a goodbye at the end of every page */
+/* behind the text and buttons: give the footer columns position: relative and z-index: 1 */
+.ig-footer-hand {
+  position: absolute;
+  z-index: 0;
+  left: 46%;
+  bottom: -70px;
+  width: 290px; /* about 260px tall */
+  aspect-ratio: 140 / 126;
+  margin-left: -145px;
+  background: var(--ig-cream);
+  -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  pointer-events: none;
+  transform-origin: 78% 92%; /* the wrist */
+  rotate: 20deg; /* 30deg stands the drawing up, -10deg tilts it */
+  translate: 0 calc((1 - var(--p)) * 45%);
+}
+.ig-footer.is-waving .ig-footer-hand {
+  animation: ig-footer-wave 700ms var(--ease-soft);
+}
+@keyframes ig-footer-wave {
+  0%,
+  100% {
+    rotate: 20deg;
+  }
+  30% {
+    rotate: 12deg;
+  }
+  65% {
+    rotate: 26deg;
+  }
+}
+
+/* option B: the team photo as a printed photo: boxy, thick cream border, tilted -4deg, rising */
+.ig-footer-photo {
   position: absolute;
   left: 50%;
-  bottom: -20%;
-  width: min(26%, 320px);
-  height: auto;
+  bottom: -40px;
+  width: min(24%, 270px);
+  margin: 0;
+  padding: 10px 10px 0;
+  border-radius: var(--r-box);
+  background: var(--ig-cream);
+  box-shadow: 0 10px 30px rgb(42 24 16 / 0.25);
   pointer-events: none;
   transform-origin: 50% 100%;
-  translate: -50% calc((1 - var(--p)) * 25%);
-  rotate: calc(-15deg + 4deg * var(--p));
+  translate: -50% calc((1 - var(--p)) * 30%);
+  rotate: -4deg;
+}
+.ig-footer-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px 6px 0 0;
+  background: var(--ig-yellow);
 }
 
 /* the drawn underline under the email address */
@@ -58,12 +105,20 @@
 }
 
 @container (max-width: 767px) {
-  .ig-footer-box {
+  .ig-footer-hand,
+  .ig-footer-photo {
     position: relative;
     display: block;
-    left: 50%;
+    left: auto;
     bottom: auto;
-    width: 62%;
-    margin: 32px 0 -22%;
+    margin: 32px auto -40px;
+  }
+  .ig-footer-hand {
+    width: 180px; /* about 160px tall */
+    translate: 0 calc((1 - var(--p)) * 30%);
+  }
+  .ig-footer-photo {
+    width: 60%;
+    translate: 0 calc((1 - var(--p)) * 20%);
   }
 }
