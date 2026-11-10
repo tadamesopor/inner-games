@@ -1,46 +1,42 @@
-/* .ig-boxscene: the game box scene. the section stays on screen (sticky) for about 1.5 screen heights,
-   and the scroll drives it: the box lands from tilted 14deg to -3deg (never perfectly straight), its
-   shadow gets sharper as it lands, and it breaks out over the rounded bottom into the next section.
+/* .ig-boxscene: the game box next to the text. one normal scroll drives it: it starts when the section
+   is about 25% in view and is finished when the section is in the middle of the screen. the box lands
+   from tilted 14deg to -3deg (never perfectly straight), its shadow gets sharper as it lands, and it
+   sticks out over the rounded bottom edge into the next section by about 10%.
    with The Elemental Five, the five card-1s come out of the box one by one and fan out.
-   boxscene.js sets --p (0 to 1) from the scroll position. reduced motion: --p is 1, the end state.
+   boxscene.js sets --p (0 to 1). reduced motion: --p is 1, the end state.
 
-   markup:
-   <section class="ig-boxscene">
-     <div class="ig-boxscene__panel"> text...
-       <div class="ig-boxscene__stage">
-         <img class="ig-boxscene__card" style="--i:0"> (optional, max 5)
-         <img class="ig-boxscene__box">
-         <span class="ig-boxscene__shadow"></span>
-       </div>
+   markup (the section itself is the coloured, rounded section):
+   <section class="ig-boxscene ig-section--rounded">
+     <div class="ig-boxscene__text">label, title, text, button</div>
+     <div class="ig-boxscene__stage">
+       <img class="ig-boxscene__card" style="--i:0"> (optional, max 5)
+       <img class="ig-boxscene__box">
+       <span class="ig-boxscene__shadow"></span>
      </div>
    </section> */
 
 .ig-boxscene {
   --p: 0;
-  /* the box lands in the first 70% of the scroll, the cards come out after that */
-  --land: min(1, calc(var(--p) / 0.7));
+  --land: min(1, calc(var(--p) / 0.8));
   --out: max(0, calc((var(--p) - 0.55) / 0.45));
+  --pad-b: 24px;
   position: relative;
   z-index: 2; /* the box overlaps the next section */
-  height: 250svh;
-}
-.ig-boxscene__panel {
-  position: sticky;
-  top: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
   align-items: center;
-  min-height: 100svh;
-  overflow: visible;
-  border-bottom-left-radius: var(--r-section);
-  border-bottom-right-radius: var(--r-section);
+  gap: 48px;
+  padding-bottom: var(--pad-b);
 }
 
 .ig-boxscene__stage {
-  position: absolute;
-  right: 6%;
-  bottom: -14%;
-  width: min(45%, 460px);
+  position: relative;
+  align-self: end;
+  justify-self: center;
+  width: min(100%, 400px);
   aspect-ratio: 398 / 459;
+  /* down to the bottom edge, then about 10% of the box past it */
+  translate: 0 calc(var(--pad-b) + 10%);
 }
 .ig-boxscene__box {
   position: absolute;
@@ -51,7 +47,7 @@
   object-fit: contain;
   transform-origin: 50% 90%;
   rotate: calc(14deg - 17deg * var(--land));
-  translate: 0 calc((1 - var(--land)) * 70px);
+  translate: 0 calc((1 - var(--land)) * 50px);
   scale: calc(0.9 + 0.1 * var(--land));
 }
 
@@ -91,18 +87,17 @@
   --pencil-draw: 500ms;
 }
 
+/* phone: the box above the text, smaller, no overlap */
 @container (max-width: 767px) {
   .ig-boxscene {
-    height: 200svh;
-  }
-  .ig-boxscene__panel {
-    align-items: start;
-    padding-top: 15svh;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    --pad-b: 48px;
   }
   .ig-boxscene__stage {
-    right: 50%;
-    translate: 50% 0;
-    bottom: -8%;
-    width: min(70%, 300px);
+    order: -1;
+    align-self: auto;
+    width: min(62%, 260px);
+    translate: none;
   }
 }
