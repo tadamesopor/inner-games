@@ -38,9 +38,22 @@ export type Effect = { n: string; name: string; cls: string; what: string; why: 
 export function SplitBtn({ children, tone = 'orange', onClick }: { children: ReactNode; tone?: 'orange' | 'ink' | 'cream'; onClick?: () => void }) {
   return (
     <button type="button" onClick={onClick} className={tone === 'orange' ? 'ig-btn-split' : `ig-btn-split ig-btn-split--${tone}`}>
-      <span className="ig-btn-split__label">{children}</span>
+      {/* two copies of the text and the arrow, for the roll on hover */}
+      <span className="ig-btn-split__label">
+        <span className="ig-btn-split__roll">
+          <span>{children}</span>
+          <span aria-hidden>{children}</span>
+        </span>
+      </span>
       <span className="ig-btn-split__arrow" aria-hidden>
-        <PencilMark name="arrow" />
+        <span className="ig-btn-split__roll">
+          <span>
+            <PencilMark name="arrow" />
+          </span>
+          <span>
+            <PencilMark name="arrow" />
+          </span>
+        </span>
       </span>
     </button>
   )

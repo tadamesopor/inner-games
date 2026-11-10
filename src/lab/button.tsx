@@ -6,7 +6,7 @@ export const button: Effect = {
   n: '05',
   name: 'gesplitste knop',
   cls: '.ig-btn-split',
-  what: 'Twee losse, hoekige delen met 3px ertussen: de tekst en een vierkant met een getekende pijl. Bij hover schuift alleen het pijldeel op en tekent de pijl zichzelf opnieuw.',
+  what: 'Twee losse, hoekige delen met 3px ertussen. Bij hover vervormen ze elk apart als zacht karton, rolt de tekst omhoog en de pijl opzij, en veren ze terug naar recht en iets donkerder.',
   why: 'Alleen voor de hoofdactie. Gewone links blijven gewone links.',
 }
 
