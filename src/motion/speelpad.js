@@ -1,23 +1,24 @@
-// .ig-bg-speelpad: a dashed board-game path that draws itself while you scroll, with a pawn walking along.
-// the path is built from the blocks it passes: every child with [data-speelpad-stop] gets a "speelvakje"
-// next to it, in the margin, and the pawn waits there for a moment. it never crosses text: it runs in
-// the side margins and only crosses over in the gaps between blocks.
+// .ig-bg-speelpad: the game path, drawn with the pencil line while you scroll (scrubbed, not played).
+// a drawn pawn walks along it, leans a little in the direction it walks, and hops once at every stop.
+// every child with [data-speelpad-stop] gets a stop square in the margin next to it. between stops the
+// line slips behind the bottom corner of the card and comes out in the gap, so it feels part of the page.
+// on a phone it's a simple line along the left edge.
 //
-// TODO: replace with drawing. the wobble below fakes a hand-drawn line until Damian's drawn path exists.
+// TODO: replace with drawing. the wobble below fakes a hand-drawn line until Damian's own path exists.
 
 import { isReduced, onReducedChange } from './prefs.js'
+import { loadMark, markMarkup } from './pencil.js'
 
 const NS = 'http://www.w3.org/2000/svg'
-const HOLD = 140 // px of scrolling the pawn waits at each stop
-const HEAD = 0.62 // the pawn walks at 62% of the screen height
+const HOLD = 150 // px of scrolling the pawn waits at each stop
+const HEAD = 0.6 // the pawn walks at 60% of the screen height
 
-// small seeded random, so the wobble is the same on every load and every resize
 function seeded(seed) {
   let s = seed
   return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646
 }
 
-// smooth curve through points (catmull-rom turned into cubic beziers)
+// smooth curve through points (catmull-rom as cubic beziers)
 function curve(pts) {
   let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`
   for (let i = 0; i < pts.length - 1; i++) {
@@ -39,16 +40,18 @@ function el(name, attrs, parent) {
   return n
 }
 
-let uid = 0
+const viewBoxOf = (mark) => mark.viewBox.split(/[\s,]+/).map(Number)
 
-export function initSpeelpad(root, { pawn = '/assets/meeple-pawn.png' } = {}) {
-  const id = `ig-speelpad-${++uid}`
+export function initSpeelpad(root) {
   const svg = el('svg', { class: 'ig-speelpad__svg', 'aria-hidden': 'true', focusable: 'false' })
   root.prepend(svg)
 
-  let path, maskPath, pawnEl, vakjes = [], keys = [], total = 0, active = false, raf = 0, pawnSize = 30
+  let marks = null
+  let path, pawn, pawnTilt, stops = [], keys = [], zones = [], total = 0, lastStopLen = 0
+  let active = false, raf = 0, zone = -1, alive = true
 
   function build() {
+    if (!marks || !alive) return
     svg.textContent = ''
     const W = root.clientWidth
     const H = root.scrollHeight
@@ -57,77 +60,90 @@ export function initSpeelpad(root, { pawn = '/assets/meeple-pawn.png' } = {}) {
     svg.setAttribute('height', H)
 
     const box = root.getBoundingClientRect()
-    const stops = [...root.querySelectorAll('[data-speelpad-stop]')].map((s) => {
+    const blocks = [...root.querySelectorAll('[data-speelpad-stop]')].map((s) => {
       const r = s.getBoundingClientRect()
       return { top: r.top - box.top, bottom: r.bottom - box.top, left: r.left - box.left, right: r.right - box.left }
     })
-    if (!stops.length) return
+    if (!blocks.length) return
 
-    const rnd = seeded(7)
+    const rnd = seeded(11)
     const wob = (n) => (rnd() - 0.5) * 2 * n
-    const leftM = Math.min(...stops.map((s) => s.left))
-    const rightM = W - Math.max(...stops.map((s) => s.right))
-    const narrow = leftM < 40 || rightM < 40
-    // x of the path in the left or right margin (or hugging the edge on a phone)
-    const side = (i) => (narrow ? 10 : i % 2 === 0 ? leftM / 2 : W - rightM / 2)
-    // on a phone the path hugs the edge, so the pawn and the squares get smaller
-    const vak = narrow ? 12 : 22
-    pawnSize = narrow ? 20 : 30
+    const narrow = blocks.some((b) => b.left < 44 || W - b.right < 44)
+    // stop i sits in the left margin for even i, the right margin for odd i (on a phone: always left)
+    const margin = (i) => {
+      const b = blocks[i]
+      if (narrow) return 10
+      return i % 2 === 0 ? b.left / 2 : b.right + (W - b.right) / 2
+    }
 
-    const pts = [[side(0) + wob(6), 8]]
+    const pts = [[margin(0) + wob(8), 6]]
     const stopIdx = []
-    stops.forEach((s, i) => {
-      const x = side(i)
-      pts.push([x + wob(4), s.top + 56])
+    blocks.forEach((b, i) => {
+      const x = margin(i)
+      pts.push([x + wob(3), b.top + 52])
       stopIdx.push(pts.length - 1)
-      const next = stops[i + 1]
-      if (next) {
-        const gap = (s.bottom + next.top) / 2
-        if (narrow) {
-          pts.push([x + wob(3), gap + wob(8)])
-        } else {
-          // down the margin, across in the gap with a little dip, up the other margin
-          const nx = side(i + 1)
-          pts.push([x + wob(5), gap - 18 + wob(6)])
-          pts.push([(x + nx) / 2 + wob(30), gap + 10 + wob(10)])
-          pts.push([nx + wob(5), gap - 4 + wob(6)])
-        }
+      const next = blocks[i + 1]
+      if (narrow) {
+        if (next) pts.push([x + wob(3), (b.bottom + next.top) / 2])
+        return
       }
+      // slip behind the bottom corner of this card...
+      const behindX = i % 2 === 0 ? b.left + 40 + wob(10) : b.right - 40 + wob(10)
+      pts.push([behindX, b.bottom - 34 + wob(8)])
+      // ...and come out in the gap, heading for the other margin
+      if (next) pts.push([(behindX + margin(i + 1)) / 2 + wob(40), (b.bottom + next.top) / 2 + wob(12)])
     })
-    pts.push([side(stops.length - 1) + wob(6), H - 8])
+    pts.push([margin(blocks.length - 1) + wob(8), H - 6])
 
     const d = curve(pts)
-    const mask = el('mask', { id, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: W, height: H }, el('defs', {}, svg))
-    maskPath = el('path', { d, class: 'ig-speelpad__mask' }, mask)
-    path = el('path', { d, class: 'ig-speelpad__path', mask: `url(#${id})` }, svg)
+    const grain = el('g', { class: 'ig-pencil__grain' }, svg)
+    path = el('path', { d, class: 'ig-speelpad__line' }, grain)
     total = path.getTotalLength()
-    maskPath.style.strokeDasharray = `${total} ${total}`
+    path.style.strokeDasharray = `${total} ${total}`
 
-    // length of the path at every stop: measure the curve up to that point
-    const stopLen = stopIdx.map((k) => {
+    const lenAt = (k) => {
       const tmp = el('path', { d: curve(pts.slice(0, k + 1)) }, svg)
       const len = tmp.getTotalLength()
       tmp.remove()
       return len
-    })
+    }
+    const stopLen = stopIdx.map(lenAt)
+    lastStopLen = stopLen[stopLen.length - 1]
 
-    // speelvakjes: a small square next to each block
-    vakjes = stopIdx.map((k, i) => {
+    // the stops: a small boxy square, outline first, yellow with a drawn tick once the pawn gets there
+    const size = narrow ? 14 : 22
+    const [, , tw, th] = viewBoxOf(marks.tick)
+    stops = stopIdx.map((k, i) => {
       const [x, y] = pts[k]
-      return el('rect', { x: x - vak / 2, y: y - vak / 2, width: vak, height: vak, rx: narrow ? 3 : 5, class: 'ig-speelpad__vak', transform: `rotate(${(wob(7)).toFixed(1)} ${x} ${y})`, 'data-len': stopLen[i] }, svg)
+      const g = el('g', { class: 'ig-speelpad__stop', transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${wob(6).toFixed(1)})` }, svg)
+      el('rect', { x: -size / 2, y: -size / 2, width: size, height: size, rx: narrow ? 3 : 4, class: 'ig-speelpad__square' }, g)
+      const tick = el('svg', { class: 'ig-pencil ig-draw ig-speelpad__tick', x: -size * 0.38, y: -size * 0.38, width: size * 0.76, height: size * 0.76, viewBox: `0 0 ${tw} ${th}` }, g)
+      tick.innerHTML = markMarkup(marks.tick)
+      return { g, tick, len: stopLen[i] }
     })
 
-    pawnEl = el('image', { href: pawn, width: pawnSize, height: pawnSize, class: 'ig-speelpad__pawn' }, svg)
+    // the pawn: drawn, cream body, feet on the line. a shadow on the ground shrinks while it hops
+    const pw = narrow ? 22 : 34
+    const [, , vw, vh] = viewBoxOf(marks.pawn)
+    const ph = (pw * vh) / vw
+    pawn = el('g', { class: 'ig-speelpad__pawn' }, svg)
+    el('ellipse', { class: 'ig-speelpad__shadow', cx: 0, cy: 0, rx: pw * 0.38, ry: pw * 0.1 }, pawn)
+    pawnTilt = el('g', {}, pawn)
+    const hopper = el('g', { class: 'ig-speelpad__hop' }, pawnTilt)
+    const body = el('svg', { class: 'ig-pencil', x: -pw / 2, y: -ph * 0.95, width: pw, height: ph, viewBox: marks.pawn.viewBox }, hopper)
+    body.innerHTML = markMarkup(marks.pawn)
 
-    // scroll position (where the pawn's "head" is, in px from the top of root) -> length on the path.
-    // between stops it walks, at a stop it waits HOLD px.
+    // scroll position (the walking "head", px from the top of root) -> length on the path.
+    // between stops it walks, at a stop it waits HOLD px
     keys = [[0, 0]]
+    zones = []
     stopIdx.forEach((k, i) => {
       const y = Math.max(pts[k][1], keys[keys.length - 1][0] + 1)
       keys.push([y, stopLen[i]], [y + HOLD, stopLen[i]])
+      zones.push([y, y + HOLD])
     })
-    keys.push([H, total])
-
+    keys.push([Math.max(H, keys[keys.length - 1][0] + 1), total])
+    zone = -1
     update()
   }
 
@@ -136,21 +152,45 @@ export function initSpeelpad(root, { pawn = '/assets/meeple-pawn.png' } = {}) {
     for (let i = 1; i < keys.length; i++) {
       const [y1, l1] = keys[i]
       const [y0, l0] = keys[i - 1]
-      if (head <= y1) return y1 === y0 ? l1 : l0 + ((head - y0) / (y1 - y0)) * (l1 - l0)
+      if (head <= y1) return l0 + ((head - y0) / (y1 - y0)) * (l1 - l0)
     }
     return total
+  }
+
+  function hop() {
+    pawn.classList.remove('is-hopping')
+    void pawn.getBoundingClientRect() // restart the animation
+    pawn.classList.add('is-hopping')
   }
 
   function update() {
     raf = 0
     if (!path) return
-    const head = isReduced() ? Infinity : window.innerHeight * HEAD - root.getBoundingClientRect().top
-    const len = Math.max(0.001, Math.min(total, lengthAt(head)))
-    maskPath.style.strokeDashoffset = `${total - len}`
-    const p = path.getPointAtLength(len)
-    pawnEl.setAttribute('x', (p.x - pawnSize / 2).toFixed(1))
-    pawnEl.setAttribute('y', (p.y - pawnSize * 0.87).toFixed(1))
-    vakjes.forEach((v) => v.classList.toggle('is-reached', len >= Number(v.dataset.len) - 1))
+    const reduced = isReduced()
+    const head = window.innerHeight * HEAD - root.getBoundingClientRect().top
+    // reduced motion: the whole line drawn, the pawn standing at the last stop, no hopping
+    const drawn = reduced ? total : Math.max(0.001, Math.min(total, lengthAt(head)))
+    const at = reduced ? lastStopLen : drawn
+    path.style.strokeDashoffset = `${total - drawn}`
+
+    const p = path.getPointAtLength(at)
+    const q = path.getPointAtLength(Math.min(total, at + 6))
+    const dist = Math.hypot(q.x - p.x, q.y - p.y) || 1
+    const lean = Math.max(-14, Math.min(14, ((q.x - p.x) / dist) * 16))
+    pawn.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`)
+    pawnTilt.setAttribute('transform', `rotate(${lean.toFixed(1)})`)
+
+    stops.forEach((s) => {
+      const reached = at >= s.len - 1
+      s.g.classList.toggle('is-reached', reached)
+      s.tick.classList.toggle('is-drawn', reached)
+    })
+
+    const z = zones.findIndex(([a, b]) => head >= a && head <= b)
+    if (z !== zone) {
+      if (z >= 0 && !reduced) hop()
+      zone = z
+    }
   }
 
   const onScroll = () => {
@@ -160,14 +200,18 @@ export function initSpeelpad(root, { pawn = '/assets/meeple-pawn.png' } = {}) {
     active = e.isIntersecting
     onScroll()
   })
-  io.observe(root)
   const ro = new ResizeObserver(() => build())
-  ro.observe(root)
   window.addEventListener('scroll', onScroll, { passive: true })
   const offReduced = onReducedChange(() => update())
-  build()
+  Promise.all([loadMark('pawn'), loadMark('tick')]).then(([pawnMark, tickMark]) => {
+    marks = { pawn: pawnMark, tick: tickMark }
+    io.observe(root)
+    ro.observe(root)
+    build()
+  })
 
   return () => {
+    alive = false
     io.disconnect()
     ro.disconnect()
     window.removeEventListener('scroll', onScroll)

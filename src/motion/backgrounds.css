@@ -1,6 +1,7 @@
-/* the InnerGames background: the speelpad. it sits behind the content (z-index 0), the content at z-index 1. */
+/* the InnerGames background: the speelpad (game path). one per page at most.
+   the svg sits behind the content (z-index 0). the cards above it need their own background,
+   so the line disappears behind them and peeks out in the gaps. */
 
-/* ---------- A. speelpad: the game path (speelpad.js builds the svg) ---------- */
 .ig-bg-speelpad {
   position: relative;
 }
@@ -15,24 +16,74 @@
   pointer-events: none;
   overflow: visible;
 }
-.ig-speelpad__path {
+
+/* the line itself: the pencil, a bit lighter so it never competes with the text */
+.ig-speelpad__line {
   fill: none;
-  stroke: rgb(234 86 31 / 0.3);
-  stroke-width: 3.5;
+  stroke: var(--ig-orange);
+  stroke-opacity: 0.6;
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 10 11;
+  stroke-linejoin: round;
 }
-.ig-speelpad__mask {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 14;
-}
-.ig-speelpad__vak {
+
+/* the stops: boxy squares, outline first, yellow when the pawn gets there */
+.ig-speelpad__square {
   fill: var(--ig-cream);
-  stroke: rgb(234 86 31 / 0.35);
+  stroke: var(--ig-orange);
   stroke-width: 2;
   transition: fill var(--dur-move) var(--ease-soft);
 }
-.ig-speelpad__vak.is-reached {
-  fill: #fde3a0; /* yellow on cream, solid so the path doesn't show through */
+.ig-speelpad__stop.is-reached .ig-speelpad__square {
+  fill: var(--ig-yellow);
+}
+.ig-speelpad__tick {
+  color: var(--ig-ink);
+  --pencil-w: 2.6;
+  --pencil-draw: 300ms;
+}
+
+/* the pawn */
+.ig-speelpad__pawn {
+  --pencil-w: 2.4;
+  --pencil-fill: #fff; /* white, so the pawn stands out on cream */
+}
+.ig-speelpad__shadow {
+  fill: var(--ig-ink);
+  opacity: 0.14;
+}
+.ig-speelpad__hop,
+.ig-speelpad__shadow {
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+.ig-speelpad__pawn.is-hopping .ig-speelpad__hop {
+  animation: ig-pawn-hop 460ms var(--ease-out);
+}
+.ig-speelpad__pawn.is-hopping .ig-speelpad__shadow {
+  animation: ig-pawn-shadow 460ms var(--ease-out);
+}
+/* squash before the jump, stretch in the air, a small squash when it lands */
+@keyframes ig-pawn-hop {
+  0% {
+    transform: scale(1, 1);
+  }
+  14% {
+    transform: scale(1.1, 0.88);
+  }
+  45% {
+    transform: translateY(-8px) scale(0.94, 1.08);
+  }
+  78% {
+    transform: translateY(0) scale(1.07, 0.92);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+@keyframes ig-pawn-shadow {
+  45% {
+    transform: scale(0.6);
+    opacity: 0.07;
+  }
 }

@@ -3,17 +3,17 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import { ALT, GAMES, PHOTOS, WORKSHOPS } from './data'
-import { MEMBERS } from './team'
 import { Btn, Photo } from './wf'
 import './motionlab.css'
 import { Switch, useEffectInit } from './lab/ui'
-import { forceReduced, igNavigate, initBoxscene, initHeaderPill, initSpeelpad } from './motion'
+import { speelpad, SpeelpadDemo } from './lab/speelpad'
+import { forceReduced, igNavigate, initBoxscene, initHeaderPill } from './motion'
 
 type Key = 'rounded' | 'speelpad' | 'split' | 'lift' | 'overgang' | 'spelbox' | 'footer' | 'menu'
 
 const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; why: string }[] = [
   { key: 'rounded', n: '01', name: 'afgeronde secties', cls: '.ig-section--rounded', what: 'De gekleurde kop eindigt met grote ronde hoeken. De volgende sectie schuift eronder.', why: 'De pagina voelt als gestapelde kaarten, en je ziet dat er meer komt.' },
-  { key: 'speelpad', n: '02', name: 'speelpad', cls: '.ig-bg-speelpad', what: 'Een getekend spelpad tekent zichzelf tijdens het scrollen. Een pion loopt mee en wacht even bij elk blok.', why: 'Spelen om te groeien, zonder woorden. Het nodigt uit om verder te scrollen.' },
+  { key: 'speelpad', ...speelpad },
   { key: 'split', n: '05', name: 'gesplitste knop', cls: '.ig-btn-split', what: 'Een tekstdeel en een apart pijldeel. Bij hover schuift de pijl 3px op.', why: 'Alleen voor de hoofdactie. Laat zien: hier ga je verder.' },
   { key: 'lift', n: '06', name: 'kaart bij hover', cls: '.ig-card-lift', what: 'De kaart komt 4px omhoog, de schaduw wordt iets sterker en de foto zoomt licht in.', why: 'Laat zien dat de hele kaart klikbaar is. Alleen met een muis.' },
   { key: 'overgang', n: '07', name: 'paginaovergang', cls: '@view-transition', what: 'Oranje met het logo komt van onder op en gaat naar boven weg: 440 ms in totaal.', why: 'Voelt als één geheel in plaats van losse pagina’s. In WordPress werkt het zonder extra code.' },
@@ -56,52 +56,6 @@ function DemoRounded({ on }: { on: boolean }) {
           ))}
         </div>
       </section>
-    </div>
-  )
-}
-
-function DemoSpeelpad({ on }: { on: boolean }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffectInit(ref, initSpeelpad, on)
-  const ws = [WORKSHOPS[0], WORKSHOPS[3]]
-  const e5 = GAMES[0]
-  const block = 'rounded-[20px] bg-white p-6 @3xl:p-8'
-  return (
-    <div className="lab-frame bg-ig-cream @container">
-      <div ref={ref} className={`flex flex-col gap-24 px-4 py-20 @3xl:gap-32 ${on ? 'ig-bg-speelpad' : ''}`}>
-        <div data-speelpad-stop className={`${block} mx-auto w-full max-w-[520px]`}>
-          <p className="text-[13px] text-[#C84413]">stop 1</p>
-          <h3 className="text-[28px] font-semibold leading-tight">waar kom jij voor?</h3>
-          <p className="mt-2 max-w-[60ch] text-base leading-relaxed">Onderwijs, organisaties, zorg of trainers: kies waar je vandaan komt.</p>
-        </div>
-        <div data-speelpad-stop className={`${block} mx-auto w-full max-w-[560px]`}>
-          <p className="text-[13px] text-[#C84413]">stop 2</p>
-          <h3 className="text-[28px] font-semibold leading-tight">uit onze sessies</h3>
-          <div className="mt-5 grid grid-cols-2 gap-4">
-            {ws.map((w) => (
-              <div key={w.slug}>
-                <Photo src={w.photo} alt="" sizes="260px" className="aspect-[4/3] w-full rounded-xl" />
-                <p className="mt-2 text-base font-semibold leading-snug">{w.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div data-speelpad-stop className={`${block} mx-auto grid w-full max-w-[540px] items-center gap-6 @3xl:grid-cols-[1fr_180px]`}>
-          <div>
-            <p className="text-[13px] text-[#C84413]">stop 3 · uitgelicht spel</p>
-            <h3 className="text-[28px] font-semibold leading-tight">the elemental five</h3>
-            <p className="mt-2 text-base leading-relaxed">{e5.short}</p>
-          </div>
-          <Photo src={e5.photo} alt={ALT[e5.photo]} sizes="180px" contain className="aspect-square w-full bg-transparent!" />
-        </div>
-        <div data-speelpad-stop className={`${block} mx-auto w-full max-w-[500px]`}>
-          <p className="text-[13px] text-[#C84413]">stop 4</p>
-          <h3 className="text-[28px] font-semibold leading-tight">vijf spelers, één idee</h3>
-          <div className="mt-5 flex gap-3">
-            {MEMBERS.slice(0, 3).map((m) => m.photo && <Photo key={m.first} src={m.photo} alt={m.first} sizes="120px" className="aspect-[3/4] w-1/3 rounded-xl" />)}
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
@@ -266,7 +220,7 @@ export default function MotionLab() {
 
   const demos: Record<Key, ReactNode> = {
     rounded: <DemoRounded on={on.rounded} />,
-    speelpad: <DemoSpeelpad on={on.speelpad} />,
+    speelpad: <SpeelpadDemo on={on.speelpad} />,
     split: <DemoSplit on={on.split} />,
     lift: <DemoLift on={on.lift} />,
     overgang: <DemoOvergang on={on.overgang} />,
