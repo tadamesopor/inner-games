@@ -17,7 +17,7 @@ import { initCards } from './cards.js'
 import { initHeaderPill } from './header.js'
 
 export { isReduced, forceReduced, onReducedChange } from './prefs.js'
-export { igNavigate } from './transition.js'
+export { igNavigate, initPageLinks } from './transition.js'
 export { loadMark, markMarkup, hydrateMarks, setPencilBase, ensurePencilDefs } from './pencil.js'
 export { initSpeelpad, initBoxscene, initHeaderPill, initCards }
 

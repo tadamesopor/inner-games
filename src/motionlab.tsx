@@ -8,6 +8,7 @@ import './motionlab.css'
 import { SplitBtn, Switch, useEffectInit } from './lab/ui'
 import { button, ButtonDemo } from './lab/button'
 import { cards, CardsDemo } from './lab/cards'
+import { transition, TransitionDemo } from './lab/transition'
 import { speelpad, SpeelpadDemo } from './lab/speelpad'
 import { forceReduced, igNavigate, initBoxscene, initHeaderPill } from './motion'
 
@@ -18,7 +19,7 @@ const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; w
   { key: 'speelpad', ...speelpad },
   { key: 'split', ...button },
   { key: 'lift', ...cards },
-  { key: 'overgang', n: '07', name: 'paginaovergang', cls: '@view-transition', what: 'Oranje met het logo komt van onder op en gaat naar boven weg: 440 ms in totaal.', why: 'Voelt als één geheel in plaats van losse pagina’s. In WordPress werkt het zonder extra code.' },
+  { key: 'overgang', ...transition },
   { key: 'spelbox', n: '08', name: 'spelbox', cls: '.ig-boxscene', what: 'De doos draait recht terwijl je naar het blok scrolt. Bij The Elemental Five schuiven daarna de vijf kaarten in een waaier uit de doos.', why: 'Laat het echte spel zien, niet alleen een foto. Speelt één keer.' },
   { key: 'footer', n: '09', name: 'doos in de footer', cls: '.ig-footer-box', what: 'Een speldoos staat schuin in de footer en draait 4° mee als de footer in beeld komt.', why: 'De pagina eindigt bij het product.' },
   { key: 'menu', n: '10', name: 'compacte menubalk', cls: '.ig-header-pill', what: 'Na 200px scrollen komt bovenaan een kleine menubalk in het midden. Bovenaan de pagina gaat hij weer weg.', why: 'Het menu is altijd bij de hand, zonder de hele breedte te pakken. Niet op mobiel.' },
@@ -41,35 +42,6 @@ function DemoRounded({ on }: { on: boolean }) {
           ))}
         </div>
       </section>
-    </div>
-  )
-}
-
-function DemoOvergang({ on }: { on: boolean }) {
-  const [page, setPage] = useState(0)
-  const pages = [
-    { title: 'sessies en workshops', photo: PHOTOS.workshopsHero },
-    { title: 'onze spellen', photo: PHOTOS.gamesHero },
-  ]
-  const p = pages[page]
-  const next = () => {
-    const update = () => flushSync(() => setPage((x) => 1 - x))
-    if (on) igNavigate(update)
-    else update()
-  }
-  return (
-    <div className="lab-frame grid items-center gap-8 bg-white p-6 @container @3xl:grid-cols-[1fr_1.1fr] @3xl:p-10">
-      <div>
-        <p className="text-[13px] text-ig-ink/70">pagina {page + 1} van 2</p>
-        <h3 className="mt-2 text-[40px] font-semibold leading-none tracking-tight">{p.title}</h3>
-        <div className="mt-8">
-          <SplitBtn onClick={next}>naar de volgende pagina</SplitBtn>
-        </div>
-        <p className="mt-4 max-w-[44ch] text-[13px] leading-relaxed text-ig-ink/70">
-          Werkt in Chrome, Edge en Safari 18+. In Firefox (nog) geen overgang, dan wisselt de pagina gewoon.
-        </p>
-      </div>
-      <Photo src={p.photo} alt={ALT[p.photo]} className="aspect-[4/3] w-full rounded-[18px]" />
     </div>
   )
 }
@@ -169,7 +141,7 @@ export default function MotionLab() {
     speelpad: <SpeelpadDemo on={on.speelpad} />,
     split: <ButtonDemo on={on.split} />,
     lift: <CardsDemo on={on.lift} />,
-    overgang: <DemoOvergang on={on.overgang} />,
+    overgang: <TransitionDemo on={on.overgang} />,
     spelbox: <DemoSpelbox on={on.spelbox} />,
     footer: <DemoFooter on={on.footer} />,
     menu: (
