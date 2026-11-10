@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600&display=swap');
+
+/* only for the lab page itself, not part of the effects */
+
+.lab {
+  font-family: var(--ig-font);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.lab h1,
+.lab h2,
+.lab h3 {
+  text-transform: lowercase;
+}
+.lab-balance {
+  text-wrap: balance;
+}
+.lab-frame {
+  border-radius: 20px;
+  /* clip, not hidden: hidden makes a scroll container and then scroll timelines inside stop working */
+  overflow: clip;
+  outline: 1px solid rgb(42 24 16 / 0.08);
+  outline-offset: -1px;
+}
+
+/* on/off switch */
+.lab-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  cursor: pointer;
+}
+.lab-switch__track {
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgb(42 24 16 / 0.18);
+  transition: background-color var(--dur-ui) var(--ease-soft);
+}
+.lab-switch__track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(42 24 16 / 0.2);
+  transition: transform var(--dur-ui) var(--ease-out);
+}
+.lab-switch[aria-checked='true'] .lab-switch__track {
+  background: var(--ig-orange);
+}
+.lab-switch[aria-checked='true'] .lab-switch__track::after {
+  transform: translateX(16px);
+}
+.lab-switch:focus-visible {
+  outline: 3px solid var(--ig-ink);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* clear slots for assets that are still missing. never a generic picture in their place */
+.lab-slot-card {
+  display: flex;
+  align-items: flex-end;
+  aspect-ratio: 5 / 7;
+  padding: 10px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.2;
+  box-shadow: 0 1px 3px rgb(42 24 16 / 0.15);
+}
+.lab-slot-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  aspect-ratio: 1 / 0.62;
+  padding: 16px;
+  border: 2px dashed rgb(42 24 16 / 0.35);
+  border-radius: 14px;
+  background: var(--ig-cream);
+  text-align: center;
+  font-size: 16px;
+}

@@ -1,0 +1,30 @@
+/* .ig-section--rounded: big rounded bottom corners, the next section slides up underneath,
+   so its colour peeks out and the page feels like stacked cards.
+   in Enfold: custom css class on a colour section. the section after it needs no class. */
+
+.ig-section--rounded {
+  --ig-round: 56px;
+  position: relative;
+  z-index: 1;
+  border-bottom-left-radius: var(--ig-round);
+  border-bottom-right-radius: var(--ig-round);
+}
+.ig-section--rounded + * {
+  --ig-round: 56px;
+  position: relative;
+  margin-top: calc(var(--ig-round) * -1);
+  padding-top: calc(var(--ig-round) + var(--ig-next-pad, 48px));
+}
+
+@container (max-width: 767px) {
+  .ig-section--rounded,
+  .ig-section--rounded + * {
+    --ig-round: 28px;
+  }
+}
+
+/* .ig-hero--peek: the hero is not a full screen. about 104px of the next section stays visible,
+   because content peeking out invites scrolling, a rounded edge alone doesn't */
+.ig-hero--peek {
+  min-height: calc(100svh - var(--ig-peek, 104px));
+}

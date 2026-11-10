@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Ctx, type PageId } from './wf'
 import TestMode from './test'
 import { Contact, Home, Projects, Trainer, Workshop, Workshops } from './pages'
 import { Game, Games, Preview } from './shop'
 import { Team } from './team'
+
+// the motion lab only loads when you open it, so the prototype itself stays exactly as it was
+const MotionLab = lazy(() => import('./motionlab'))
+const isLab = () => location.pathname === '/motion-lab' || location.hash === '#motion-lab'
 
 const PAGES: Record<PageId, () => React.ReactNode> = {
   home: Home,
@@ -26,10 +30,25 @@ export default function App() {
   const [ann, setAnn] = useState(false)
   const [tasks, setTasks] = useState(false)
   const bus = useRef<(() => void) | undefined>(undefined)
+  const [lab, setLab] = useState(isLab)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [page, sel])
+
+  // the lab's own menu uses #fx-... links, so only ever switch the lab on here, never off
+  useEffect(() => {
+    const onHash = () => isLab() && setLab(true)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  if (lab)
+    return (
+      <Suspense fallback={null}>
+        <MotionLab />
+      </Suspense>
+    )
 
   const go = (p: PageId, id = '') => {
     setPage(p)

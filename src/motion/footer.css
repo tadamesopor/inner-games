@@ -1,0 +1,38 @@
+/* .ig-footer-box: a game box, tilted about -15deg and cut off by the bottom edge of the footer.
+   it turns 4deg while the footer scrolls into view. end state (and reduced motion): -11deg.
+   in Enfold: an image element with this class inside the footer's colour section.
+   the footer itself gets .ig-footer and overflow: clip (not hidden, see boxscene.css). */
+
+.ig-footer {
+  view-timeline: --ig-footer block;
+}
+.ig-footer-box {
+  position: absolute;
+  bottom: -18%;
+  right: 6%;
+  width: min(34cqw, 380px);
+  height: auto;
+  transform-origin: 50% 100%;
+  transform: rotate(-11deg);
+  pointer-events: none;
+}
+@supports (animation-timeline: view()) {
+  .ig-footer-box {
+    animation: ig-footer-turn linear both;
+    animation-timeline: --ig-footer;
+    animation-range: entry 0% entry 100%;
+  }
+}
+@keyframes ig-footer-turn {
+  from {
+    transform: rotate(-15deg) translateY(4%);
+  }
+}
+
+@container (max-width: 767px) {
+  .ig-footer-box {
+    width: 44cqw;
+    right: -4%;
+    bottom: -12%;
+  }
+}

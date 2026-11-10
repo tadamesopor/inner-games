@@ -1,0 +1,30 @@
+/* .ig-card-lift: on hover the card lifts 4px, the shadow gets a bit stronger, the photo zooms to 1.04.
+   only with a real mouse; nothing happens on touch screens.
+   the photo needs a wrapper with .ig-card-lift__media (overflow hidden) */
+
+.ig-card-lift {
+  box-shadow:
+    0 1px 2px rgb(42 24 16 / 0.06),
+    0 4px 12px rgb(42 24 16 / 0.05);
+  transition:
+    transform var(--dur-move) var(--ease-out),
+    box-shadow var(--dur-move) var(--ease-out);
+}
+.ig-card-lift__media {
+  overflow: hidden;
+}
+.ig-card-lift__media img {
+  transition: transform var(--dur-move) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ig-card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 2px 4px rgb(42 24 16 / 0.06),
+      0 14px 32px rgb(42 24 16 / 0.1);
+  }
+  .ig-card-lift:hover .ig-card-lift__media img {
+    transform: scale(1.04);
+  }
+}

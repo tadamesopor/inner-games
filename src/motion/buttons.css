@@ -1,0 +1,72 @@
+/* .ig-btn-split: label + a separate arrow part. only for main actions ("vraag deze workshop aan",
+   "speel de preview", "boek een workshop"). secondary buttons stay simple.
+   markup:
+   <a class="ig-btn-split" href="..."><span class="ig-btn-split__label">boek een workshop</span>
+     <span class="ig-btn-split__arrow" aria-hidden="true"><svg ...></svg></span></a>  */
+
+.ig-btn-split {
+  --c: var(--ig-orange);
+  --fg: var(--ig-ink);
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--fg);
+  font: 600 16px/1 var(--ig-font);
+  text-decoration: none;
+  text-transform: lowercase;
+  cursor: pointer;
+}
+.ig-btn-split__label {
+  display: flex;
+  align-items: center;
+  padding: 0 20px 0 24px;
+  border-radius: 999px 6px 6px 999px;
+  background: var(--c);
+}
+.ig-btn-split__arrow {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  border-radius: 6px 999px 999px 6px;
+  background: color-mix(in srgb, var(--c) 88%, var(--ig-ink));
+  transition: background-color var(--dur-ui) var(--ease-soft);
+}
+.ig-btn-split__arrow svg {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--dur-ui) var(--ease-out);
+}
+.ig-btn-split:hover .ig-btn-split__arrow {
+  background: color-mix(in srgb, var(--c) 76%, var(--ig-ink));
+}
+.ig-btn-split:hover .ig-btn-split__arrow svg {
+  transform: translateX(3px);
+}
+.ig-btn-split:active .ig-btn-split__label,
+.ig-btn-split:active .ig-btn-split__arrow {
+  background: color-mix(in srgb, var(--c) 70%, var(--ig-ink));
+}
+.ig-btn-split:focus-visible {
+  outline: 3px solid var(--ig-ink);
+  outline-offset: 3px;
+}
+
+/* on dark or orange backgrounds */
+.ig-btn-split--dark {
+  --c: var(--ig-ink);
+  --fg: var(--ig-cream);
+}
+.ig-btn-split--dark .ig-btn-split__arrow {
+  background: color-mix(in srgb, var(--ig-ink) 82%, var(--ig-cream));
+}
+.ig-btn-split--dark:hover .ig-btn-split__arrow {
+  background: color-mix(in srgb, var(--ig-ink) 72%, var(--ig-cream));
+}
+.ig-btn-split--dark:focus-visible {
+  outline-color: var(--ig-cream);
+}

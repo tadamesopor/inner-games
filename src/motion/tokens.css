@@ -1,0 +1,52 @@
+/* InnerGames motion: shared tokens.
+   Plain CSS so it can go into the Enfold child theme as is.
+   Rule for every effect: the normal style IS the end state. Animations only describe where something
+   comes from. So with reduced motion (animations off) you always see the finished picture. */
+
+:root {
+  --ig-orange: #ea561f;
+  --ig-orange-text: #c84413;
+  --ig-yellow: #fab512;
+  --ig-ink: #2a1810;
+  --ig-cream: #fff6e6;
+  --ig-font: 'Gill Sans', 'Gill Sans MT', 'Cabin', 'Segoe UI', system-ui, sans-serif;
+
+  /* named easing curves, nothing else is used */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1); /* things arriving */
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0); /* things leaving */
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1); /* colour and small state changes */
+  --ease-breath: cubic-bezier(0.45, 0, 0.55, 1); /* slow loops, like breathing */
+
+  --dur-ui: 150ms; /* hover, focus, small things */
+  --dur-move: 300ms; /* cards, buttons moving */
+  --dur-large: 450ms; /* big things entering */
+}
+
+/* reduced motion: one switch for everything.
+   prefs.js puts .ig-reduced on <html> when the OS asks for it (or the lab toggle does).
+   the media query below is the same rule for when js doesn't run. */
+.ig-reduced *,
+.ig-reduced *::before,
+.ig-reduced *::after {
+  animation: none !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html *,
+  html *::before,
+  html *::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* loops stop when they're off screen (prefs.js -> pauseOffscreen) */
+.ig-paused,
+.ig-paused *,
+.ig-paused::before,
+.ig-paused::after {
+  animation-play-state: paused !important;
+}

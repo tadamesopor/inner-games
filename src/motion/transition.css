@@ -1,0 +1,57 @@
+/* page transition with the View Transitions API.
+   orange with the logo comes up from the bottom over the old page (220ms), then leaves upwards and
+   reveals the new page (220ms). 440ms in total.
+   - in the prototype transition.js calls document.startViewTransition() around the page change
+   - in WordPress the @view-transition rule below does it on normal link clicks (same site only),
+     no js needed
+   browsers without support (or with reduced motion) just change page, no transition. */
+
+@view-transition {
+  navigation: auto;
+}
+
+/* the orange "curtain" is the background of the transition layer, so no extra element is needed */
+::view-transition {
+  background: var(--ig-orange) url('/assets/logo-cream.png') center / min(200px, 40vw) auto no-repeat;
+}
+
+/* old page: its bottom edge goes up, rounded, so the orange rises with soft shoulders */
+::view-transition-old(root) {
+  animation: ig-vt-cover 220ms var(--ease-in) both;
+}
+/* new page: its top edge comes up from the bottom, so the orange leaves upwards */
+::view-transition-new(root) {
+  animation: ig-vt-reveal 220ms var(--ease-out) 220ms both;
+}
+
+/* the curve grows in during the first part and flattens out at the very end,
+   so there's no sudden orange corner on the first or last frame */
+@keyframes ig-vt-cover {
+  0% {
+    clip-path: inset(0 0 0 0 round 0 0 50% 50% / 0 0 0 0);
+  }
+  30% {
+    clip-path: inset(0 0 10% 0 round 0 0 50% 50% / 0 0 96px 96px);
+  }
+  100% {
+    clip-path: inset(0 0 100% 0 round 0 0 50% 50% / 0 0 96px 96px);
+  }
+}
+@keyframes ig-vt-reveal {
+  0% {
+    clip-path: inset(100% 0 0 0 round 50% 50% 0 0 / 96px 96px 0 0);
+  }
+  70% {
+    clip-path: inset(10% 0 0 0 round 50% 50% 0 0 / 96px 96px 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0 round 50% 50% 0 0 / 0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

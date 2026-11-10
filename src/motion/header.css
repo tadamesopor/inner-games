@@ -1,0 +1,54 @@
+/* .ig-header-pill: after 200px of scrolling a compact menu bar slides in at the top centre
+   (cream, light shadow). at the top it goes away again and the normal header is there.
+   it's a separate element, so only transform and opacity animate. desktop only.
+   in Enfold: a small fixed code block with the main links + this class; header.js toggles it. */
+
+.ig-header-pill {
+  position: fixed;
+  z-index: 60;
+  top: 16px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--ig-cream);
+  box-shadow:
+    0 1px 2px rgb(42 24 16 / 0.08),
+    0 8px 24px rgb(42 24 16 / 0.1);
+  font: 500 15px/1 var(--ig-font);
+  transform: translate(-50%, 0);
+  opacity: 1;
+  transition:
+    transform var(--dur-move) var(--ease-out),
+    opacity var(--dur-move) var(--ease-out);
+}
+.ig-header-pill:not(.is-shown) {
+  transform: translate(-50%, calc(-100% - 24px));
+  opacity: 0;
+  pointer-events: none;
+  transition-timing-function: var(--ease-in);
+}
+.ig-header-pill a,
+.ig-header-pill button {
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: var(--ig-ink);
+  text-decoration: none;
+  transition: background-color var(--dur-ui) var(--ease-soft);
+}
+.ig-header-pill a:hover,
+.ig-header-pill button:hover {
+  background: rgb(234 86 31 / 0.12);
+}
+.ig-header-pill a[aria-current] {
+  background: var(--ig-ink);
+  color: var(--ig-cream);
+}
+
+@media (max-width: 767px) {
+  .ig-header-pill {
+    display: none;
+  }
+}

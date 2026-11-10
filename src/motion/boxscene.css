@@ -1,0 +1,99 @@
+/* .ig-boxscene: a game box comes in while you scroll the section into view: from tilted 12deg and a
+   bit smaller to straight and full size. with .ig-boxscene--fan the cards then slide out of the box
+   in a fan, one by one. plays once: boxscene.js adds .is-done at the end and then it stays.
+   the normal styles are the end state, so without js or with reduced motion you see the box straight
+   and the cards fanned.
+   markup:
+   <div class="ig-boxscene ig-boxscene--fan">
+     <div class="ig-boxscene__stage">
+       <img class="ig-boxscene__card" style="--i:0" ...> (x5)
+       <img class="ig-boxscene__box" ...>
+     </div>
+   </div> */
+
+.ig-boxscene {
+  view-timeline: --ig-box block;
+}
+.ig-boxscene__stage {
+  position: relative;
+  display: grid;
+  place-items: end center;
+}
+.ig-boxscene__box {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 80%;
+}
+
+/* the fan: five cards stand up out of the box. positions per card */
+.ig-boxscene__card {
+  position: absolute;
+  z-index: 0;
+  bottom: var(--ig-fan-bottom, 38%);
+  left: 50%;
+  width: 34%;
+  height: auto;
+  transform-origin: 50% 100%;
+  transform: translateX(-50%) rotate(var(--r)) translateY(var(--y));
+}
+.ig-boxscene__card:nth-child(1) { --r: -26deg; --y: -16%; }
+.ig-boxscene__card:nth-child(2) { --r: -13deg; --y: -26%; }
+.ig-boxscene__card:nth-child(3) { --r: 0deg; --y: -30%; }
+.ig-boxscene__card:nth-child(4) { --r: 13deg; --y: -26%; }
+.ig-boxscene__card:nth-child(5) { --r: 26deg; --y: -16%; }
+
+@keyframes ig-box-in {
+  from {
+    transform: rotate(12deg) scale(0.86);
+    opacity: 0.2;
+  }
+}
+@keyframes ig-card-out {
+  from {
+    transform: translateX(-50%) rotate(0deg) translateY(30%);
+    opacity: 0;
+  }
+}
+
+/* modern browsers: linked to the scroll position.
+   careful: no ancestor may have overflow: hidden (use overflow: clip), or the timeline stops moving.
+   the ranges use the same selector as the animation, because the shorthand resets animation-range */
+@supports (animation-timeline: view()) {
+  .ig-boxscene:not(.is-done) .ig-boxscene__box {
+    animation: ig-box-in linear both;
+    animation-timeline: --ig-box;
+    animation-range: entry 10% cover 30%;
+  }
+  .ig-boxscene:not(.is-done) .ig-boxscene__card {
+    animation: ig-card-out linear both;
+    animation-timeline: --ig-box;
+  }
+  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(1) { animation-range: cover 28% cover 38%; }
+  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(2) { animation-range: cover 30% cover 40%; }
+  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(3) { animation-range: cover 32% cover 42%; }
+  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(4) { animation-range: cover 34% cover 44%; }
+  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(5) { animation-range: cover 36% cover 46%; }
+}
+
+/* other browsers (firefox for now): plays on time once it's in view (boxscene.js adds .is-in) */
+@supports not (animation-timeline: view()) {
+  .ig-boxscene__box,
+  .ig-boxscene__card {
+    transition:
+      transform var(--dur-large) var(--ease-out),
+      opacity var(--dur-large) var(--ease-out);
+  }
+  .ig-boxscene__card {
+    transition-delay: calc(400ms + var(--i, 0) * 90ms);
+  }
+  .ig-js .ig-boxscene:not(.is-in) .ig-boxscene__box {
+    transform: rotate(12deg) scale(0.86);
+    opacity: 0.2;
+  }
+  .ig-js .ig-boxscene:not(.is-in) .ig-boxscene__card {
+    transform: translateX(-50%) rotate(0deg) translateY(30%);
+    opacity: 0;
+  }
+}
