@@ -21,8 +21,8 @@ export function createPawn(parent, { size = 38, src = PAWN_SRC } = {}) {
   el('ellipse', { class: 'ig-pawn__shadow', cx: 0, cy: 0, rx: size * 0.42, ry: size * 0.11 }, node)
   const tilt = el('g', {}, node)
   const hopper = el('g', { class: 'ig-pawn__hop' }, tilt)
-  // the photo leans a little to the right; -6deg stands it up
-  el('image', { class: 'ig-pawn__img', href: src, x: -size / 2, y: -h * 0.97, width: size, height: h, transform: 'rotate(-6)' }, hopper)
+  // the photo leans to the right; -14deg stands it up
+  el('image', { class: 'ig-pawn__img', href: src, x: -size / 2, y: -h * 0.97, width: size, height: h, transform: 'rotate(-14)' }, hopper)
 
   return {
     node,
