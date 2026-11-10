@@ -5,8 +5,6 @@ export function forceReduced(value: boolean | null): void
 export function onReducedChange(f: (reduced: boolean) => void): () => void
 export function igNavigate(update: () => void): void
 export function initSpeelpad(root: HTMLElement, opts?: { pawn?: string }): Stop
-export function initOpstelling(root: HTMLElement): Stop
-export function initAdem(root: HTMLElement): Stop
 export function initBoxscene(root: HTMLElement): Stop
 export function initHeaderPill(pill: HTMLElement): Stop
 export function init(scope?: ParentNode): Stop

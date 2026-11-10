@@ -11,20 +11,17 @@ import './footer.css'
 import './header.css'
 
 import { initSpeelpad } from './speelpad.js'
-import { initOpstelling, initAdem } from './opstelling.js'
 import { initBoxscene } from './boxscene.js'
 import { initHeaderPill } from './header.js'
 
 export { isReduced, forceReduced, onReducedChange } from './prefs.js'
 export { igNavigate } from './transition.js'
-export { initSpeelpad, initOpstelling, initAdem, initBoxscene, initHeaderPill }
+export { initSpeelpad, initBoxscene, initHeaderPill }
 
 /** WordPress: finds every element with a motion class and starts it */
 export function init(scope = document) {
   const map = {
     '.ig-bg-speelpad': initSpeelpad,
-    '.ig-bg-opstelling': initOpstelling,
-    '.ig-bg-adem': initAdem,
     '.ig-boxscene': initBoxscene,
     '.ig-header-pill': initHeaderPill,
   }

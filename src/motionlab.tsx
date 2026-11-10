@@ -6,15 +6,13 @@ import { ALT, GAMES, PHOTOS, WORKSHOPS } from './data'
 import { MEMBERS } from './team'
 import { Btn, Photo } from './wf'
 import './motionlab.css'
-import { forceReduced, igNavigate, initAdem, initBoxscene, initHeaderPill, initOpstelling, initSpeelpad } from './motion'
+import { forceReduced, igNavigate, initBoxscene, initHeaderPill, initSpeelpad } from './motion'
 
-type Key = 'rounded' | 'speelpad' | 'opstelling' | 'adem' | 'split' | 'lift' | 'overgang' | 'spelbox' | 'footer' | 'menu'
+type Key = 'rounded' | 'speelpad' | 'split' | 'lift' | 'overgang' | 'spelbox' | 'footer' | 'menu'
 
 const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; why: string }[] = [
   { key: 'rounded', n: '01', name: 'afgeronde secties', cls: '.ig-section--rounded', what: 'De gekleurde kop eindigt met grote ronde hoeken. De volgende sectie schuift eronder.', why: 'De pagina voelt als gestapelde kaarten, en je ziet dat er meer komt.' },
-  { key: 'speelpad', n: '02 · achtergrond a', name: 'speelpad', cls: '.ig-bg-speelpad', what: 'Een getekend spelpad tekent zichzelf tijdens het scrollen. Een pion loopt mee en wacht even bij elk blok.', why: 'Spelen om te groeien, zonder woorden. Het nodigt uit om verder te scrollen.' },
-  { key: 'opstelling', n: '03 · achtergrond b', name: 'opstelling', cls: '.ig-bg-opstelling', what: 'De drie ringen van een Elemental Five-opstelling, van bovenaf, met vijf vloerkaarten. Draait heel langzaam; de ring bij het blok in beeld licht op.', why: 'Koppelt de website aan het spel en de methode.' },
-  { key: 'adem', n: '04 · achtergrond c', name: 'adem', cls: '.ig-bg-adem', what: 'Eén zachte ring achter de kop die in- en uitademt: 5 seconden in, 5 seconden uit.', why: 'InnerGames werkt met lichaam en adem. Dit is de rustigste optie.' },
+  { key: 'speelpad', n: '02', name: 'speelpad', cls: '.ig-bg-speelpad', what: 'Een getekend spelpad tekent zichzelf tijdens het scrollen. Een pion loopt mee en wacht even bij elk blok.', why: 'Spelen om te groeien, zonder woorden. Het nodigt uit om verder te scrollen.' },
   { key: 'split', n: '05', name: 'gesplitste knop', cls: '.ig-btn-split', what: 'Een tekstdeel en een apart pijldeel. Bij hover schuift de pijl 3px op.', why: 'Alleen voor de hoofdactie. Laat zien: hier ga je verder.' },
   { key: 'lift', n: '06', name: 'kaart bij hover', cls: '.ig-card-lift', what: 'De kaart komt 4px omhoog, de schaduw wordt iets sterker en de foto zoomt licht in.', why: 'Laat zien dat de hele kaart klikbaar is. Alleen met een muis.' },
   { key: 'overgang', n: '07', name: 'paginaovergang', cls: '@view-transition', what: 'Oranje met het logo komt van onder op en gaat naar boven weg: 440 ms in totaal.', why: 'Voelt als één geheel in plaats van losse pagina’s. In WordPress werkt het zonder extra code.' },
@@ -118,48 +116,6 @@ function DemoSpeelpad({ on }: { on: boolean }) {
           <div className="mt-5 flex gap-3">
             {MEMBERS.slice(0, 3).map((m) => m.photo && <Photo key={m.first} src={m.photo} alt={m.first} sizes="120px" className="aspect-[3/4] w-1/3 rounded-xl" />)}
           </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function DemoOpstelling({ on }: { on: boolean }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffectInit(ref, initOpstelling, on)
-  const rows = [GAMES[0], GAMES[1], GAMES[3]]
-  return (
-    <div className="lab-frame bg-white @container">
-      <div ref={ref} className={`px-6 py-16 @3xl:px-12 ${on ? 'ig-bg-opstelling' : ''}`}>
-        <div className="max-w-[480px]">
-          <h3 className="text-[40px] font-semibold leading-none tracking-tight">onze spellen</h3>
-          <p className="mt-4 text-xl leading-snug">Zes spellen om te spelen, te leren en te groeien.</p>
-        </div>
-        <div className="mt-16 flex max-w-[460px] flex-col gap-28">
-          {rows.map((g, i) => (
-            <div key={g.slug} data-opstelling-ring={i} className="grid grid-cols-[96px_1fr] items-center gap-5">
-              <Photo src={g.photo} alt="" sizes="96px" contain className="aspect-square w-full rounded-xl" />
-              <div>
-                <p className="text-xl font-semibold leading-snug">{g.title}</p>
-                <p className="mt-1 text-base leading-relaxed">{g.short}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function DemoAdem({ on }: { on: boolean }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffectInit(ref, initAdem, on)
-  return (
-    <div className="lab-frame bg-ig-cream @container">
-      <div ref={ref} className={`grid min-h-[440px] place-items-center px-6 py-20 text-center ${on ? 'ig-bg-adem' : ''}`}>
-        <div>
-          <h3 className="text-[40px] font-semibold leading-none tracking-tight @3xl:text-[64px]">vijf spelers, één idee</h3>
-          <p className="mx-auto mt-5 max-w-[40ch] text-xl leading-snug">Een serieuze organisatie die speelse dingen doet, vanuit Eindhoven.</p>
         </div>
       </div>
     </div>
@@ -327,8 +283,6 @@ export default function MotionLab() {
   const demos: Record<Key, ReactNode> = {
     rounded: <DemoRounded on={on.rounded} />,
     speelpad: <DemoSpeelpad on={on.speelpad} />,
-    opstelling: <DemoOpstelling on={on.opstelling} />,
-    adem: <DemoAdem on={on.adem} />,
     split: <DemoSplit on={on.split} />,
     lift: <DemoLift on={on.lift} />,
     overgang: <DemoOvergang on={on.overgang} />,
@@ -375,7 +329,6 @@ export default function MotionLab() {
             <p>Elk effect staat hier los, met een schakelaar. Zo kiezen we samen wat bij InnerGames past, voordat het op de echte pagina’s komt.</p>
             <p className="text-base leading-relaxed text-ig-ink/80">
               De toets: merk je het tijdens het lezen, dan is het te veel. Zet <em>minder beweging</em> aan om te zien wat iemand ziet die beweging uit heeft staan.
-              Van de drie achtergronden komt er hooguit één per pagina.
             </p>
           </div>
         </section>

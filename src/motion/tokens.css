@@ -17,9 +17,23 @@
   --ease-soft: cubic-bezier(0.4, 0, 0.2, 1); /* colour and small state changes */
   --ease-breath: cubic-bezier(0.45, 0, 0.55, 1); /* slow loops, like breathing */
 
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* small overshoot, only for the hand popping up */
+
+  /* shapes: only these four. not everything is round */
+  --r-section: 56px; /* bottom of big coloured sections */
+  --r-box: 12px; /* cards, buttons, menu items, fields, image frames */
+  --r-tag: 999px; /* small tags like onderwijs or zorg */
+  /* full circles (50%) only for icon buttons */
+
   --dur-ui: 150ms; /* hover, focus, small things */
   --dur-move: 300ms; /* cards, buttons moving */
   --dur-large: 450ms; /* big things entering */
+}
+
+@media (max-width: 767px) {
+  :root {
+    --r-section: 28px;
+  }
 }
 
 /* reduced motion: one switch for everything.

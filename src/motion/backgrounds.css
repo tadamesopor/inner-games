@@ -1,5 +1,4 @@
-/* three InnerGames backgrounds. one per page at most.
-   all of them sit behind the content (z-index 0), the content sits at z-index 1. */
+/* the InnerGames background: the speelpad. it sits behind the content (z-index 0), the content at z-index 1. */
 
 /* ---------- A. speelpad: the game path (speelpad.js builds the svg) ---------- */
 .ig-bg-speelpad {
@@ -36,85 +35,4 @@
 }
 .ig-speelpad__vak.is-reached {
   fill: #fde3a0; /* yellow on cream, solid so the path doesn't show through */
-}
-
-/* ---------- B. opstelling: the floor layout seen from above ---------- */
-.ig-bg-opstelling {
-  position: relative;
-  overflow: hidden;
-}
-.ig-bg-opstelling > :not(.ig-opstelling__svg) {
-  position: relative;
-  z-index: 1;
-}
-.ig-opstelling__svg {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  width: var(--ig-opstelling-size, min(92cqw, 760px));
-  aspect-ratio: 1;
-  right: var(--ig-opstelling-x, -18%);
-  top: var(--ig-opstelling-y, 50%);
-  translate: 0 -50%;
-}
-.ig-opstelling__set {
-  transform-box: view-box;
-  transform-origin: 50% 50%;
-  animation: ig-turn 160s linear infinite;
-}
-.ig-opstelling__ring {
-  fill: none;
-  stroke: var(--ig-ink);
-  stroke-opacity: 0.08;
-  stroke-width: 1.5;
-  transition: stroke-opacity 600ms var(--ease-soft), stroke 600ms var(--ease-soft);
-}
-.ig-opstelling__ring.is-lit {
-  stroke: var(--ig-orange);
-  stroke-opacity: 0.32;
-}
-.ig-opstelling__card {
-  opacity: 0.4;
-}
-@keyframes ig-turn {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ---------- C. adem: one soft ring that breathes, 5s in, 5s out ---------- */
-.ig-bg-adem {
-  position: relative;
-  overflow: hidden;
-}
-.ig-bg-adem > * {
-  position: relative;
-  z-index: 1;
-}
-.ig-bg-adem::before {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  left: var(--ig-adem-x, 50%);
-  top: var(--ig-adem-y, 50%);
-  width: var(--ig-adem-size, min(84cqw, 620px));
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  /* a flat ring, not a glow: a thin line with a wide pale band inside it.
-     the middle stays empty, so it never lowers the contrast of the heading */
-  border: 1.5px solid rgb(234 86 31 / 0.22);
-  box-shadow: inset 0 0 0 clamp(20px, 5cqw, 40px) rgb(250 181 18 / 0.1);
-  pointer-events: none;
-  transform: scale(0.94); /* at rest */
-  animation: ig-adem 10s var(--ease-breath) infinite;
-}
-@keyframes ig-adem {
-  0%,
-  100% {
-    transform: scale(0.88);
-  }
-  50% {
-    transform: scale(1.04);
-  }
 }

@@ -8,7 +8,7 @@ Add the page and element mapping here when it's written.
 All effects live in `src/motion/` as plain CSS and plain JS (ES modules, no framework).
 
 1. Copy `src/motion/*.css` into the Enfold child theme, for example `css/ig-motion.css` (one file, in this order:
-   `tokens`, `sections`, `backgrounds`, `buttons`, `cards`, `transition`, `boxscene`, `footer`, `header`).
+   `tokens`, `pencil`, `sections`, `backgrounds`, `buttons`, `cards`, `transition`, `boxscene`, `footer`, `header`).
    Small things can also go in Enfold → Quick CSS, but one file is easier to keep in sync.
 2. Copy `src/motion/*.js` into `js/ig-motion/` and enqueue `index.js` as a module:
    ```php
@@ -34,8 +34,6 @@ end state.
 |---|---|---|---|---|
 | Rounded section bottom | Color Section | `ig-section--rounded` on the section | `sections.css` | The section after it slides up underneath automatically. Optional `--ig-next-pad` to change its top padding. Hero: also `ig-hero--peek` (not full screen, ~104 px of the next section visible). |
 | Background A: speelpad | Color Section (or a group of sections in one wrapper) | `ig-bg-speelpad` on the wrapper; `data-speelpad-stop` on each block the path stops at | `backgrounds.css`, `speelpad.js`, `/assets/meeple-pawn.png` | Enfold can't add a data attribute in the editor: add it with a Code Block wrapper, or give the blocks a class `ig-stop` and change the selector in `speelpad.js`. The blocks need empty space on both sides (40 px or more), otherwise the path runs along the left edge. |
-| Background B: opstelling | Color Section | `ig-bg-opstelling`; `data-opstelling-ring="0"`, `"1"`, `"2"` on blocks inside | `backgrounds.css`, `opstelling.js` | Position and size with `--ig-opstelling-x`, `--ig-opstelling-y`, `--ig-opstelling-size`. |
-| Background C: adem | Color Section | `ig-bg-adem` | `backgrounds.css`, `opstelling.js` (only to pause off screen) | Position and size with `--ig-adem-x`, `--ig-adem-y`, `--ig-adem-size`. |
 | Split button | Button (or a Code Block) | `ig-btn-split` (+ `ig-btn-split--dark` on orange or dark) | `buttons.css` | Needs the two inner spans (label + arrow). Enfold's Button element doesn't allow that: use a small Code Block or a shortcode. Only for main actions. |
 | Card hover | Column / Masonry item | `ig-card-lift`; the image wrapper gets `ig-card-lift__media` | `cards.css` | Only with a mouse (`hover: hover`). |
 | Page transition | none | none | `transition.css` | Works on normal page loads in Chrome, Edge and Safari 18+ through `@view-transition { navigation: auto; }`, no JS. Same-site links only. Other browsers just load the page. `transition.js` is only for the prototype (one page app). Uses `/assets/logo-cream.png`: upload it and fix the path in the CSS. |

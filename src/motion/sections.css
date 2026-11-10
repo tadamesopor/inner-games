@@ -3,23 +3,21 @@
    in Enfold: custom css class on a colour section. the section after it needs no class. */
 
 .ig-section--rounded {
-  --ig-round: 56px;
   position: relative;
   z-index: 1;
-  border-bottom-left-radius: var(--ig-round);
-  border-bottom-right-radius: var(--ig-round);
+  border-bottom-left-radius: var(--r-section);
+  border-bottom-right-radius: var(--r-section);
 }
 .ig-section--rounded + * {
-  --ig-round: 56px;
   position: relative;
-  margin-top: calc(var(--ig-round) * -1);
-  padding-top: calc(var(--ig-round) + var(--ig-next-pad, 48px));
+  margin-top: calc(var(--r-section) * -1);
+  padding-top: calc(var(--r-section) + var(--ig-next-pad, 48px));
 }
 
 @container (max-width: 767px) {
   .ig-section--rounded,
   .ig-section--rounded + * {
-    --ig-round: 28px;
+    --r-section: 28px;
   }
 }
 
