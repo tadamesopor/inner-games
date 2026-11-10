@@ -7,6 +7,7 @@ import { Photo } from './wf'
 import './motionlab.css'
 import { SplitBtn, Switch, useEffectInit } from './lab/ui'
 import { button, ButtonDemo } from './lab/button'
+import { cards, CardsDemo } from './lab/cards'
 import { speelpad, SpeelpadDemo } from './lab/speelpad'
 import { forceReduced, igNavigate, initBoxscene, initHeaderPill } from './motion'
 
@@ -16,7 +17,7 @@ const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; w
   { key: 'rounded', n: '01', name: 'afgeronde secties', cls: '.ig-section--rounded', what: 'De gekleurde kop eindigt met grote ronde hoeken. De volgende sectie schuift eronder.', why: 'De pagina voelt als gestapelde kaarten, en je ziet dat er meer komt.' },
   { key: 'speelpad', ...speelpad },
   { key: 'split', ...button },
-  { key: 'lift', n: '06', name: 'kaart bij hover', cls: '.ig-card-lift', what: 'De kaart komt 4px omhoog, de schaduw wordt iets sterker en de foto zoomt licht in.', why: 'Laat zien dat de hele kaart klikbaar is. Alleen met een muis.' },
+  { key: 'lift', ...cards },
   { key: 'overgang', n: '07', name: 'paginaovergang', cls: '@view-transition', what: 'Oranje met het logo komt van onder op en gaat naar boven weg: 440 ms in totaal.', why: 'Voelt als één geheel in plaats van losse pagina’s. In WordPress werkt het zonder extra code.' },
   { key: 'spelbox', n: '08', name: 'spelbox', cls: '.ig-boxscene', what: 'De doos draait recht terwijl je naar het blok scrolt. Bij The Elemental Five schuiven daarna de vijf kaarten in een waaier uit de doos.', why: 'Laat het echte spel zien, niet alleen een foto. Speelt één keer.' },
   { key: 'footer', n: '09', name: 'doos in de footer', cls: '.ig-footer-box', what: 'Een speldoos staat schuin in de footer en draait 4° mee als de footer in beeld komt.', why: 'De pagina eindigt bij het product.' },
@@ -40,27 +41,6 @@ function DemoRounded({ on }: { on: boolean }) {
           ))}
         </div>
       </section>
-    </div>
-  )
-}
-
-function DemoLift({ on }: { on: boolean }) {
-  return (
-    <div className="lab-frame bg-ig-cream p-6 @container @3xl:p-10">
-      <div className="grid gap-6 @xl:grid-cols-3">
-        {[WORKSHOPS[0], WORKSHOPS[3], WORKSHOPS[7]].map((w) => (
-          <article key={w.slug} className={`flex cursor-pointer flex-col overflow-hidden rounded-[18px] bg-white ${on ? 'ig-card-lift' : ''}`}>
-            <div className="ig-card-lift__media">
-              <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 25vw, 100vw" className="aspect-[4/3] w-full" />
-            </div>
-            <div className="flex flex-1 flex-col gap-2 p-5">
-              <h3 className="text-xl font-semibold leading-tight">{w.title}</h3>
-              <p className="text-base leading-relaxed text-ig-ink/80">{w.tagline}</p>
-              <p className="mt-auto pt-3 text-base">{w.price}</p>
-            </div>
-          </article>
-        ))}
-      </div>
     </div>
   )
 }
@@ -188,7 +168,7 @@ export default function MotionLab() {
     rounded: <DemoRounded on={on.rounded} />,
     speelpad: <SpeelpadDemo on={on.speelpad} />,
     split: <ButtonDemo on={on.split} />,
-    lift: <DemoLift on={on.lift} />,
+    lift: <CardsDemo on={on.lift} />,
     overgang: <DemoOvergang on={on.overgang} />,
     spelbox: <DemoSpelbox on={on.spelbox} />,
     footer: <DemoFooter on={on.footer} />,

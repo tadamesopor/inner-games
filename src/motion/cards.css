@@ -1,30 +1,122 @@
-/* .ig-card-lift: on hover the card lifts 4px, the shadow gets a bit stronger, the photo zooms to 1.04.
-   only with a real mouse; nothing happens on touch screens.
-   the photo needs a wrapper with .ig-card-lift__media (overflow hidden) */
+/* .ig-card: on hover the InnerGames hand pops up from behind the card, like someone raising a hand
+   in a workshop ("kies mij"). the card tilts a little and lifts. one wave, never a loop.
+   the hand is the wrapper's ::before with the logo hand as a mask, so in Enfold it's only css classes:
+   <div class="ig-card ig-card--cream"><div class="ig-card__body"><div class="ig-card__media"><img></div>...</div></div>
+   cards.js adds a tiny random tilt and position per card, and the touch-screen version. */
 
-.ig-card-lift {
-  box-shadow:
-    0 1px 2px rgb(42 24 16 / 0.06),
-    0 4px 12px rgb(42 24 16 / 0.05);
+.ig-card {
+  --card-bg: var(--ig-cream);
+  --hand-color: var(--ig-orange); /* a darker tint of the card's own colour */
+  --hand-size: 68px; /* about 56px of hand is visible */
+  --hand-x: 0px;
+  --hand-tilt: 0deg;
+  --hand-up: -118%; /* how far the hand comes out above the card */
+  position: relative;
+  isolation: isolate;
+}
+.ig-card--orange {
+  --card-bg: var(--ig-orange);
+  --hand-color: var(--ig-yellow);
+}
+.ig-card--yellow {
+  --card-bg: var(--ig-yellow);
+  --hand-color: var(--ig-orange);
+}
+
+/* the hand, hidden behind the top edge of the card */
+.ig-card::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 6px;
+  right: calc(16% + var(--hand-x));
+  width: var(--hand-size);
+  aspect-ratio: 140 / 126;
+  background: var(--hand-color);
+  -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  /* the drawing leans left; turned upright it's a raised hand. the pivot is the wrist */
+  transform-origin: 78% 92%;
+  rotate: calc(30deg + var(--hand-tilt));
+  translate: 0 0;
+  scale: 0.85;
   transition:
-    transform var(--dur-move) var(--ease-out),
-    box-shadow var(--dur-move) var(--ease-out);
-}
-.ig-card-lift__media {
-  overflow: hidden;
-}
-.ig-card-lift__media img {
-  transition: transform var(--dur-move) var(--ease-out);
+    translate 200ms var(--ease-in),
+    scale 200ms var(--ease-in);
 }
 
+.ig-card__body {
+  position: relative;
+  height: 100%;
+  padding: 10px;
+  border-radius: var(--r-box);
+  background: var(--card-bg);
+  /* on mouse leave the card waits until the hand has sunk back */
+  transition: transform 200ms var(--ease-out) 140ms;
+}
+.ig-card__media {
+  overflow: hidden;
+  border-radius: 8px;
+}
+.ig-card__media img {
+  transition: scale 300ms var(--ease-out);
+}
+
+/* hover with a mouse */
 @media (hover: hover) and (pointer: fine) {
-  .ig-card-lift:hover {
-    transform: translateY(-4px);
-    box-shadow:
-      0 2px 4px rgb(42 24 16 / 0.06),
-      0 14px 32px rgb(42 24 16 / 0.1);
+  .ig-card:hover .ig-card__body {
+    transform: translateY(-6px) rotate(-2deg);
+    transition-delay: 0ms;
   }
-  .ig-card-lift:hover .ig-card-lift__media img {
-    transform: scale(1.04);
+  .ig-card:hover .ig-card__media img {
+    scale: 1.03;
   }
+  .ig-card:hover::before {
+    translate: 0 var(--hand-up);
+    scale: 1;
+    transition:
+      translate 380ms var(--ease-spring) 60ms,
+      scale 380ms var(--ease-spring) 60ms;
+    animation: ig-hand-wave 500ms var(--ease-soft) 460ms;
+  }
+}
+/* touch screens: cards.js adds .is-greeting once, when the card scrolls into view */
+.ig-card.is-greeting::before {
+  translate: 0 var(--hand-up);
+  scale: 1;
+  transition:
+    translate 380ms var(--ease-spring),
+    scale 380ms var(--ease-spring);
+  animation: ig-hand-wave 500ms var(--ease-soft) 400ms;
+}
+
+/* one small wave: -8deg, +5deg, back */
+@keyframes ig-hand-wave {
+  0%,
+  100% {
+    rotate: calc(30deg + var(--hand-tilt));
+  }
+  35% {
+    rotate: calc(22deg + var(--hand-tilt));
+  }
+  70% {
+    rotate: calc(35deg + var(--hand-tilt));
+  }
+}
+
+@container (max-width: 767px) {
+  .ig-card {
+    --hand-size: 48px;
+  }
+}
+
+/* reduced motion: no pop and no wave, the hand is simply there at its end position on hover */
+.ig-reduced .ig-card::before {
+  translate: 0 var(--hand-up);
+  scale: 1;
+  opacity: 0;
+}
+.ig-reduced .ig-card:hover::before,
+.ig-reduced .ig-card.is-greeting::before {
+  opacity: 1;
 }
