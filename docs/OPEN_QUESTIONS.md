@@ -21,3 +21,9 @@
 - **Element colours.** The colours for vuur, lucht, aarde, water and ether in the opstelling background are taken from the
   floor-card photo. Check them against the real card art.
 - **Speelpad drawing.** The path is drawn in code with a little wobble. Damian's own drawn path goes in `public/assets/draw/`.
+
+## Motion lab (round 2)
+
+- **3D pawn (next step).** Replace the photo of the yellow pawn with a 3D pawn: a phone 3D scan, or a model made in Blender,
+  shown with `<model-viewer>` or three.js. The pawn is one component (`src/motion/pawn.js`, class `.ig-pawn`), so only that
+  file changes; the path stays as it is. The current photo is 109 × 119 px: a larger cut-out would also help.

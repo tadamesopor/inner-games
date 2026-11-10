@@ -18,6 +18,7 @@ import { initFooterReveal } from './footer.js'
 
 export { isReduced, forceReduced, onReducedChange } from './prefs.js'
 export { igNavigate, initPageLinks } from './transition.js'
+export { createPawn, PAWN_SRC } from './pawn.js'
 export { loadMark, markMarkup, hydrateMarks, setPencilBase, ensurePencilDefs } from './pencil.js'
 export { initSpeelpad, initBoxscene, initCards, initFooterReveal }
 

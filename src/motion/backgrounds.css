@@ -43,24 +43,25 @@
   --pencil-draw: 300ms;
 }
 
-/* the pawn */
-.ig-speelpad__pawn {
-  --pencil-w: 2.4;
-  --pencil-fill: #fff; /* white, so the pawn stands out on cream */
-}
-.ig-speelpad__shadow {
+/* the pawn (.ig-pawn, see pawn.js): a soft contact shadow that shrinks while it's in the air */
+.ig-pawn__shadow {
   fill: var(--ig-ink);
-  opacity: 0.14;
+  opacity: 0.2;
+  filter: blur(1.5px);
 }
-.ig-speelpad__hop,
-.ig-speelpad__shadow {
+.ig-pawn__img {
+  /* a hint of shadow on the pawn itself, so it sits on the page instead of on top of it */
+  filter: drop-shadow(0 1px 1px rgb(42 24 16 / 0.25));
+}
+.ig-pawn__hop,
+.ig-pawn__shadow {
   transform-box: view-box;
   transform-origin: 0 0;
 }
-.ig-speelpad__pawn.is-hopping .ig-speelpad__hop {
+.ig-pawn.is-hopping .ig-pawn__hop {
   animation: ig-pawn-hop 460ms var(--ease-out);
 }
-.ig-speelpad__pawn.is-hopping .ig-speelpad__shadow {
+.ig-pawn.is-hopping .ig-pawn__shadow {
   animation: ig-pawn-shadow 460ms var(--ease-out);
 }
 /* squash before the jump, stretch in the air, a small squash when it lands */
@@ -83,7 +84,7 @@
 }
 @keyframes ig-pawn-shadow {
   45% {
-    transform: scale(0.6);
-    opacity: 0.07;
+    transform: scale(0.55);
+    opacity: 0.08;
   }
 }

@@ -1,5 +1,6 @@
 // .ig-bg-speelpad: the game path, drawn with the pencil line while you scroll (scrubbed, not played).
-// a drawn pawn walks along it, leans a little in the direction it walks, and hops once at every stop.
+// the yellow InnerGames pawn (pawn.js) walks along it, leans a little in the direction it walks,
+// and hops once at every stop.
 // every child with [data-speelpad-stop] gets a stop square in the margin next to it. between stops the
 // line slips behind the bottom corner of the card and comes out in the gap, so it feels part of the page.
 // on a phone it's a simple line along the left edge.
@@ -8,6 +9,7 @@
 
 import { isReduced, onReducedChange } from './prefs.js'
 import { loadMark, markMarkup } from './pencil.js'
+import { createPawn } from './pawn.js'
 
 const NS = 'http://www.w3.org/2000/svg'
 const HOLD = 150 // px of scrolling the pawn waits at each stop
@@ -47,7 +49,7 @@ export function initSpeelpad(root) {
   root.prepend(svg)
 
   let marks = null
-  let path, pawn, pawnTilt, stops = [], keys = [], zones = [], total = 0, lastStopLen = 0
+  let path, pawn, stops = [], keys = [], zones = [], total = 0, lastStopLen = 0
   let active = false, raf = 0, zone = -1, alive = true
 
   function build() {
@@ -122,16 +124,8 @@ export function initSpeelpad(root) {
       return { g, tick, len: stopLen[i] }
     })
 
-    // the pawn: drawn, cream body, feet on the line. a shadow on the ground shrinks while it hops
-    const pw = narrow ? 22 : 34
-    const [, , vw, vh] = viewBoxOf(marks.pawn)
-    const ph = (pw * vh) / vw
-    pawn = el('g', { class: 'ig-speelpad__pawn' }, svg)
-    el('ellipse', { class: 'ig-speelpad__shadow', cx: 0, cy: 0, rx: pw * 0.38, ry: pw * 0.1 }, pawn)
-    pawnTilt = el('g', {}, pawn)
-    const hopper = el('g', { class: 'ig-speelpad__hop' }, pawnTilt)
-    const body = el('svg', { class: 'ig-pencil', x: -pw / 2, y: -ph * 0.95, width: pw, height: ph, viewBox: marks.pawn.viewBox }, hopper)
-    body.innerHTML = markMarkup(marks.pawn)
+    // the pawn: feet on the line, its own component (pawn.js) so it can become 3D later
+    pawn = createPawn(svg, { size: narrow ? 28 : 44 })
 
     // scroll position (the walking "head", px from the top of root) -> length on the path.
     // between stops it walks, at a stop it waits HOLD px
@@ -157,12 +151,6 @@ export function initSpeelpad(root) {
     return total
   }
 
-  function hop() {
-    pawn.classList.remove('is-hopping')
-    void pawn.getBoundingClientRect() // restart the animation
-    pawn.classList.add('is-hopping')
-  }
-
   function update() {
     raf = 0
     if (!path) return
@@ -176,9 +164,7 @@ export function initSpeelpad(root) {
     const p = path.getPointAtLength(at)
     const q = path.getPointAtLength(Math.min(total, at + 6))
     const dist = Math.hypot(q.x - p.x, q.y - p.y) || 1
-    const lean = Math.max(-14, Math.min(14, ((q.x - p.x) / dist) * 16))
-    pawn.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`)
-    pawnTilt.setAttribute('transform', `rotate(${lean.toFixed(1)})`)
+    pawn.pose(p.x, p.y, ((q.x - p.x) / dist) * 10)
 
     stops.forEach((s) => {
       const reached = at >= s.len - 1
@@ -188,7 +174,7 @@ export function initSpeelpad(root) {
 
     const z = zones.findIndex(([a, b]) => head >= a && head <= b)
     if (z !== zone) {
-      if (z >= 0 && !reduced) hop()
+      if (z >= 0 && !reduced) pawn.hop()
       zone = z
     }
   }
@@ -203,8 +189,8 @@ export function initSpeelpad(root) {
   const ro = new ResizeObserver(() => build())
   window.addEventListener('scroll', onScroll, { passive: true })
   const offReduced = onReducedChange(() => update())
-  Promise.all([loadMark('pawn'), loadMark('tick')]).then(([pawnMark, tickMark]) => {
-    marks = { pawn: pawnMark, tick: tickMark }
+  loadMark('tick').then((tickMark) => {
+    marks = { tick: tickMark }
     io.observe(root)
     ro.observe(root)
     build()

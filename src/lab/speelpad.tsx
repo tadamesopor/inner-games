@@ -10,7 +10,7 @@ export const speelpad: Effect = {
   n: '02',
   name: 'speelpad',
   cls: '.ig-bg-speelpad',
-  what: 'Het spelpad tekent zichzelf met de potloodlijn terwijl je scrolt. De pion loopt mee, leunt in de looprichting en maakt een sprongetje bij elk blok.',
+  what: 'Het spelpad tekent zichzelf met de potloodlijn terwijl je scrolt. De gele InnerGames-pion loopt mee, leunt in de looprichting en maakt een sprongetje bij elk blok.',
   why: 'Spelen om te groeien, zonder woorden. De lijn loopt achter de kaarten langs, alsof hij bij de pagina hoort.',
 }
 
