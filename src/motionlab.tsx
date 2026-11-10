@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import { ALT, GAMES, PHOTOS, WORKSHOPS } from './data'
-import { Btn, Photo } from './wf'
+import { Photo } from './wf'
 import './motionlab.css'
-import { Switch, useEffectInit } from './lab/ui'
+import { SplitBtn, Switch, useEffectInit } from './lab/ui'
+import { button, ButtonDemo } from './lab/button'
 import { speelpad, SpeelpadDemo } from './lab/speelpad'
 import { forceReduced, igNavigate, initBoxscene, initHeaderPill } from './motion'
 
@@ -14,30 +15,13 @@ type Key = 'rounded' | 'speelpad' | 'split' | 'lift' | 'overgang' | 'spelbox' | 
 const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; why: string }[] = [
   { key: 'rounded', n: '01', name: 'afgeronde secties', cls: '.ig-section--rounded', what: 'De gekleurde kop eindigt met grote ronde hoeken. De volgende sectie schuift eronder.', why: 'De pagina voelt als gestapelde kaarten, en je ziet dat er meer komt.' },
   { key: 'speelpad', ...speelpad },
-  { key: 'split', n: '05', name: 'gesplitste knop', cls: '.ig-btn-split', what: 'Een tekstdeel en een apart pijldeel. Bij hover schuift de pijl 3px op.', why: 'Alleen voor de hoofdactie. Laat zien: hier ga je verder.' },
+  { key: 'split', ...button },
   { key: 'lift', n: '06', name: 'kaart bij hover', cls: '.ig-card-lift', what: 'De kaart komt 4px omhoog, de schaduw wordt iets sterker en de foto zoomt licht in.', why: 'Laat zien dat de hele kaart klikbaar is. Alleen met een muis.' },
   { key: 'overgang', n: '07', name: 'paginaovergang', cls: '@view-transition', what: 'Oranje met het logo komt van onder op en gaat naar boven weg: 440 ms in totaal.', why: 'Voelt als één geheel in plaats van losse pagina’s. In WordPress werkt het zonder extra code.' },
   { key: 'spelbox', n: '08', name: 'spelbox', cls: '.ig-boxscene', what: 'De doos draait recht terwijl je naar het blok scrolt. Bij The Elemental Five schuiven daarna de vijf kaarten in een waaier uit de doos.', why: 'Laat het echte spel zien, niet alleen een foto. Speelt één keer.' },
   { key: 'footer', n: '09', name: 'doos in de footer', cls: '.ig-footer-box', what: 'Een speldoos staat schuin in de footer en draait 4° mee als de footer in beeld komt.', why: 'De pagina eindigt bij het product.' },
   { key: 'menu', n: '10', name: 'compacte menubalk', cls: '.ig-header-pill', what: 'Na 200px scrollen komt bovenaan een kleine menubalk in het midden. Bovenaan de pagina gaat hij weer weg.', why: 'Het menu is altijd bij de hand, zonder de hele breedte te pakken. Niet op mobiel.' },
 ]
-
-const Arrow = () => (
-  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M3 9.2h11.5M10 4.5l4.6 4.7L10 13.7" />
-  </svg>
-)
-
-function SplitBtn({ children, dark = false, onClick }: { children: ReactNode; dark?: boolean; onClick?: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className={`ig-btn-split ${dark ? 'ig-btn-split--dark' : ''}`}>
-      <span className="ig-btn-split__label">{children}</span>
-      <span className="ig-btn-split__arrow" aria-hidden>
-        <Arrow />
-      </span>
-    </button>
-  )
-}
 
 /* ---------------- demos ---------------- */
 
@@ -56,24 +40,6 @@ function DemoRounded({ on }: { on: boolean }) {
           ))}
         </div>
       </section>
-    </div>
-  )
-}
-
-function DemoSplit({ on }: { on: boolean }) {
-  return (
-    <div className="lab-frame grid gap-px bg-ig-ink/10 @container @3xl:grid-cols-2">
-      <div className="flex flex-col items-start gap-4 bg-white p-8">
-        <p className="text-[13px] text-ig-ink/70">op wit</p>
-        {on ? <SplitBtn>vraag deze workshop aan</SplitBtn> : <Btn variant="primary" className="w-auto!">vraag deze workshop aan</Btn>}
-        {on ? <SplitBtn dark>speel de preview</SplitBtn> : <Btn variant="dark" className="w-auto!">speel de preview</Btn>}
-        <button type="button" className="text-base underline underline-offset-4">bekijk het spel</button>
-      </div>
-      <div className="flex flex-col items-start gap-4 bg-ig-orange p-8">
-        <p className="text-[13px] text-ig-ink">op oranje</p>
-        {on ? <SplitBtn dark>boek een workshop</SplitBtn> : <Btn variant="dark" className="w-auto!">boek een workshop</Btn>}
-        <p className="max-w-[34ch] text-base">De link eronder blijft een gewone link: alleen de hoofdactie krijgt een pijl.</p>
-      </div>
     </div>
   )
 }
@@ -221,7 +187,7 @@ export default function MotionLab() {
   const demos: Record<Key, ReactNode> = {
     rounded: <DemoRounded on={on.rounded} />,
     speelpad: <SpeelpadDemo on={on.speelpad} />,
-    split: <DemoSplit on={on.split} />,
+    split: <ButtonDemo on={on.split} />,
     lift: <DemoLift on={on.lift} />,
     overgang: <DemoOvergang on={on.overgang} />,
     spelbox: <DemoSpelbox on={on.spelbox} />,

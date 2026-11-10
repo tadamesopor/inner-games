@@ -1,5 +1,5 @@
 // shared bits for the motion lab demos
-import { useEffect, useState, type RefObject } from 'react'
+import { useEffect, useState, type ReactNode, type RefObject } from 'react'
 import { loadMark, markMarkup } from '../motion'
 
 /** starts a plain js effect on an element while it's switched on */
@@ -33,3 +33,15 @@ export function PencilMark({ name, className = '' }: { name: string; className?:
 }
 
 export type Effect = { n: string; name: string; cls: string; what: string; why: string }
+
+/** the split button: text part + arrow part, for main actions only */
+export function SplitBtn({ children, tone = 'orange', onClick }: { children: ReactNode; tone?: 'orange' | 'ink' | 'cream'; onClick?: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className={tone === 'orange' ? 'ig-btn-split' : `ig-btn-split ig-btn-split--${tone}`}>
+      <span className="ig-btn-split__label">{children}</span>
+      <span className="ig-btn-split__arrow" aria-hidden>
+        <PencilMark name="arrow" />
+      </span>
+    </button>
+  )
+}

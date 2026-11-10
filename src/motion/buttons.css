@@ -1,19 +1,18 @@
-/* .ig-btn-split: label + a separate arrow part. only for main actions ("vraag deze workshop aan",
-   "speel de preview", "boek een workshop"). secondary buttons stay simple.
+/* .ig-btn-split: two separate boxy parts of the same colour with a 3px gap: the text, and a square with
+   a drawn arrow. only for main actions ("boek een workshop", "speel het spel", "bekijk het spel").
+   hover: only the arrow part moves 3px and the arrow redraws itself. press: both parts go down 1px.
    markup:
    <a class="ig-btn-split" href="..."><span class="ig-btn-split__label">boek een workshop</span>
-     <span class="ig-btn-split__arrow" aria-hidden="true"><svg ...></svg></span></a>  */
+     <span class="ig-btn-split__arrow" aria-hidden="true"><svg data-pencil="arrow"></svg></span></a>  */
 
 .ig-btn-split {
   --c: var(--ig-orange);
   --fg: var(--ig-ink);
   display: inline-flex;
   align-items: stretch;
-  gap: 2px;
-  min-height: 48px;
+  gap: 3px;
   padding: 0;
   border: 0;
-  border-radius: 999px;
   background: none;
   color: var(--fg);
   font: 600 16px/1 var(--ig-font);
@@ -21,52 +20,75 @@
   text-transform: lowercase;
   cursor: pointer;
 }
+.ig-btn-split__label,
+.ig-btn-split__arrow {
+  background: var(--c);
+  border-radius: var(--r-box);
+  transition:
+    transform var(--dur-ui) var(--ease-out),
+    background-color var(--dur-ui) var(--ease-soft);
+}
 .ig-btn-split__label {
   display: flex;
   align-items: center;
-  padding: 0 20px 0 24px;
-  border-radius: 999px 6px 6px 999px;
-  background: var(--c);
+  min-height: 48px;
+  padding: 0 20px;
 }
 .ig-btn-split__arrow {
   display: grid;
   place-items: center;
   width: 48px;
-  border-radius: 6px 999px 999px 6px;
-  background: color-mix(in srgb, var(--c) 88%, var(--ig-ink));
-  transition: background-color var(--dur-ui) var(--ease-soft);
+  min-height: 48px;
 }
 .ig-btn-split__arrow svg {
-  width: 18px;
-  height: 18px;
-  transition: transform var(--dur-ui) var(--ease-out);
+  width: 22px;
+  height: 22px;
+  color: var(--fg);
+  --pencil-w: 2.3;
 }
-.ig-btn-split:hover .ig-btn-split__arrow {
-  background: color-mix(in srgb, var(--c) 76%, var(--ig-ink));
-}
-.ig-btn-split:hover .ig-btn-split__arrow svg {
-  transform: translateX(3px);
-}
-.ig-btn-split:active .ig-btn-split__label,
-.ig-btn-split:active .ig-btn-split__arrow {
-  background: color-mix(in srgb, var(--c) 70%, var(--ig-ink));
-}
-.ig-btn-split:focus-visible {
-  outline: 3px solid var(--ig-ink);
-  outline-offset: 3px;
+.ig-btn-split__arrow path {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
 }
 
-/* on dark or orange backgrounds */
-.ig-btn-split--dark {
+.ig-btn-split:hover .ig-btn-split__arrow {
+  transform: translateX(3px);
+}
+.ig-btn-split:hover .ig-btn-split__arrow path {
+  animation: ig-redraw 360ms var(--ease-out) both;
+}
+.ig-btn-split:hover .ig-btn-split__arrow path + path {
+  animation-delay: 120ms;
+}
+.ig-btn-split:active .ig-btn-split__label {
+  transform: translateY(1px);
+}
+.ig-btn-split:active .ig-btn-split__arrow {
+  transform: translate(3px, 1px);
+}
+.ig-btn-split:focus-visible {
+  outline: none;
+}
+.ig-btn-split:focus-visible .ig-btn-split__label,
+.ig-btn-split:focus-visible .ig-btn-split__arrow {
+  outline: 3px solid var(--focus, var(--ig-ink));
+  outline-offset: 2px;
+}
+@keyframes ig-redraw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* colours: orange on cream (default), ink on cream, cream on orange */
+.ig-btn-split--ink {
   --c: var(--ig-ink);
   --fg: var(--ig-cream);
 }
-.ig-btn-split--dark .ig-btn-split__arrow {
-  background: color-mix(in srgb, var(--ig-ink) 82%, var(--ig-cream));
-}
-.ig-btn-split--dark:hover .ig-btn-split__arrow {
-  background: color-mix(in srgb, var(--ig-ink) 72%, var(--ig-cream));
-}
-.ig-btn-split--dark:focus-visible {
-  outline-color: var(--ig-cream);
+.ig-btn-split--cream {
+  --c: var(--ig-cream);
+  --fg: var(--ig-ink);
 }
