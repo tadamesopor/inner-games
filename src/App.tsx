@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Ctx, WireCtx, type PageId } from './wf'
+import { Ctx, type PageId } from './wf'
 import TestMode from './test'
 import { Contact, Home, Projects, Trainer, Workshop, Workshops } from './pages'
 import { Game, Games, Preview } from './shop'
@@ -25,7 +25,6 @@ export default function App() {
   const [mobile, setMobile] = useState(false)
   const [ann, setAnn] = useState(false)
   const [tasks, setTasks] = useState(false)
-  const [wire, setWire] = useState(true)
   const bus = useRef<(() => void) | undefined>(undefined)
 
   useEffect(() => {
@@ -43,20 +42,13 @@ export default function App() {
 
   return (
     <Ctx.Provider value={{ ann, sel, cart, go, toggleCart }}>
-      <WireCtx.Provider value={wire}>
-        <div className={wire ? 'wf' : ''}>
-          <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
-            <div className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
-              <Page key={page + sel} />
-            </div>
-          </div>
-          {tasks && <TestMode setWire={setWire} pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
+      <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
+        <div className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
+          <Page key={page + sel} />
         </div>
-      </WireCtx.Provider>
+      </div>
+      {tasks && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
       <div className="fixed bottom-4 left-1/2 z-[70] max-w-[calc(100vw-1rem)] flex-wrap justify-center flex -translate-x-1/2 items-center gap-1 rounded-full bg-ig-ink p-1 shadow-xl" role="group" aria-label="Prototype-opties">
-        <button className={pill(!wire)} onClick={() => setWire(false)} aria-pressed={!wire}>ontwerp</button>
-        <button className={pill(wire)} onClick={() => setWire(true)} aria-pressed={wire}>wireframe</button>
-        <span className="mx-0.5 h-5 w-px bg-white/25" aria-hidden />
         <button className={pill(!mobile)} onClick={() => setMobile(false)}>desktop</button>
         <button className={pill(mobile)} onClick={() => setMobile(true)}>mobiel 390</button>
         <button className={pill(ann)} onClick={() => setAnn(!ann)}>labels {ann ? 'aan' : 'uit'}</button>

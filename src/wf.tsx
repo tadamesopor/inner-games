@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ImgHTMLAttributes, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import { CLIENTS_ALT, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
 export type PageId =
@@ -19,20 +19,6 @@ type CtxT = {
   cart: string[]
   go: (p: PageId, id?: string) => void
   toggleCart: (id: string) => void
-}
-
-export const WireCtx = createContext(false)
-
-/** Afbeelding die in de wireframe-weergave een grijze placeholder met label wordt. Decoratief (alt="") verdwijnt. */
-export function Pic({ label, wfClassName, className = '', alt, ...rest }: ImgHTMLAttributes<HTMLImageElement> & { label?: string; wfClassName?: string }) {
-  const wire = useContext(WireCtx)
-  if (!wire) return <img alt={alt} className={className} {...rest} />
-  if (!alt) return null
-  return (
-    <span role="img" aria-label={alt} className={`wf-ph ${wfClassName ?? className}`}>
-      <span>{label ?? `foto: ${alt.toLowerCase()}`}</span>
-    </span>
-  )
 }
 
 export const Ctx = createContext<CtxT>({ ann: false, sel: '', cart: [], go: () => {}, toggleCart: () => {} })
@@ -74,7 +60,7 @@ export function Section({
 }
 
 export function Photo({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
-  return <Pic src={src} alt={alt} loading="lazy" className={`bg-ig-cream object-cover ${className}`} />
+  return <img src={src} alt={alt} loading="lazy" className={`bg-ig-cream object-cover ${className}`} />
 }
 
 export function Img({ label, className = 'aspect-[4/3]' }: { label: string; className?: string }) {
@@ -239,7 +225,7 @@ export function ClientStrip() {
   return (
     <Section id="LOGO" label="logo’s opdrachtgevers" className="bg-white" note="vertrouwen">
       <p className="mb-8 text-center text-sm font-medium">zij speelden al met ons</p>
-      <Pic src="/assets/clients.png" alt={CLIENTS_ALT} label="logo’s opdrachtgevers" wfClassName="mx-auto h-32 w-full max-w-4xl" className="mx-auto w-full max-w-4xl mix-blend-multiply" />
+      <img src="/assets/clients.png" alt={CLIENTS_ALT} className="mx-auto w-full max-w-4xl mix-blend-multiply" />
     </Section>
   )
 }
@@ -347,7 +333,7 @@ export function Header({ active }: { active: PageId }) {
       {ann && <span className="absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
       <div className="flex items-center justify-between gap-4 px-5 py-2.5 @3xl:px-16">
         <Link to="home" className="shrink-0">
-          <Pic src="/assets/logo.png" alt="InnerGames, naar de homepage" label="logo" wfClassName="h-11 w-32 @3xl:h-14" className="h-11 w-auto @3xl:h-14" />
+          <img src="/assets/logo.png" alt="InnerGames, naar de homepage" className="h-11 w-auto @3xl:h-14" />
         </Link>
         <nav className="hidden items-center gap-5 @6xl:flex" aria-label="Hoofdmenu">
           {NAV.map((n) => (
@@ -510,7 +496,7 @@ export function Marquee({ text }: { text: string }) {
             {Array.from({ length: 6 }).map((_, i) => (
               <span key={i} className="flex items-center gap-6 pr-6 text-2xl font-extrabold lowercase italic @3xl:text-4xl">
                 {text}
-                <Pic src="/assets/meeple.png" alt="" className="h-9 w-9 object-contain mix-blend-multiply @3xl:h-12 @3xl:w-12" />
+                <img src="/assets/meeple.png" alt="" className="h-9 w-9 object-contain mix-blend-multiply @3xl:h-12 @3xl:w-12" />
               </span>
             ))}
           </div>

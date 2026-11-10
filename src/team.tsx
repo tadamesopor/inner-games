@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import { Pic, Ctx, ContactCta, Footer, Header, Img, Section } from './wf'
+import { Ctx, ContactCta, Footer, Header, Img, Section } from './wf'
 
 type Member = {
   first: string
@@ -70,8 +70,7 @@ function MemberCard({ m }: { m: Member }) {
     >
       <div className={`relative aspect-[4/5] overflow-hidden transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
         {m.photo && (
-          <Pic
-            label={`portret ${m.first}`}
+          <img
             src={m.photo}
             alt={`Portret van ${m.first} ${m.last}`}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -137,14 +136,12 @@ export function Team() {
             </div>
           </div>
           <div className="relative -mx-5 h-[380px] overflow-hidden bg-ig-cream @3xl:mx-0 @3xl:h-[600px] @3xl:rounded-t-3xl">
-            <Pic
-              label="groepsfoto team"
-              wfClassName="absolute inset-0 h-full w-full"
+            <img
               src="/assets/team-group.png"
               alt="Ariën, Sanne en Aron van InnerGames staan lachend naast elkaar"
               className="absolute bottom-0 left-1/2 h-[125%] max-w-none -translate-x-1/2"
             />
-            <Pic src="/assets/meeple.png" alt="" aria-hidden className="absolute right-4 top-4 h-16 w-16 rotate-12 object-contain mix-blend-multiply @3xl:h-24 @3xl:w-24" />
+            <img src="/assets/meeple.png" alt="" aria-hidden className="absolute right-4 top-4 h-16 w-16 rotate-12 object-contain mix-blend-multiply @3xl:h-24 @3xl:w-24" />
           </div>
         </div>
       </Section>
@@ -198,7 +195,7 @@ export function Team() {
 
       <Section id="D" label="werkplek" className="p-0!" note="FULL-WIDTH BACKGROUND IMAGE · het team aan het werk, Eindhoven">
         <div className="relative h-72 overflow-hidden @3xl:h-[520px]">
-          <Pic label="foto: team aan het werk" src="/assets/office.png" alt="Het team aan het werk op een zonnige werkplek met grote ramen en planten" className="absolute inset-0 h-full w-full object-cover" />
+          <img src="/assets/office.png" alt="Het team aan het werk op een zonnige werkplek met grote ramen en planten" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           <p className="absolute bottom-6 left-5 max-w-xl text-3xl font-normal lowercase leading-none tracking-tight text-white @3xl:bottom-12 @3xl:left-16 @3xl:text-6xl">
             samen aan tafel, vanuit eindhoven

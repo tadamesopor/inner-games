@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 import { AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { Pic, AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag } from './wf'
+import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -51,7 +51,7 @@ export function Home() {
     <>
       <Header active="home" />
       <Section id="A" label="hero" className="relative overflow-hidden bg-ig-orange py-0! text-white" note="FULL-WIDTH ACHTERGRONDFOTO met oranje overlay">
-        <Pic src={PHOTOS.play} alt="Mensen spelen samen een bordspel" label="foto: mensen spelen samen" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={PHOTOS.play} alt="Mensen spelen samen een bordspel" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-ig-orange/80" />
         <div className="relative flex min-h-[560px] flex-col justify-center py-16 @3xl:min-h-[720px]">
           <p className="mb-5 text-base font-medium">spelen om te leren · spelen om te groeien</p>
@@ -128,7 +128,7 @@ export function Home() {
               <div key={m.first} className="flex-1 overflow-hidden rounded-2xl bg-ig-cream">
                 <div className="aspect-[3/4] overflow-hidden">
                   {m.photo ? (
-                    <Pic src={m.photo} alt={m.first} label={`portret ${m.first}`} className="h-full w-full object-cover" />
+                    <img src={m.photo} alt={m.first} className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-ig-cream text-xs text-neutral-500">foto volgt</div>
                   )}

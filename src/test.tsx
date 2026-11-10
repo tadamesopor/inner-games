@@ -20,7 +20,7 @@ type Q = {
 type Task = { t: string; code: string; expect?: string; ask?: Q[] }
 type Round = {
   name: string
-  view: 'huidige site' | 'wireframe' | 'ontwerp'
+  view: 'huidige site' | 'ontwerp'
   warmup: boolean
   five: { id: string; q: string }[]
   menu: boolean
@@ -159,8 +159,8 @@ export const ROUNDS: Round[] = [
     profileQ: PROFILE_R1,
   },
   {
-    name: 'ronde 1 · wireframe',
-    view: 'wireframe',
+    name: 'ronde 1 · prototype',
+    view: 'ontwerp',
     warmup: true,
     five: [
       { id: 'wat', q: 'Wat doet dit bedrijf?' },
@@ -538,7 +538,7 @@ function QA({ title, items }: { title: string; items: [string, string][] }) {
   )
 }
 
-export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: string; go: (p: PageId) => void; bus: MutableRefObject<(() => void) | undefined>; setWire: (w: boolean) => void }) {
+export default function TestMode({ pageKey, go, bus}: { pageKey: string; go: (p: PageId) => void; bus: MutableRefObject<(() => void) | undefined> }) {
   const [s, setS] = useState<Session>(load)
   const [leader, setLeader] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -553,12 +553,6 @@ export default function TestMode({ pageKey, go, bus, setWire }: { pageKey: strin
   const upd = (f: (d: Session) => Session) => setS((d) => f(d))
   const updTask = (f: (t: TaskRes) => TaskRes) => upd((d) => ({ ...d, tasks: d.tasks.map((t, i) => (i === d.idx ? f(t) : t)) }))
   const setAns = (id: string, v: Answer) => upd((d) => ({ ...d, answers: { ...d.answers, [id]: { ...d.answers[id], ...v } } }))
-
-  // ronde bepaalt de weergave
-  useEffect(() => {
-    if (r.view !== 'huidige site') setWire(r.view === 'wireframe')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.round])
 
   // opslaan per deelnemer en ronde
   useEffect(() => {

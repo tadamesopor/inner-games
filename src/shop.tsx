@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 import { AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Pic, Btn, card, cardStatic, ContactCta, Ctx, Footer, H2, Header, PageHero, Photo, Section, Tag } from './wf'
+import { Btn, card, cardStatic, ContactCta, Ctx, Footer, H2, Header, PageHero, Photo, Section, Tag } from './wf'
 
 function GameCard({ g }: { g: G }) {
   const { go, cart, toggleCart } = useContext(Ctx)
@@ -78,7 +78,7 @@ export function Games() {
   )
 }
 
-// licht oranje, ondoorzichtig, zodat een lichte balk bovenop een volle balk zichtbaar blijft (ook in wireframe)
+// licht oranje, ondoorzichtig, zodat een lichte balk bovenop een volle balk zichtbaar blijft
 const lightBar = 'bg-[color-mix(in_srgb,var(--color-ig-orange)_35%,white)]'
 
 function Teaser({ game }: { game: G }) {
@@ -147,7 +147,7 @@ function Teaser({ game }: { game: G }) {
         </div>
       ) : (
         <div className="rounded-2xl bg-white p-6 text-center @3xl:p-10" role="status">
-          <Pic src="/assets/meeple.png" alt="" aria-hidden className="mx-auto h-14 w-14 object-contain mix-blend-multiply" />
+          <img src="/assets/meeple.png" alt="" aria-hidden className="mx-auto h-14 w-14 object-contain mix-blend-multiply" />
           <p className="mt-3 text-2xl font-semibold lowercase @3xl:text-4xl">dat was een voorproefje.</p>
           <p className="mx-auto mt-3 max-w-md text-lg">Wil je het hele spel met je team of klas spelen?</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
