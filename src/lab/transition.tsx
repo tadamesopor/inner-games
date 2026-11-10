@@ -10,12 +10,12 @@ export const transition: Effect = {
   n: '07',
   name: 'paginaovergang',
   cls: '.ig-scribble',
-  what: 'Een potloodlijn krabbelt over het scherm en wordt dikker tot alles oranje is. De hand verschijnt, de pagina wisselt, en het oranje schuift met een ronde rand naar boven weg.',
-  why: 'Zoals je op een flip-over iets doorkrast en opnieuw begint. Volledig 900 ms; in de gebruikerstest een korte versie van 460 ms, of uit.',
+  what: 'Een potloodlijn krabbelt over het scherm en wordt dikker tot alles oranje is. Dan komt de hand van onder op, zwaait één keer, en het oranje schuift met een ronde rand naar boven weg.',
+  why: 'Zoals je op een flip-over iets doorkrast en opnieuw begint. Volledig 920 ms; in de gebruikerstest een korte versie van 460 ms (de hand komt op, zonder zwaai), of uit.',
 }
 
 const MODES = [
-  ['full', 'volledig (900 ms)'],
+  ['full', 'volledig (920 ms)'],
   ['short', 'kort, voor de test (460 ms)'],
   ['off', 'uit'],
 ] as const

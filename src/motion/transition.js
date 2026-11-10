@@ -8,9 +8,11 @@
 import { isReduced } from './prefs.js'
 import { loadMark, markMarkup } from './pencil.js'
 
+// full: the hand rises once it's all orange and waves while the orange starts to leave (about 920ms).
+// short (user test, 460ms): the hand only pops up, no wave
 const TIMING = {
-  full: { in: 400, hold: 150, out: 350 },
-  short: { in: 200, hold: 60, out: 200 },
+  full: { in: 380, hold: 220, out: 320, rise: 300, wave: true },
+  short: { in: 200, hold: 60, out: 200, rise: 200, wave: false },
 }
 const KEY = 'ig-scribble' // WordPress: tells the next page to start covered and play the way out
 
@@ -48,7 +50,6 @@ async function coverIn(t) {
   const o = await getOverlay()
   const lines = [...o.querySelectorAll('.ig-pencil__grain path')]
   const fill = o.querySelector('.ig-scribble__fill')
-  const hand = o.querySelector('.ig-scribble__hand')
   o.getAnimations({ subtree: true }).forEach((a) => a.cancel())
   o.classList.add('is-on')
   const ease = 'cubic-bezier(0.5, 0, 0.75, 0)'
@@ -64,15 +65,27 @@ async function coverIn(t) {
   )
   // the fill makes sure it's 100% covered at the peak, on every screen size
   fill.animate([{ opacity: 0 }, { opacity: 0, offset: 0.7 }, { opacity: 1 }], { duration: t.in, fill: 'forwards' })
+  await wait(t.in)
+}
+
+/** once it's all orange: the cream hand rises from the bottom edge (spring), then one short wave.
+    the same signature as the hand on the cards. it leaves together with the orange */
+function handUp(t) {
+  const hand = overlay.querySelector('.ig-scribble__hand')
   hand.animate(
     [
-      { opacity: 0, transform: 'translate(-50%, -50%) scale(0.9)' },
-      { opacity: 0, transform: 'translate(-50%, -50%) scale(0.9)', offset: 0.6 },
-      { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+      { opacity: 1, transform: 'translate(-50%, calc(50vh + 60%))' },
+      { opacity: 1, transform: 'translate(-50%, -50%)' },
     ],
-    { duration: t.in + t.hold * 0.5, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'forwards' },
+    { duration: t.rise, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', fill: 'forwards' },
   )
-  await wait(t.in)
+  if (t.wave) {
+    hand.animate([{ rotate: '30deg' }, { rotate: '24deg' }, { rotate: '34deg' }, { rotate: '30deg' }], {
+      duration: 300,
+      delay: t.rise - 40,
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    })
+  }
 }
 
 /** the orange slides off upwards with one curved edge */
@@ -92,6 +105,7 @@ export async function igNavigate(update, { mode = 'full', fadeTarget } = {}) {
   if (isReduced()) return fade(update, fadeTarget)
   const t = TIMING[mode] || TIMING.full
   await coverIn(t)
+  handUp(t)
   update()
   await wait(t.hold)
   await coverOut(t)
