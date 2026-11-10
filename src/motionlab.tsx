@@ -1,11 +1,12 @@
 // motion lab: every effect on its own, with a switch, so Ariën and Damian can choose before anything
 // goes onto the real pages. open with /motion-lab or #motion-lab, it's not in the menu.
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import { ALT, GAMES, PHOTOS, WORKSHOPS } from './data'
 import { MEMBERS } from './team'
 import { Btn, Photo } from './wf'
 import './motionlab.css'
+import { Switch, useEffectInit } from './lab/ui'
 import { forceReduced, igNavigate, initBoxscene, initHeaderPill, initSpeelpad } from './motion'
 
 type Key = 'rounded' | 'speelpad' | 'split' | 'lift' | 'overgang' | 'spelbox' | 'footer' | 'menu'
@@ -20,23 +21,6 @@ const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; w
   { key: 'footer', n: '09', name: 'doos in de footer', cls: '.ig-footer-box', what: 'Een speldoos staat schuin in de footer en draait 4° mee als de footer in beeld komt.', why: 'De pagina eindigt bij het product.' },
   { key: 'menu', n: '10', name: 'compacte menubalk', cls: '.ig-header-pill', what: 'Na 200px scrollen komt bovenaan een kleine menubalk in het midden. Bovenaan de pagina gaat hij weer weg.', why: 'Het menu is altijd bij de hand, zonder de hele breedte te pakken. Niet op mobiel.' },
 ]
-
-/** starts a plain js effect on an element while it's switched on */
-function useEffectInit(ref: RefObject<HTMLElement>, init: (el: HTMLElement) => () => void, on: boolean) {
-  useEffect(() => {
-    if (!on || !ref.current) return
-    return init(ref.current)
-  }, [on, init, ref])
-}
-
-function Switch({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)} className="lab-switch">
-      <span className="lab-switch__track" aria-hidden />
-      <span className="text-[13px]">{on ? 'aan' : 'uit'}</span>
-    </button>
-  )
-}
 
 const Arrow = () => (
   <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>

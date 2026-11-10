@@ -8,3 +8,9 @@ export function initSpeelpad(root: HTMLElement, opts?: { pawn?: string }): Stop
 export function initBoxscene(root: HTMLElement): Stop
 export function initHeaderPill(pill: HTMLElement): Stop
 export function init(scope?: ParentNode): Stop
+export type Mark = { viewBox: string; inner: string }
+export function loadMark(name: string): Promise<Mark>
+export function markMarkup(mark: Mark): string
+export function hydrateMarks(root?: ParentNode): Promise<void>
+export function setPencilBase(url: string): void
+export function ensurePencilDefs(): void

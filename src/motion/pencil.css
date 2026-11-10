@@ -1,0 +1,42 @@
+/* the pencil line style. every drawn mark on the site uses this, so it's one line everywhere.
+   colour comes from `color` (currentColor), width from --pencil-w. */
+
+.ig-pencil {
+  overflow: visible;
+  color: var(--ig-orange);
+}
+.ig-pencil__grain {
+  filter: url(#ig-pencil);
+}
+.ig-pencil__box {
+  fill: transparent;
+  stroke: none;
+}
+.ig-pencil path,
+.ig-pencil line,
+.ig-pencil polyline,
+.ig-pencil circle,
+.ig-pencil ellipse {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--pencil-w, 2.4);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ig-pencil .ig-fill {
+  fill: var(--pencil-fill, var(--ig-cream));
+}
+
+/* draw itself: add .ig-draw, then .is-drawn when it should appear */
+.ig-draw path {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+.ig-draw.is-drawn path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--pencil-draw, 450ms) var(--ease-out);
+}
+/* the second stroke (an arrow head, a tick's end) starts a bit later, like a real hand */
+.ig-draw.is-drawn path + path {
+  transition-delay: calc(var(--pencil-draw, 450ms) * 0.6);
+}
