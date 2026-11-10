@@ -12,10 +12,11 @@ import { cards, CardsDemo } from './lab/cards'
 import { transition, TransitionDemo } from './lab/transition'
 import { gamebox, GameboxDemo } from './lab/gamebox'
 import { footer, FooterDemo } from './lab/footer'
-import { menu, SiteMenu } from './lab/menu'
+import { menu, MenuDemo } from './lab/menu'
 
+// the last value: wide, the demo gets the full width (the menu needs the room)
 type Demo = (p: { on: boolean }) => ReactNode
-const EFFECTS: [string, Effect, Demo | null][] = [
+const EFFECTS: [string, Effect, Demo, boolean?][] = [
   ['rounded', rounded, RoundedDemo],
   ['speelpad', speelpad, SpeelpadDemo],
   ['split', button, ButtonDemo],
@@ -23,7 +24,7 @@ const EFFECTS: [string, Effect, Demo | null][] = [
   ['overgang', transition, TransitionDemo],
   ['spelbox', gamebox, GameboxDemo],
   ['footer', footer, FooterDemo],
-  ['menu', menu, null], // the menu demo is the header of this page
+  ['menu', menu, MenuDemo, true],
 ]
 
 export default function MotionLab() {
@@ -37,7 +38,9 @@ export default function MotionLab() {
 
   return (
     <div className="lab @container min-h-screen bg-white text-ig-ink">
-      <SiteMenu on={on.menu} />
+      <header className="mx-auto flex max-w-[1200px] items-center gap-4 px-4 pt-6 @3xl:px-8">
+        <img src="/assets/logo.png" alt="InnerGames" className="h-12 w-auto" />
+      </header>
 
       <main id="top" className="mx-auto max-w-[1200px] px-4 pb-32 @3xl:px-8">
         <section className="grid gap-8 pb-20 pt-16 @3xl:grid-cols-[1fr_1fr] @3xl:pt-24">
@@ -62,9 +65,9 @@ export default function MotionLab() {
           </div>
         </section>
 
-        {EFFECTS.map(([key, e, Demo]) => (
-          <section key={key} id={`fx-${key}`} className="grid scroll-mt-24 gap-6 border-t border-ig-ink/10 py-12 @3xl:grid-cols-[280px_1fr] @3xl:gap-16 @3xl:py-16">
-            <div className="@3xl:sticky @3xl:top-24 @3xl:self-start">
+        {EFFECTS.map(([key, e, Demo, wide]) => (
+          <section key={key} id={`fx-${key}`} className={`grid scroll-mt-24 gap-6 border-t border-ig-ink/10 py-12 @3xl:gap-16 @3xl:py-16 ${wide ? '' : '@3xl:grid-cols-[280px_1fr]'}`}>
+            <div className={wide ? 'max-w-[620px]' : '@3xl:sticky @3xl:top-24 @3xl:self-start'}>
               <p className="text-base text-[#C84413] tabular-nums">{e.n}</p>
               <h2 className="lab-balance mt-1 text-[28px] font-semibold leading-tight">{e.name}</h2>
               <p className="mt-3 text-base leading-relaxed">{e.what}</p>
@@ -74,7 +77,9 @@ export default function MotionLab() {
                 <Switch on={on[key]} onChange={(v) => setOn((o) => ({ ...o, [key]: v }))} label={e.name} />
               </div>
             </div>
-            <div className="min-w-0">{Demo ? <Demo on={on[key]} /> : null}</div>
+            <div className="min-w-0">
+              <Demo on={on[key]} />
+            </div>
           </section>
         ))}
       </main>

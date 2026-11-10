@@ -1,63 +1,121 @@
-/* .ig-menu: separate small menu items in the centre, each its own boxy tile. the logo (left) and the
-   phone number (right) scroll away with the page; only this group stays at the top (sticky, 12px).
-   hover: a mini InnerGames hand pops up above the item (like the card hover, small, no wave).
-   the current page (aria-current) keeps its hand.
-   in Enfold: the nav must be a direct child of the long page wrapper, otherwise sticky stops early.
-   on a phone the normal (current) menu stays: this group is not sticky there. */
+/* .ig-menu: separate menu tiles in the centre, close together in a row, like Aardvark's: big enough,
+   bold, clearly coloured. the logo (left) and phone number (right) are in .ig-menubar and scroll away;
+   only the tiles stay at the top (sticky, 12px). floating over content they get a soft shadow and
+   shrink to 94% (menu.js adds .is-stuck).
+   hover: the tile gets one step darker, lifts 2px, and a mini InnerGames hand pops up behind it in the
+   tile's own colour (like the cards, small, no wave). the current page is filled orange and keeps its hand.
+   below 1100px wide the tiles fold into a "menu" tile that opens the list (menu.js).
 
-.ig-menu {
-  position: sticky;
-  top: 12px;
-  z-index: 60;
+   markup:
+   <div class="ig-menubar"><a class="ig-menubar__logo">...</a><a class="ig-menubar__phone">...</a></div>
+   <nav class="ig-menu">
+     <button class="ig-menu__toggle ig-menu__item" aria-expanded="false">menu</button>
+     <div class="ig-menu__list">
+       <a class="ig-menu__item" aria-current="page">spellen</a> ...
+       <span class="ig-menu__cta"><a class="ig-btn-split">...</a></span>
+     </div>
+   </nav>
+   in Enfold: the nav must be a direct child of the long page wrapper, otherwise sticky stops early. */
+
+.ig-menubar {
+  --menu-row: 80px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  width: fit-content;
-  margin: -58px auto 0; /* sits in the same row as the logo at the top of the page */
-  padding: 0;
+  justify-content: space-between;
+  height: var(--menu-row);
+  padding: 0 24px;
 }
-.ig-menu__item {
-  --hand-up: -112%;
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 8px;
+.ig-menubar__logo img {
+  display: block;
+  height: 48px;
+  width: auto;
+}
+.ig-menubar__phone {
   color: var(--ig-ink);
   font: 500 15px/1 var(--ig-font);
   text-decoration: none;
 }
-/* the tile itself is ::after, so the hand (::before, further back) is really hidden behind it.
-   a negative z-index child paints above its own parent background, not below it */
+
+.ig-menu {
+  --item-h: 44px;
+  position: sticky;
+  top: 12px;
+  z-index: 60;
+  width: fit-content;
+  /* sits in the same row as the logo at the top of the page */
+  margin: calc((80px + var(--item-h)) / -2) auto 0;
+  transform-origin: 50% 0;
+  transition: scale var(--dur-move) var(--ease-out);
+}
+.ig-menu__list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ig-menu.is-stuck {
+  scale: 0.94;
+}
+
+.ig-menu__item {
+  --item: color-mix(in srgb, var(--ig-yellow) 48%, #fff);
+  --hand-up: -100%;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  height: var(--item-h);
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--ig-ink);
+  font: 600 16px/1 var(--ig-font);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: translate var(--dur-ui) var(--ease-out);
+}
+/* the tile is ::after, so the hand (::before, further back) is really hidden behind it.
+   a negative z-index child paints above its own parent's background, not below it */
 .ig-menu__item::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--ig-orange) 14%, var(--ig-cream));
-  box-shadow: 0 1px 2px rgb(42 24 16 / 0.06);
-  transition: background-color var(--dur-ui) var(--ease-soft);
+  background: var(--item);
+  transition:
+    background-color var(--dur-ui) var(--ease-soft),
+    box-shadow var(--dur-move) var(--ease-out);
 }
-.ig-menu__item:hover::after {
-  background: color-mix(in srgb, var(--ig-orange) 24%, var(--ig-cream));
+.ig-menu__item:hover {
+  --item: color-mix(in srgb, var(--ig-yellow) 72%, #fff);
+  translate: 0 -2px;
+}
+/* the current page: filled. #C84413 instead of the brand orange, so cream text stays readable (AA) */
+.ig-menu__item[aria-current] {
+  --item: var(--ig-orange-text);
+  color: var(--ig-cream);
+}
+.ig-menu__item[aria-current]:hover {
+  --item: color-mix(in srgb, var(--ig-orange-text) 88%, var(--ig-ink));
 }
 .ig-menu__item:focus-visible {
   outline: 3px solid var(--ig-ink);
   outline-offset: 2px;
 }
+
+/* the mini hand, in the tile's colour */
 .ig-menu__item::before {
   content: '';
   position: absolute;
   z-index: -2;
-  top: 4px;
+  top: 6px;
   left: 50%;
-  width: 20px; /* about 16px of hand is visible */
+  width: 26px; /* about 22px tall */
   aspect-ratio: 140 / 126;
-  margin-left: -10px;
-  background: var(--ig-orange);
+  margin-left: -15px;
+  background: var(--item);
   -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
   mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
   transform-origin: 78% 92%;
@@ -66,7 +124,8 @@
   scale: 0.85;
   transition:
     translate 200ms var(--ease-in),
-    scale 200ms var(--ease-in);
+    scale 200ms var(--ease-in),
+    background-color var(--dur-ui) var(--ease-soft);
 }
 .ig-menu__item:hover::before,
 .ig-menu__item[aria-current]::before {
@@ -74,34 +133,66 @@
   scale: 1;
   transition:
     translate 380ms var(--ease-spring),
-    scale 380ms var(--ease-spring);
+    scale 380ms var(--ease-spring),
+    background-color var(--dur-ui) var(--ease-soft);
+}
+.ig-menu__toggle {
+  display: none;
 }
 
-/* the last item: a small split button */
+/* floating over the page: a soft shadow under each tile, so the group reads as its own layer */
+.ig-menu.is-stuck .ig-menu__item::after,
+.ig-menu.is-stuck .ig-btn-split__label,
+.ig-menu.is-stuck .ig-btn-split__arrow {
+  box-shadow: 0 8px 22px rgb(42 24 16 / 0.16);
+}
+
+/* the last item: the split button at menu size */
 .ig-menu__cta .ig-btn-split {
-  font-size: 15px;
+  --h: var(--item-h);
 }
 .ig-menu__cta .ig-btn-split__label {
-  min-height: 40px;
-  padding: 0 14px;
-  border-radius: 8px;
-}
-.ig-menu__cta .ig-btn-split__arrow {
-  width: 40px;
-  min-height: 40px;
-  border-radius: 8px;
+  padding: 0 18px;
 }
 .ig-menu__cta .ig-btn-split__arrow svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
-@container (max-width: 1023px) {
+/* narrow: the tiles fold into one "menu" tile on the right, which opens the list */
+@container (max-width: 1239px) {
+  .ig-menubar__phone {
+    display: none;
+  }
+}
+@container (max-width: 1099px) {
   .ig-menu {
-    position: static;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 16px auto 0;
-    padding: 0 16px;
+    margin: calc((80px + var(--item-h)) / -2) 24px 0 auto;
+  }
+  .ig-menu.is-stuck {
+    scale: 1;
+  }
+  .ig-menu__toggle {
+    display: inline-flex;
+  }
+  .ig-menu__list {
+    display: none;
+  }
+  .ig-menu.is-open .ig-menu__list {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: max-content;
+    min-width: 220px;
+    padding: 8px;
+    border-radius: var(--r-box);
+    background: var(--ig-cream);
+    box-shadow: 0 12px 32px rgb(42 24 16 / 0.18);
+  }
+  .ig-menu.is-open .ig-menu__item::before {
+    display: none; /* no hands in the open list, they'd poke into the tile above */
   }
 }
