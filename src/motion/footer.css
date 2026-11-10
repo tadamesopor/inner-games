@@ -1,38 +1,69 @@
-/* .ig-footer-box: a game box, tilted about -15deg and cut off by the bottom edge of the footer.
-   it turns 4deg while the footer scrolls into view. end state (and reduced motion): -11deg.
-   in Enfold: an image element with this class inside the footer's colour section.
-   the footer itself gets .ig-footer and overflow: clip (not hidden, see boxscene.css). */
+/* the footer reveal: the last section (cream, rounded bottom) slides up off the footer, which sits
+   underneath (sticky at the bottom). a big game box rises from the bottom edge, tilted about -15deg,
+   cut off by the edge, and turns 4deg while the footer comes into view. one drawn underline.
+   footer.js sets --p (0 = hidden, 1 = fully revealed).
 
-.ig-footer {
-  view-timeline: --ig-footer block;
+   markup:
+   <section class="ig-reveal-cover ig-section--rounded">...the last section...</section>
+   <footer class="ig-footer ig-footer--ink">...<img class="ig-footer-box">...</footer>
+   in Enfold: the last color section gets ig-reveal-cover, the footer section ig-footer. */
+
+.ig-reveal-cover {
+  position: relative;
+  z-index: 1;
 }
+.ig-footer {
+  --p: 0;
+  --footer-bg: var(--ig-ink);
+  --footer-fg: var(--ig-cream);
+  position: sticky;
+  bottom: 0;
+  z-index: 0;
+  /* the cover's rounded corners show the footer colour behind them */
+  margin-top: calc(var(--r-section) * -1);
+  padding-top: var(--r-section);
+  overflow: clip; /* clip, not hidden (see the overflow rule in the mapping doc) */
+  background: var(--footer-bg);
+  color: var(--footer-fg);
+}
+.ig-footer--orange {
+  --footer-bg: var(--ig-orange);
+  --footer-fg: var(--ig-ink);
+}
+
 .ig-footer-box {
   position: absolute;
-  bottom: -18%;
-  right: 6%;
-  width: min(34cqw, 380px);
+  left: 50%;
+  bottom: -20%;
+  width: min(26%, 320px);
   height: auto;
-  transform-origin: 50% 100%;
-  transform: rotate(-11deg);
   pointer-events: none;
+  transform-origin: 50% 100%;
+  translate: -50% calc((1 - var(--p)) * 25%);
+  rotate: calc(-15deg + 4deg * var(--p));
 }
-@supports (animation-timeline: view()) {
-  .ig-footer-box {
-    animation: ig-footer-turn linear both;
-    animation-timeline: --ig-footer;
-    animation-range: entry 0% entry 100%;
-  }
+
+/* the drawn underline under the email address */
+.ig-footer__mark {
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin-top: 2px;
+  color: var(--ig-yellow);
+  --pencil-w: 2.6;
+  --pencil-draw: 600ms;
 }
-@keyframes ig-footer-turn {
-  from {
-    transform: rotate(-15deg) translateY(4%);
-  }
+.ig-footer--orange .ig-footer__mark {
+  color: var(--ig-cream);
 }
 
 @container (max-width: 767px) {
   .ig-footer-box {
-    width: 44cqw;
-    right: -4%;
-    bottom: -12%;
+    position: relative;
+    display: block;
+    left: 50%;
+    bottom: auto;
+    width: 62%;
+    margin: 32px 0 -22%;
   }
 }

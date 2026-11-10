@@ -10,6 +10,7 @@ import { button, ButtonDemo } from './lab/button'
 import { cards, CardsDemo } from './lab/cards'
 import { transition, TransitionDemo } from './lab/transition'
 import { gamebox, GameboxDemo } from './lab/gamebox'
+import { footer, FooterDemo } from './lab/footer'
 import { speelpad, SpeelpadDemo } from './lab/speelpad'
 import { forceReduced, igNavigate, initBoxscene, initHeaderPill } from './motion'
 
@@ -22,7 +23,7 @@ const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; w
   { key: 'lift', ...cards },
   { key: 'overgang', ...transition },
   { key: 'spelbox', ...gamebox },
-  { key: 'footer', n: '09', name: 'doos in de footer', cls: '.ig-footer-box', what: 'Een speldoos staat schuin in de footer en draait 4° mee als de footer in beeld komt.', why: 'De pagina eindigt bij het product.' },
+  { key: 'footer', ...footer },
   { key: 'menu', n: '10', name: 'compacte menubalk', cls: '.ig-header-pill', what: 'Na 200px scrollen komt bovenaan een kleine menubalk in het midden. Bovenaan de pagina gaat hij weer weg.', why: 'Het menu is altijd bij de hand, zonder de hele breedte te pakken. Niet op mobiel.' },
 ]
 
@@ -47,29 +48,6 @@ function DemoRounded({ on }: { on: boolean }) {
   )
 }
 
-function DemoFooter({ on }: { on: boolean }) {
-  return (
-    <div className="lab-frame @container">
-      <footer className={`relative min-h-[360px] overflow-clip bg-ig-orange px-6 py-12 text-ig-ink @3xl:px-12 ${on ? 'ig-footer' : ''}`}>
-        <div className="relative z-[1] grid max-w-[560px] gap-8 @3xl:grid-cols-2">
-          <div className="space-y-1 text-base">
-            <p className="font-semibold">bezoekadres</p>
-            <p>InnerGames</p>
-            <p>Kronehoefstraat 87</p>
-            <p>5612 HL Eindhoven</p>
-          </div>
-          <div className="space-y-1 text-base">
-            <p className="font-semibold">bel, app of mail ons</p>
-            <p>+31 (0)6 – 215 27 855</p>
-            <p>info@innergames.nl</p>
-          </div>
-        </div>
-        {on && <img className="ig-footer-box" src="/assets/img/games/sociality-box.png" alt="" width={398} height={459} />}
-      </footer>
-    </div>
-  )
-}
-
 /* ---------------- the lab page ---------------- */
 
 export default function MotionLab() {
@@ -90,7 +68,7 @@ export default function MotionLab() {
     lift: <CardsDemo on={on.lift} />,
     overgang: <TransitionDemo on={on.overgang} />,
     spelbox: <GameboxDemo on={on.spelbox} />,
-    footer: <DemoFooter on={on.footer} />,
+    footer: <FooterDemo on={on.footer} />,
     menu: (
       <div className="lab-frame bg-ig-cream p-8 text-base leading-relaxed">
         Scroll op deze pagina meer dan 200px naar beneden: bovenaan in het midden verschijnt de compacte menubalk. Op een telefoon blijft het gewone menu.

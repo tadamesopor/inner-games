@@ -7,6 +7,7 @@ export function igNavigate(update: () => void, opts?: { mode?: 'full' | 'short' 
 export function initPageLinks(opts?: { mode?: 'full' | 'short' | 'off' }): Stop
 export function initSpeelpad(root: HTMLElement, opts?: { pawn?: string }): Stop
 export function initCards(root?: HTMLElement): Stop
+export function initFooterReveal(footer: HTMLElement): Stop
 export function initBoxscene(root: HTMLElement): Stop
 export function initHeaderPill(pill: HTMLElement): Stop
 export function init(scope?: ParentNode): Stop
