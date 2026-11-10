@@ -15,12 +15,11 @@ import { initSpeelpad } from './speelpad.js'
 import { initBoxscene } from './boxscene.js'
 import { initCards } from './cards.js'
 import { initFooterReveal } from './footer.js'
-import { initHeaderPill } from './header.js'
 
 export { isReduced, forceReduced, onReducedChange } from './prefs.js'
 export { igNavigate, initPageLinks } from './transition.js'
 export { loadMark, markMarkup, hydrateMarks, setPencilBase, ensurePencilDefs } from './pencil.js'
-export { initSpeelpad, initBoxscene, initHeaderPill, initCards, initFooterReveal }
+export { initSpeelpad, initBoxscene, initCards, initFooterReveal }
 
 /** WordPress: finds every element with a motion class and starts it */
 export function init(scope = document) {
@@ -29,7 +28,6 @@ export function init(scope = document) {
     '.ig-boxscene': initBoxscene,
     '.ig-card': initCards,
     '.ig-footer': initFooterReveal,
-    '.ig-header-pill': initHeaderPill,
   }
   const stops = []
   for (const sel in map) scope.querySelectorAll(sel).forEach((el) => stops.push(map[sel](el)))

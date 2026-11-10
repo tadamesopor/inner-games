@@ -1,54 +1,107 @@
-/* .ig-header-pill: after 200px of scrolling a compact menu bar slides in at the top centre
-   (cream, light shadow). at the top it goes away again and the normal header is there.
-   it's a separate element, so only transform and opacity animate. desktop only.
-   in Enfold: a small fixed code block with the main links + this class; header.js toggles it. */
+/* .ig-menu: separate small menu items in the centre, each its own boxy tile. the logo (left) and the
+   phone number (right) scroll away with the page; only this group stays at the top (sticky, 12px).
+   hover: a mini InnerGames hand pops up above the item (like the card hover, small, no wave).
+   the current page (aria-current) keeps its hand.
+   in Enfold: the nav must be a direct child of the long page wrapper, otherwise sticky stops early.
+   on a phone the normal (current) menu stays: this group is not sticky there. */
 
-.ig-header-pill {
-  position: fixed;
+.ig-menu {
+  position: sticky;
+  top: 12px;
   z-index: 60;
-  top: 16px;
-  left: 50%;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 999px;
-  background: var(--ig-cream);
-  box-shadow:
-    0 1px 2px rgb(42 24 16 / 0.08),
-    0 8px 24px rgb(42 24 16 / 0.1);
-  font: 500 15px/1 var(--ig-font);
-  transform: translate(-50%, 0);
-  opacity: 1;
-  transition:
-    transform var(--dur-move) var(--ease-out),
-    opacity var(--dur-move) var(--ease-out);
+  gap: 6px;
+  width: fit-content;
+  margin: -58px auto 0; /* sits in the same row as the logo at the top of the page */
+  padding: 0;
 }
-.ig-header-pill:not(.is-shown) {
-  transform: translate(-50%, calc(-100% - 24px));
-  opacity: 0;
-  pointer-events: none;
-  transition-timing-function: var(--ease-in);
-}
-.ig-header-pill a,
-.ig-header-pill button {
-  padding: 10px 16px;
-  border-radius: 999px;
+.ig-menu__item {
+  --hand-up: -112%;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
   color: var(--ig-ink);
+  font: 500 15px/1 var(--ig-font);
   text-decoration: none;
+}
+/* the tile itself is ::after, so the hand (::before, further back) is really hidden behind it.
+   a negative z-index child paints above its own parent background, not below it */
+.ig-menu__item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ig-orange) 14%, var(--ig-cream));
+  box-shadow: 0 1px 2px rgb(42 24 16 / 0.06);
   transition: background-color var(--dur-ui) var(--ease-soft);
 }
-.ig-header-pill a:hover,
-.ig-header-pill button:hover {
-  background: rgb(234 86 31 / 0.12);
+.ig-menu__item:hover::after {
+  background: color-mix(in srgb, var(--ig-orange) 24%, var(--ig-cream));
 }
-.ig-header-pill a[aria-current] {
-  background: var(--ig-ink);
-  color: var(--ig-cream);
+.ig-menu__item:focus-visible {
+  outline: 3px solid var(--ig-ink);
+  outline-offset: 2px;
+}
+.ig-menu__item::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  top: 4px;
+  left: 50%;
+  width: 20px; /* about 16px of hand is visible */
+  aspect-ratio: 140 / 126;
+  margin-left: -10px;
+  background: var(--ig-orange);
+  -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  transform-origin: 78% 92%;
+  rotate: 30deg;
+  translate: 0 0;
+  scale: 0.85;
+  transition:
+    translate 200ms var(--ease-in),
+    scale 200ms var(--ease-in);
+}
+.ig-menu__item:hover::before,
+.ig-menu__item[aria-current]::before {
+  translate: 0 var(--hand-up);
+  scale: 1;
+  transition:
+    translate 380ms var(--ease-spring),
+    scale 380ms var(--ease-spring);
 }
 
-@media (max-width: 767px) {
-  .ig-header-pill {
-    display: none;
+/* the last item: a small split button */
+.ig-menu__cta .ig-btn-split {
+  font-size: 15px;
+}
+.ig-menu__cta .ig-btn-split__label {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+}
+.ig-menu__cta .ig-btn-split__arrow {
+  width: 40px;
+  min-height: 40px;
+  border-radius: 8px;
+}
+.ig-menu__cta .ig-btn-split__arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+@container (max-width: 1023px) {
+  .ig-menu {
+    position: static;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 16px auto 0;
+    padding: 0 16px;
   }
 }

@@ -9,7 +9,6 @@ export function initSpeelpad(root: HTMLElement, opts?: { pawn?: string }): Stop
 export function initCards(root?: HTMLElement): Stop
 export function initFooterReveal(footer: HTMLElement): Stop
 export function initBoxscene(root: HTMLElement): Stop
-export function initHeaderPill(pill: HTMLElement): Stop
 export function init(scope?: ParentNode): Stop
 export type Mark = { viewBox: string; inner: string }
 export function loadMark(name: string): Promise<Mark>
