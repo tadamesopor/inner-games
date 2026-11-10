@@ -9,8 +9,8 @@ export const cards: Effect = {
   n: '06',
   name: 'de hand bij hover',
   cls: '.ig-card',
-  what: 'De kaart kantelt iets en komt omhoog. Achter de bovenrand komt de InnerGames-hand op, zwaait één keer en zakt terug als je weggaat.',
-  why: 'Ons eigen handschrift, uit het logo: iemand die zijn hand opsteekt. Op een telefoon groet de hand één keer als de kaart in beeld komt.',
+  what: 'De kaart kantelt iets en komt omhoog. Links achter de bovenrand komt de InnerGames-hand op, in precies de kleur van de kaart. Hij zwaait één keer en zakt terug als je weggaat.',
+  why: 'Ons eigen handschrift, uit het logo: iemand die zijn hand opsteekt. De crème kaart staat op crème, dus kaart en hand krijgen een dun randje. Op een telefoon groet de hand één keer.',
 }
 
 const TONES = ['cream', 'orange', 'yellow'] as const
@@ -20,10 +20,10 @@ export function CardsDemo({ on }: { on: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   useEffectInit(ref, initCards, on)
   return (
-    <div className="lab-frame bg-white px-6 pb-10 pt-20 @container @3xl:px-10">
-      <div ref={ref} className="grid gap-x-6 gap-y-16 @xl:grid-cols-3">
+    <div className="lab-frame bg-ig-cream px-6 pb-10 pt-28 @container @3xl:px-10">
+      <div ref={ref} className="grid gap-x-6 gap-y-28 @xl:grid-cols-3">
         {[WORKSHOPS[0], WORKSHOPS[3], WORKSHOPS[7]].map((w, i) => (
-          <a key={w.slug} href="#fx-lift" className={on ? `ig-card ig-card--${TONES[i]}` : 'block'}>
+          <a key={w.slug} href="#fx-lift" className={on ? `ig-card ig-card--${TONES[i]}${TONES[i] === 'cream' ? ' ig-card--outline' : ''}` : 'block'}>
             <article className={on ? 'ig-card__body flex flex-col' : `flex h-full flex-col rounded-[var(--r-box)] p-[10px] ${PLAIN_BG[i]}`}>
               <div className={on ? 'ig-card__media' : 'overflow-hidden rounded-[8px]'}>
                 <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 25vw, 100vw" className="aspect-[4/3] w-full" />

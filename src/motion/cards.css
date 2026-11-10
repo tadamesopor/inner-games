@@ -1,35 +1,38 @@
 /* .ig-card: on hover the InnerGames hand pops up from behind the card, like someone raising a hand
    in a workshop ("kies mij"). the card tilts a little and lifts. one wave, never a loop.
+   the hand has exactly the card's colour, so it looks like a part of the card that pops up.
    the hand is the wrapper's ::before with the logo hand as a mask, so in Enfold it's only css classes:
    <div class="ig-card ig-card--cream"><div class="ig-card__body"><div class="ig-card__media"><img></div>...</div></div>
+   a card on a background of its own colour gets .ig-card--outline: a 1.5px line around card and hand.
    cards.js adds a tiny random tilt and position per card, and the touch-screen version. */
 
 .ig-card {
   --card-bg: var(--ig-cream);
-  --hand-color: var(--ig-orange); /* a darker tint of the card's own colour */
-  --hand-size: 68px; /* about 56px of hand is visible */
+  --hand-color: var(--card-bg);
+  --outline: color-mix(in srgb, var(--card-bg) 72%, var(--ig-ink));
+  --hand-size: 98px; /* the hand drawing is about 88px tall at this width */
   --hand-x: 0px;
   --hand-tilt: 0deg;
-  --hand-up: -118%; /* how far the hand comes out above the card */
+  --hand-up: -96%; /* fingers and part of the palm come out, the rest stays behind the card */
   position: relative;
   isolation: isolate;
 }
 .ig-card--orange {
   --card-bg: var(--ig-orange);
-  --hand-color: var(--ig-yellow);
 }
 .ig-card--yellow {
   --card-bg: var(--ig-yellow);
-  --hand-color: var(--ig-orange);
 }
 
-/* the hand, hidden behind the top edge of the card */
-.ig-card::before {
+/* the hand, hidden behind the top edge, about 20px in from the left corner.
+   ::after is only the outline of the same hand, on top of it, only shown with .ig-card--outline */
+.ig-card::before,
+.ig-card--outline::after {
   content: '';
   position: absolute;
   z-index: -1;
-  top: 6px;
-  right: calc(16% + var(--hand-x));
+  top: 8px;
+  left: calc(20px + var(--hand-x));
   width: var(--hand-size);
   aspect-ratio: 140 / 126;
   background: var(--hand-color);
@@ -43,6 +46,14 @@
   transition:
     translate 200ms var(--ease-in),
     scale 200ms var(--ease-in);
+}
+.ig-card--outline::after {
+  background: var(--outline);
+  -webkit-mask-image: url('/assets/brand/innergames-hand-outline.svg');
+  mask-image: url('/assets/brand/innergames-hand-outline.svg');
+}
+.ig-card--outline .ig-card__body {
+  box-shadow: 0 0 0 1.5px var(--outline);
 }
 
 .ig-card__body {
@@ -71,7 +82,8 @@
   .ig-card:hover .ig-card__media img {
     scale: 1.03;
   }
-  .ig-card:hover::before {
+  .ig-card:hover::before,
+  .ig-card--outline:hover::after {
     translate: 0 var(--hand-up);
     scale: 1;
     transition:
@@ -81,7 +93,8 @@
   }
 }
 /* touch screens: cards.js adds .is-greeting once, when the card scrolls into view */
-.ig-card.is-greeting::before {
+.ig-card.is-greeting::before,
+.ig-card--outline.is-greeting::after {
   translate: 0 var(--hand-up);
   scale: 1;
   transition:
@@ -106,17 +119,20 @@
 
 @container (max-width: 767px) {
   .ig-card {
-    --hand-size: 48px;
+    --hand-size: 67px; /* about 60px tall */
   }
 }
 
 /* reduced motion: no pop and no wave, the hand is simply there at its end position on hover */
-.ig-reduced .ig-card::before {
+.ig-reduced .ig-card::before,
+.ig-reduced .ig-card--outline::after {
   translate: 0 var(--hand-up);
   scale: 1;
   opacity: 0;
 }
 .ig-reduced .ig-card:hover::before,
-.ig-reduced .ig-card.is-greeting::before {
+.ig-reduced .ig-card.is-greeting::before,
+.ig-reduced .ig-card--outline:hover::after,
+.ig-reduced .ig-card--outline.is-greeting::after {
   opacity: 1;
 }
