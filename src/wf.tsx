@@ -59,8 +59,33 @@ export function Section({
   )
 }
 
-export function Photo({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
-  return <img src={src} alt={alt} loading="lazy" className={`bg-ig-cream object-cover ${className}`} />
+// src is a base path from data.ts (no extension). the browser picks the 800 or 1600 version itself,
+// same as WordPress does with srcset. contain = product photos that must not be cropped
+export function Photo({
+  src,
+  alt,
+  className = '',
+  sizes = '(min-width: 1024px) 50vw, 100vw',
+  eager = false,
+  contain = false,
+}: {
+  src: string
+  alt: string
+  className?: string
+  sizes?: string
+  eager?: boolean
+  contain?: boolean
+}) {
+  return (
+    <img
+      src={`${src}-1600.webp`}
+      srcSet={`${src}-800.webp 800w, ${src}-1600.webp 1600w`}
+      sizes={sizes}
+      alt={alt}
+      loading={eager ? 'eager' : 'lazy'}
+      className={`bg-ig-cream ${contain ? 'object-contain' : 'object-cover'} ${className}`}
+    />
+  )
 }
 
 export function Img({ label, className = 'aspect-[4/3]' }: { label: string; className?: string }) {

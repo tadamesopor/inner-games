@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import { AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
+import { ALT, AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag } from './wf'
 
@@ -17,7 +17,7 @@ function WorkshopCard({ w }: { w: WS }) {
   const { go } = useContext(Ctx)
   return (
     <article className={`${card} group flex cursor-pointer flex-col`} onClick={() => go('workshop', w.slug)}>
-      <Photo src={w.photo} alt={w.title} className="aspect-[4/3] w-full" />
+      <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
       <div className="flex flex-1 flex-col gap-3 p-5">
         <AudTags aud={w.aud} />
         <h3 className="text-2xl font-semibold leading-tight tracking-tight">{w.title}</h3>
@@ -51,7 +51,7 @@ export function Home() {
     <>
       <Header active="home" />
       <Section id="A" label="hero" className="relative overflow-hidden bg-ig-orange py-0! text-white" note="FULL-WIDTH ACHTERGRONDFOTO met oranje overlay">
-        <img src={PHOTOS.play} alt="Mensen spelen samen een bordspel" className="absolute inset-0 h-full w-full object-cover" />
+        <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="100vw" eager className="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 bg-ig-orange/80" />
         <div className="relative flex min-h-[560px] flex-col justify-center py-16 @3xl:min-h-[720px]">
           <p className="mb-5 text-base font-medium">spelen om te leren · spelen om te groeien</p>
@@ -102,7 +102,7 @@ export function Home() {
               <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
             </div>
           </div>
-          <Photo src={PHOTOS.cards} alt="Kaartspel op tafel" className="aspect-[5/4] w-full rounded-2xl" />
+          <Photo src={GAMES[0].photo} alt={ALT[GAMES[0].photo]} contain className="aspect-[5/4] w-full rounded-2xl" />
         </div>
       </Section>
 
@@ -128,7 +128,7 @@ export function Home() {
               <div key={m.first} className="flex-1 overflow-hidden rounded-2xl bg-ig-cream">
                 <div className="aspect-[3/4] overflow-hidden">
                   {m.photo ? (
-                    <img src={m.photo} alt={m.first} className="h-full w-full object-cover" />
+                    <Photo src={m.photo} alt={m.first} sizes="200px" className="h-full w-full" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-ig-cream text-xs text-neutral-500">foto volgt</div>
                   )}
@@ -161,8 +161,8 @@ export function Workshops() {
         kicker="sessies en workshops"
         title="sessies en workshops"
         sub="Negen sessies waarin je speelt, reflecteert en beweegt. Voor teams, klassen, zorg en trainers."
-        photo={PHOTOS.notes}
-        alt="Mensen werken met notities aan tafel"
+        photo={PHOTOS.workshopsHero}
+        alt={ALT[PHOTOS.workshopsHero]}
         tone="cream"
       />
       <Section id="B" label="overzicht + filter" className="bg-white" note="filter op doelgroep · kaart → detailpagina">
@@ -229,7 +229,7 @@ export function Workshop() {
               {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
             </div>
           </div>
-          <Photo src={w.photo} alt={w.title} className="h-64 w-full rounded-2xl @3xl:h-[460px]" />
+          <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} eager className="h-64 w-full rounded-2xl @3xl:h-[460px]" />
         </div>
       </Section>
 
@@ -288,7 +288,7 @@ export function Workshop() {
             <div className="mt-5 space-y-4">
               {game ? (
                 <button onClick={() => go('game', game.slug)} className={`${card} flex w-full items-center gap-4 p-3 text-left`}>
-                  <Photo src={game.photo} alt="" className="h-20 w-20 shrink-0 rounded-xl" />
+                  <Photo src={game.photo} alt="" sizes="80px" contain className="h-20 w-20 shrink-0 rounded-xl" />
                   <span className="font-semibold">{game.title}</span>
                   <span className="ml-auto pr-2">→</span>
                 </button>
@@ -328,15 +328,15 @@ export function Projects() {
         kicker="projecten"
         title="projecten"
         sub="Waar we nu aan werken. Alles op deze pagina is nog in ontwikkeling."
-        photo={PHOTOS.notes2}
-        alt="Notities en schetsen op tafel"
+        photo={PROJECTS[0].photo}
+        alt="Een groep test een nieuw bordspel aan tafel"
         tone="white"
       />
       <Section id="B" label="projectkaarten" className="bg-ig-cream" note="elke kaart: ‘in ontwikkeling’-label">
         <div className="grid gap-7 @3xl:grid-cols-3">
           {PROJECTS.map((p) => (
             <article key={p.title} className={`${cardStatic} flex flex-col`}>
-              <Photo src={p.photo} alt="" className="aspect-[4/3] w-full" />
+              <Photo src={p.photo} alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
               <div className="flex flex-1 flex-col gap-3 p-5">
                 <div className="flex flex-wrap gap-1.5">
                   <Tag tone="yellow">in ontwikkeling</Tag>
@@ -385,8 +385,8 @@ export function Trainer() {
         kicker="train-de-trainer"
         title="train-de-trainer"
         sub="Leer spel-workshops geven. Van zelf spelen tot zelf begeleiden."
-        photo={PHOTOS.circle}
-        alt="Groep zit in een kring"
+        photo={PHOTOS.trainerHero}
+        alt={ALT[PHOTOS.trainerHero]}
         tone="cream"
       />
       <Section id="B" label="het aanbod" className="bg-white py-10! @3xl:py-14!" note="echt aanbod: € 1.800 · 8 uur">
@@ -502,7 +502,7 @@ export function Contact() {
         </div>
       </Section>
       <Section id="B" label="werkplek" className="p-0!" note="FULL-WIDTH · werkplek Eindhoven">
-        <Photo src={PHOTOS.plant} alt="Werkplek in Eindhoven" className="h-64 w-full @3xl:h-96" />
+        <Photo src={PHOTOS.tafel} alt={ALT[PHOTOS.tafel]} sizes="100vw" className="h-64 w-full @3xl:h-96" />
       </Section>
       <Footer />
     </>

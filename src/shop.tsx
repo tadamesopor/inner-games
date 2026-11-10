@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
+import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
 import { Btn, card, cardStatic, ContactCta, Ctx, Footer, H2, Header, PageHero, Photo, Section, Tag } from './wf'
 
 function GameCard({ g }: { g: G }) {
@@ -8,7 +8,7 @@ function GameCard({ g }: { g: G }) {
   return (
     <article className={`${card} flex cursor-pointer flex-col`} onClick={() => go('game', g.slug)}>
       <div className="relative">
-        <Photo src={g.photo} alt={g.title} className="aspect-[4/3] w-full" />
+        <Photo src={g.photo} alt={ALT[g.photo] ?? g.title} sizes="(min-width: 1024px) 33vw, 100vw" contain className="aspect-[4/3] w-full" />
         {g.previewKey && <span className="absolute left-3 top-3"><Tag tone="orange">preview</Tag></span>}
         {g.status && <span className="absolute left-3 top-3"><Tag tone="white">{g.status}</Tag></span>}
       </div>
@@ -49,8 +49,8 @@ export function Games() {
         kicker="onze spellen"
         title="onze spellen"
         sub="Zes spellen om te spelen, te leren en te groeien. Probeer eerst een preview van 30 seconden."
-        photo={PHOTOS.cards2}
-        alt="Spelkaarten op tafel"
+        photo={PHOTOS.gamesHero}
+        alt={ALT[PHOTOS.gamesHero]}
         tone="orange"
       />
       <Section id="B" label="shop-overzicht" className="bg-white" note="WooCommerce-grid · filter · preview-label">
@@ -180,11 +180,11 @@ export function Game() {
         <button onClick={() => go('games')} className="mb-6 text-sm underline">← alle spellen</button>
         <div className="grid gap-10 @3xl:grid-cols-2 @3xl:gap-14">
           <div>
-            <Photo src={g.gallery[img]} alt={g.title} className="aspect-[4/3] w-full rounded-2xl" />
-            <div className="mt-5 flex gap-3">
+            <Photo src={g.gallery[img]} alt={ALT[g.gallery[img]] ?? g.title} eager contain className="aspect-[4/3] w-full rounded-2xl" />
+            <div className={`mt-5 flex gap-3 ${g.gallery.length < 2 ? 'hidden' : ''}`}>
               {g.gallery.map((p, k) => (
                 <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-xl ${img === k ? 'ring-4 ring-ig-orange' : ''}`}>
-                  <Photo src={p} alt="" className="h-16 w-20" />
+                  <Photo src={p} alt="" sizes="80px" contain className="h-16 w-20" />
                 </button>
               ))}
             </div>

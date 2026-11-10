@@ -1,23 +1,40 @@
 export type Aud = 'onderwijs' | 'organisaties' | 'zorg' | 'trainers'
 
-const u = (id: string, w = 1200) => `https://images.unsplash.com/photo-${id}?w=${w}&fit=crop&auto=format&q=75`
+// real photos from innergames.nl, made by scripts/fetch-images.mjs.
+// a photo is a base path: <Photo> adds -800.webp / -1600.webp itself
+const img = (name: string) => `/assets/img/${name}`
 
 export const PHOTOS = {
-  play: u('1676651471150-0e3a5f8de05e', 1800),
-  play2: u('1676482721054-59f8326cd1d9'),
-  notes: u('1623652554515-91c833e3080e'),
-  notes2: u('1590402494587-44b71d7772f6'),
-  notes3: u('1503551723145-6c040742065b-v2'),
-  class: u('1509062522246-3755977927d7'),
-  circle: u('1643682661119-28da0685be2c'),
-  chairs: u('1601931992301-5c9a46c92808'),
-  grass: u('1555069855-e580a9adbf43'),
-  cards: u('1501003878151-d3cb87799705'),
-  cards2: u('1503482618211-c70b46ede8b0'),
-  board: u('1756130085073-2c96cbac079d'),
-  move: u('1615657973599-990d6e05fb8a'),
-  plant: u('1679110667877-408593fab0f6'),
-  globe: u('1585871746932-e133d3fedf4d', 900),
+  homeHero: img('site/home-hero'),
+  tafel: img('site/samen-aan-tafel'),
+  workshopsHero: img('site/workshops-hero'),
+  gamesHero: img('site/games-hero'),
+  trainerHero: img('site/trainer-hero'),
+}
+
+// alt text per photo, so every page describes the same photo the same way
+export const ALT: Record<string, string> = {
+  [PHOTOS.homeHero]: 'Deelnemers spelen samen een spel aan tafel',
+  [PHOTOS.tafel]: 'Het team aan het werk op een zonnige werkplek met grote ramen en planten',
+  [PHOTOS.workshopsHero]: 'Een groep speelt een spel aan een tafel bij het raam',
+  [PHOTOS.gamesHero]: 'Deelnemers schrijven op kaartjes tijdens een spel',
+  [PHOTOS.trainerHero]: 'Drie mensen van InnerGames staan buiten naast elkaar',
+  [img('workshops/energiek-team')]: 'Twee begeleiders lachen in de camera, achter hen werken groepjes aan tafels',
+  [img('workshops/ontdek-jouw-drijfveren')]: 'Een groep speelt een spel aan een tafel bij het raam',
+  [img('workshops/de-klimaat-collage')]: 'Deelnemers staan rond een tafel en werken aan een collage',
+  [img('workshops/het-impact-imperium')]: 'Deelnemers spelen Het Impact Imperium aan tafel',
+  [img('workshops/hoofd-en-lichaam')]: 'Twee begeleiders op een evenement, met een groot scherm achter hen',
+  [img('workshops/hoezo-raar')]: 'Een groep staat en loopt door een lichte ruimte',
+  [img('workshops/positive-masculinity')]: 'Twee jonge mannen praten met elkaar',
+  [img('workshops/kansen-keren')]: 'Spelbord van Kansen Keren met een pion en een dobbelsteen',
+  [img('workshops/memorystory')]: 'Deelnemers zitten aan tafel en spelen samen',
+  [img('games/elemental-five-compleet')]: 'Doos, kaarten en grondankers van The Elemental Five',
+  [img('games/elemental-five-grondankers')]: 'De ronde grondankers van The Elemental Five',
+  [img('games/elemental-five-kaartenset')]: 'Kaarten van The Elemental Five',
+  [img('games/elemental-five-opstelling')]: 'Deelnemers staan op blote voeten bij de grondankers van The Elemental Five',
+  [img('games/impact-imperium')]: 'Spelbord en kaarten van Impact Imperium',
+  [img('games/sociality')]: 'Speldoos en kaarten van Sociality',
+  [img('games/kansen-keren')]: 'Speldozen van Kansen Keren',
 }
 
 export const AUD_LABEL: Record<Aud, string> = { onderwijs: 'onderwijs', organisaties: 'organisaties', zorg: 'zorg', trainers: 'trainers' }
@@ -54,7 +71,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '3 sessies van 4 uur',
     group: 'tot 12 personen',
     price: '€ 2.850 per groep',
-    photo: PHOTOS.notes,
+    photo: img('workshops/energiek-team'),
     gameSlug: 'elemental-five-compleet',
     story: [
       'Iedereen in een team werkt op een eigen manier. Met The Elemental Five ontdek je wat die van jou is: hoe je je gedraagt, wat je gewoontes zijn en wat je eigenlijk liever zou doen.',
@@ -82,7 +99,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '3 uur',
     group: 'tot 30 personen',
     price: '€ 1.800',
-    photo: PHOTOS.globe,
+    photo: img('workshops/de-klimaat-collage'),
     story: [
       'Klimaatverandering is groot en ingewikkeld. In deze workshop maak je het samen overzichtelijk: met 42 informatiekaarten ontdekt de groep hoe de onderdelen van het klimaatprobleem met elkaar samenhangen.',
       'Je praat, tekent, brainstormt en schrijft. Zo ontstaat stap voor stap een gedeeld beeld, en eindig je met oplossingen die de groep zelf bedenkt.',
@@ -108,7 +125,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '1,5 uur',
     group: 'tot 25 personen',
     price: '€ 350',
-    photo: PHOTOS.class,
+    photo: img('workshops/hoezo-raar'),
     story: [
       'Iedereen heeft wel iets wat hij zelf een beetje raar vindt. Iets aan je lijf, aan hoe je denkt of aan hoe je dingen doet. In Hoezo Raar?! deel je dat, op een speelse en veilige manier.',
       'Al snel merk je dat je niet de enige bent. Dat maakt het gesprek open en brengt mensen dichter bij elkaar, en dichter bij zichzelf. Het werkt in groepen die elkaar al kennen en in groepen die elkaar nog nooit hebben gezien.',
@@ -130,7 +147,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '± 2 uur',
     group: '3 tot 12 personen',
     price: '€ 350',
-    photo: PHOTOS.circle,
+    photo: img('workshops/positive-masculinity'),
     story: [
       'Wat betekent het om een man te zijn? Via social media, school en de samenleving krijgen jongens vaak één beeld mee: sterk, dominant en succesvol.',
       'In deze workshop praten jongens en jonge mannen daar samen over. Ze ontdekken dat er meer is: dat je emoties mag delen, je eigen pad mag kiezen en kwetsbaar mag zijn.',
@@ -151,7 +168,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '± 1,5 uur',
     group: '3 tot ~50 personen',
     price: 'vanaf € 350 (tot 15 personen)',
-    photo: PHOTOS.notes3,
+    photo: img('workshops/kansen-keren'),
     gameSlug: 'kansen-keren',
     story: [
       'Niet iedereen krijgt dezelfde kansen mee. Kansen Keren maakt dat voelbaar: je ervaart hoe achterstand en privilege iemands levenspad beïnvloeden, in plaats van er alleen over te praten.',
@@ -174,7 +191,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '± 4 uur',
     group: 'tot 12 personen',
     price: '€ 950',
-    photo: PHOTOS.notes2,
+    photo: img('workshops/ontdek-jouw-drijfveren'),
     gameSlug: 'elemental-five-compleet',
     story: [
       'Wat geeft jou de meeste energie? In deze speelse workshop ontdek je het met The Elemental Five.',
@@ -197,7 +214,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '± 4 uur (halve of hele dag mogelijk)',
     group: 'tot 12 personen, 1 trainer',
     price: '€ 950',
-    photo: PHOTOS.move,
+    photo: img('workshops/hoofd-en-lichaam'),
     gameSlug: 'elemental-five-compleet',
     story: [
       'Werkdruk en stress zitten niet alleen in je hoofd. Volgens TNO heeft één op de zes werknemers burn-outklachten, en werkstress is de beroepsziekte nummer één.',
@@ -226,7 +243,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '1,5 tot 2 uur',
     group: 'tot 32 personen',
     price: '€ 423,50',
-    photo: PHOTOS.play2,
+    photo: img('workshops/het-impact-imperium'),
     gameSlug: 'impact-imperium',
     story: [
       'Hoeveel water, energie en grondstoffen kost het eigenlijk om iets te maken? In Het Impact Imperium ontdekken leerlingen en studenten het door te spelen.',
@@ -254,7 +271,7 @@ export const WORKSHOPS: Workshop[] = [
     duration: '1 tot 3 uur',
     group: '4 tot 30 personen',
     price: '€ 423,50',
-    photo: PHOTOS.cards2,
+    photo: img('workshops/memorystory'),
     story: [
       'Teken een kaart, maak een video, neem een geluid op en vind het paar. In MemoryStory maken deelnemers zelf de tegels van een memoryspel, rond een thema dat bij de groep past.',
       'Dat kan met tekeningen, schilderingen, foto’s, video of geluid. De tegels komen op een groot scherm of digibord, en dan speel je samen memory. Bij elk paar praat je over wat de tegel betekent.',
@@ -301,8 +318,8 @@ export const GAMES: Game[] = [
     short: 'Gebaseerd op het Big Five-model, via vijf elementen: water, vuur, aarde, lucht en ether.',
     aud: ['organisaties', 'onderwijs', 'trainers'],
     price: '€ 152',
-    photo: PHOTOS.cards,
-    gallery: [PHOTOS.cards, PHOTOS.cards2, PHOTOS.board],
+    photo: img('games/elemental-five-compleet'),
+    gallery: [img('games/elemental-five-compleet'), img('games/elemental-five-opstelling'), img('games/elemental-five-kaartenset'), img('games/elemental-five-grondankers')],
     previewKey: 'the elemental five',
     forWhom: 'coaches, trainers, teams en studie- en loopbaanbegeleiding',
     story: [
@@ -318,8 +335,8 @@ export const GAMES: Game[] = [
     short: '36 ronde vloerkaarten om de elementen fysiek te ervaren.',
     aud: ['trainers', 'organisaties'],
     price: '€ 79',
-    photo: PHOTOS.board,
-    gallery: [PHOTOS.board, PHOTOS.cards, PHOTOS.play],
+    photo: img('games/elemental-five-grondankers'),
+    gallery: [img('games/elemental-five-grondankers'), img('games/elemental-five-opstelling')],
     previewKey: 'the elemental five',
     players: 'individuele en groepsopstellingen',
     story: [
@@ -334,8 +351,8 @@ export const GAMES: Game[] = [
     short: '36 grote kaarten, de basis van de serie.',
     aud: ['trainers', 'organisaties'],
     price: '€ 39',
-    photo: PHOTOS.cards2,
-    gallery: [PHOTOS.cards2, PHOTOS.cards, PHOTOS.notes],
+    photo: img('games/elemental-five-kaartenset'),
+    gallery: [img('games/elemental-five-kaartenset'), img('games/elemental-five-compleet')],
     previewKey: 'the elemental five',
     players: 'alleen of in groepen',
     story: [
@@ -350,8 +367,8 @@ export const GAMES: Game[] = [
     short: 'Een bordspel van HAN en InnerGames over het model Sociale Kwaliteit, met praktijkcasussen.',
     aud: ['zorg', 'onderwijs'],
     price: '€ 69',
-    photo: PHOTOS.chairs,
-    gallery: [PHOTOS.chairs, PHOTOS.circle, PHOTOS.notes2],
+    photo: img('games/sociality'),
+    gallery: [img('games/sociality')],
     previewKey: 'Sociality',
     forWhom: 'mensen die werken of studeren in het sociaal werk, en iedereen die meer wil weten over Sociale Kwaliteit',
     players: 'ongeveer 3 tot 6 per set (meer sets voor grotere groepen)',
@@ -368,8 +385,8 @@ export const GAMES: Game[] = [
     short: 'Een competitief klassenspel over alledaagse producten, afval en plastic.',
     aud: ['onderwijs'],
     price: '€ 275',
-    photo: PHOTOS.play2,
-    gallery: [PHOTOS.play2, PHOTOS.board, PHOTOS.play],
+    photo: img('games/impact-imperium'),
+    gallery: [img('games/impact-imperium'), img('workshops/het-impact-imperium')],
     previewKey: 'Impact Imperium',
     forWhom: 'klassen: leerlingen en studenten',
     players: '4 tot 40 personen (8 exemplaren)',
@@ -386,8 +403,8 @@ export const GAMES: Game[] = [
     short: '66 levenssituaties in een niet-competitief gesprekspel.',
     aud: ['onderwijs', 'organisaties'],
     price: '€ 16,35 incl. verzending',
-    photo: PHOTOS.notes3,
-    gallery: [PHOTOS.notes3, PHOTOS.notes, PHOTOS.class],
+    photo: img('games/kansen-keren'),
+    gallery: [img('games/kansen-keren'), img('workshops/kansen-keren')],
     // preview staat uit tot Ariën en Carinda Jansen akkoord geven; aanzetten: previewKey: 'Kansen Keren' en status weghalen
     previewKey: null,
     status: 'wordt herzien',
@@ -428,11 +445,11 @@ export const PARTNERS = [
 ]
 
 export const PROJECTS = [
-  { title: 'KansenKeren Senior', text: 'Bordspel over ongelijke kansen bij ouderen, met buro KAN.', when: 'verwacht december 2026', photo: PHOTOS.notes3 },
-  { title: 'MemoryStory app', text: 'Deel tekeningen, geluid, foto’s en video op een digibord en speel samen. Voor klassen, teams en zorg.', when: 'verwacht eind 2026', photo: PHOTOS.cards2 },
-  { title: 'Ready to Board', text: 'Een speelse gesprekstool voor sollicitatie en onboarding, vooral voor neurodivergente mensen.', when: 'bèta', photo: PHOTOS.notes },
-  { title: 'Sociality cases', text: 'Nieuwe praktijkcasussen, gemaakt met studenten sociaal werk van de HAN.', when: 'in ontwikkeling', photo: PHOTOS.chairs },
-  { title: 'Wisselwerk', text: 'Een app voor teams over verschillende werk- en communicatiestijlen.', when: 'in ontwikkeling', photo: PHOTOS.play },
+  { title: 'KansenKeren Senior', text: 'Bordspel over ongelijke kansen bij ouderen, met buro KAN.', when: 'verwacht december 2026', photo: img('projects/kansenkeren-senior') },
+  { title: 'MemoryStory app', text: 'Deel tekeningen, geluid, foto’s en video op een digibord en speel samen. Voor klassen, teams en zorg.', when: 'verwacht eind 2026', photo: img('projects/memorystory-app') },
+  { title: 'Ready to Board', text: 'Een speelse gesprekstool voor sollicitatie en onboarding, vooral voor neurodivergente mensen.', when: 'bèta', photo: img('projects/ready-to-board') },
+  { title: 'Sociality cases', text: 'Nieuwe praktijkcasussen, gemaakt met studenten sociaal werk van de HAN.', when: 'in ontwikkeling', photo: img('projects/sociality-cases') },
+  { title: 'Wisselwerk', text: 'Een app voor teams over verschillende werk- en communicatiestijlen.', when: 'in ontwikkeling', photo: img('projects/wisselwerk') },
 ]
 
 export type Step = {

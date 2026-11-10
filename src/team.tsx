@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react'
-import { Ctx, ContactCta, Footer, Header, Img, Section } from './wf'
+import { PHOTOS, ALT } from './data'
+import { Ctx, ContactCta, Footer, Header, Img, Photo, Section } from './wf'
 
 type Member = {
   first: string
@@ -18,7 +19,7 @@ export const MEMBERS: Member[] = [
     roles: ['Oprichter', 'Spelontwikkelaar', 'Ontwerper', 'Trainer', 'Ontwikkelaar opleidingen'],
     bio: 'Ik hou ervan om mensen net dat stuk te laten ontdekken die ze zelf niet zagen, zodat ze daarna zelf weer richting kunnen bepalen.',
     tags: ['spelontwikkelaars', 'trainers', 'workshops en opleidingen'],
-    photo: '/assets/arien.png',
+    photo: '/assets/img/team/arien',
     founder: true,
   },
   {
@@ -27,6 +28,7 @@ export const MEMBERS: Member[] = [
     roles: ['Spelontwikkelaar', 'Adviseur Duurzaamheid en Educatie', 'Facilitator', 'Workshopleider'],
     bio: 'Ik maak graag positieve impact op mens, maatschappij en planeet met mijn vernieuwende ideeën en interactieve werkvormen.',
     tags: ['spelontwikkelaars', 'workshops en opleidingen'],
+    photo: '/assets/img/team/aron',
   },
   {
     first: 'Sanne',
@@ -34,7 +36,7 @@ export const MEMBERS: Member[] = [
     roles: ['Workshopontwikkelaar', 'Coördinator welzijn', 'Coach', 'Trainer'],
     bio: 'Ik werk lichaamsgericht en ervaringsgericht met mensen en teams die dichter bij zichzelf willen komen en beter willen afstemmen met anderen. Dit doe ik speels, liefdevol, met aandacht en humor.',
     tags: ['trainers', 'workshops en opleidingen'],
-    photo: '/assets/sanne.png',
+    photo: '/assets/img/team/sanne',
   },
   {
     first: 'Carinda',
@@ -42,6 +44,7 @@ export const MEMBERS: Member[] = [
     roles: ['(Actie-)onderzoeker', 'Projectleider', 'Tekstschrijver', 'Spelontwikkelaar', 'Trainer'],
     bio: 'Ik draag bij aan grote en kleine sociale verandering. Dat doe ik door (onderzoeks-)projecten mét de mensen waar het om gaat.',
     tags: ['spelontwikkelaars', 'trainers'],
+    photo: '/assets/img/team/carinda',
   },
   {
     first: 'Wies',
@@ -49,6 +52,7 @@ export const MEMBERS: Member[] = [
     roles: ['Ademtrainer', 'Opleider', 'Spreker', 'Ontwikkelaar workshops en opleidingen'],
     bio: 'Ik geef ademtrainingen in organisaties met als doel je vitaliteit te verhogen. Het belang van een functioneel adempatroon staat centraal.',
     tags: ['trainers', 'workshops en opleidingen'],
+    photo: '/assets/img/team/wies',
   },
 ]
 
@@ -70,10 +74,11 @@ function MemberCard({ m }: { m: Member }) {
     >
       <div className={`relative aspect-[4/5] overflow-hidden transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
         {m.photo && (
-          <img
+          <Photo
             src={m.photo}
             alt={`Portret van ${m.first} ${m.last}`}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(min-width: 1024px) 25vw, 50vw"
+            className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105"
           />
         )}
         {!m.photo && (
@@ -195,7 +200,7 @@ export function Team() {
 
       <Section id="D" label="werkplek" className="p-0!" note="FULL-WIDTH BACKGROUND IMAGE · het team aan het werk, Eindhoven">
         <div className="relative h-72 overflow-hidden @3xl:h-[520px]">
-          <img src="/assets/office.png" alt="Het team aan het werk op een zonnige werkplek met grote ramen en planten" className="absolute inset-0 h-full w-full object-cover" />
+          <Photo src={PHOTOS.tafel} alt={ALT[PHOTOS.tafel]} sizes="100vw" className="absolute inset-0 h-full w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           <p className="absolute bottom-6 left-5 max-w-xl text-3xl font-normal lowercase leading-none tracking-tight text-white @3xl:bottom-12 @3xl:left-16 @3xl:text-6xl">
             samen aan tafel, vanuit eindhoven
