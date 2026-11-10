@@ -62,30 +62,3 @@
   outline-offset: 3px;
   border-radius: 6px;
 }
-
-/* clear slots for assets that are still missing. never a generic picture in their place */
-.lab-slot-card {
-  display: flex;
-  align-items: flex-end;
-  aspect-ratio: 5 / 7;
-  padding: 10px;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 13px;
-  line-height: 1.2;
-  box-shadow: 0 1px 3px rgb(42 24 16 / 0.15);
-}
-.lab-slot-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  aspect-ratio: 1 / 0.62;
-  padding: 16px;
-  border: 2px dashed rgb(42 24 16 / 0.35);
-  border-radius: 14px;
-  background: var(--ig-cream);
-  text-align: center;
-  font-size: 16px;
-}

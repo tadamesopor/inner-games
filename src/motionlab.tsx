@@ -9,6 +9,7 @@ import { SplitBtn, Switch, useEffectInit } from './lab/ui'
 import { button, ButtonDemo } from './lab/button'
 import { cards, CardsDemo } from './lab/cards'
 import { transition, TransitionDemo } from './lab/transition'
+import { gamebox, GameboxDemo } from './lab/gamebox'
 import { speelpad, SpeelpadDemo } from './lab/speelpad'
 import { forceReduced, igNavigate, initBoxscene, initHeaderPill } from './motion'
 
@@ -20,7 +21,7 @@ const EFFECTS: { key: Key; n: string; name: string; cls: string; what: string; w
   { key: 'split', ...button },
   { key: 'lift', ...cards },
   { key: 'overgang', ...transition },
-  { key: 'spelbox', n: '08', name: 'spelbox', cls: '.ig-boxscene', what: 'De doos draait recht terwijl je naar het blok scrolt. Bij The Elemental Five schuiven daarna de vijf kaarten in een waaier uit de doos.', why: 'Laat het echte spel zien, niet alleen een foto. Speelt één keer.' },
+  { key: 'spelbox', ...gamebox },
   { key: 'footer', n: '09', name: 'doos in de footer', cls: '.ig-footer-box', what: 'Een speldoos staat schuin in de footer en draait 4° mee als de footer in beeld komt.', why: 'De pagina eindigt bij het product.' },
   { key: 'menu', n: '10', name: 'compacte menubalk', cls: '.ig-header-pill', what: 'Na 200px scrollen komt bovenaan een kleine menubalk in het midden. Bovenaan de pagina gaat hij weer weg.', why: 'Het menu is altijd bij de hand, zonder de hele breedte te pakken. Niet op mobiel.' },
 ]
@@ -42,60 +43,6 @@ function DemoRounded({ on }: { on: boolean }) {
           ))}
         </div>
       </section>
-    </div>
-  )
-}
-
-const E5_ELEMENTS: [string, string][] = [
-  ['vuur', '#e0582c'],
-  ['lucht', '#8fc3d6'],
-  ['aarde', '#e8a93a'],
-  ['water', '#3c8f8a'],
-  ['ether', '#a98fbf'],
-]
-
-function DemoSpelbox({ on }: { on: boolean }) {
-  const a = useRef<HTMLDivElement>(null)
-  const b = useRef<HTMLDivElement>(null)
-  useEffectInit(a, initBoxscene, on)
-  useEffectInit(b, initBoxscene, on)
-  const soc = GAMES.find((g) => g.slug === 'sociality')!
-  return (
-    <div className="lab-frame bg-white @container">
-      <p className="px-6 pt-8 text-[13px] text-ig-ink/70 @3xl:px-12">scroll langzaam naar beneden</p>
-      <div className="h-[40vh]" />
-      {/* key: switching the effect off and on again restarts the scene */}
-      <div key={`a${on}`} ref={a} className={`grid items-center gap-10 px-6 py-16 @3xl:grid-cols-[1fr_1fr] @3xl:px-12 ${on ? 'ig-boxscene' : ''}`}>
-        <div>
-          <p className="text-base text-[#C84413]">uitgelicht spel</p>
-          <h3 className="mt-2 text-[40px] font-semibold leading-none tracking-tight">sociality</h3>
-          <p className="mt-4 max-w-[44ch] text-xl leading-snug">{soc.short}</p>
-        </div>
-        <div className="ig-boxscene__stage mx-auto w-full max-w-[340px]">
-          <img className="ig-boxscene__box" src="/assets/img/games/sociality-box.png" alt="Speldoos van Sociality" width={398} height={459} />
-        </div>
-      </div>
-      <div className="h-[30vh]" />
-      <div key={`b${on}`} ref={b} className={`grid items-center gap-10 bg-ig-yellow px-6 py-16 @3xl:grid-cols-[1fr_1fr] @3xl:px-12 ${on ? 'ig-boxscene ig-boxscene--fan' : ''}`}>
-        <div>
-          <p className="text-base">uitgelicht spel</p>
-          <h3 className="mt-2 text-[40px] font-semibold leading-none tracking-tight">the elemental five</h3>
-          <p className="mt-4 max-w-[44ch] text-xl leading-snug">{GAMES[0].short}</p>
-        </div>
-        <div className="ig-boxscene__stage mx-auto w-full max-w-[340px] pt-[58%]">
-          {E5_ELEMENTS.map(([name, colour], i) => (
-            // TODO: replace with the real card 1 of each element (game assets)
-            <div key={name} className="ig-boxscene__card lab-slot-card" style={{ ['--i' as string]: i, background: colour }}>
-              <span>kaart 1 · {name}</span>
-            </div>
-          ))}
-          <div className="ig-boxscene__box lab-slot-box">
-            <span>vrijstaande foto van de doos</span>
-            <span className="text-[13px] opacity-70">nog aanleveren</span>
-          </div>
-        </div>
-      </div>
-      <div className="h-[50vh]" />
     </div>
   )
 }
@@ -142,7 +89,7 @@ export default function MotionLab() {
     split: <ButtonDemo on={on.split} />,
     lift: <CardsDemo on={on.lift} />,
     overgang: <TransitionDemo on={on.overgang} />,
-    spelbox: <DemoSpelbox on={on.spelbox} />,
+    spelbox: <GameboxDemo on={on.spelbox} />,
     footer: <DemoFooter on={on.footer} />,
     menu: (
       <div className="lab-frame bg-ig-cream p-8 text-base leading-relaxed">

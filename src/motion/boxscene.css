@@ -1,99 +1,108 @@
-/* .ig-boxscene: a game box comes in while you scroll the section into view: from tilted 12deg and a
-   bit smaller to straight and full size. with .ig-boxscene--fan the cards then slide out of the box
-   in a fan, one by one. plays once: boxscene.js adds .is-done at the end and then it stays.
-   the normal styles are the end state, so without js or with reduced motion you see the box straight
-   and the cards fanned.
+/* .ig-boxscene: the game box scene. the section stays on screen (sticky) for about 1.5 screen heights,
+   and the scroll drives it: the box lands from tilted 14deg to -3deg (never perfectly straight), its
+   shadow gets sharper as it lands, and it breaks out over the rounded bottom into the next section.
+   with The Elemental Five, the five card-1s come out of the box one by one and fan out.
+   boxscene.js sets --p (0 to 1) from the scroll position. reduced motion: --p is 1, the end state.
+
    markup:
-   <div class="ig-boxscene ig-boxscene--fan">
-     <div class="ig-boxscene__stage">
-       <img class="ig-boxscene__card" style="--i:0" ...> (x5)
-       <img class="ig-boxscene__box" ...>
+   <section class="ig-boxscene">
+     <div class="ig-boxscene__panel"> text...
+       <div class="ig-boxscene__stage">
+         <img class="ig-boxscene__card" style="--i:0"> (optional, max 5)
+         <img class="ig-boxscene__box">
+         <span class="ig-boxscene__shadow"></span>
+       </div>
      </div>
-   </div> */
+   </section> */
 
 .ig-boxscene {
-  view-timeline: --ig-box block;
-}
-.ig-boxscene__stage {
+  --p: 0;
+  /* the box lands in the first 70% of the scroll, the cards come out after that */
+  --land: min(1, calc(var(--p) / 0.7));
+  --out: max(0, calc((var(--p) - 0.55) / 0.45));
   position: relative;
+  z-index: 2; /* the box overlaps the next section */
+  height: 250svh;
+}
+.ig-boxscene__panel {
+  position: sticky;
+  top: 0;
   display: grid;
-  place-items: end center;
+  align-items: center;
+  min-height: 100svh;
+  overflow: visible;
+  border-bottom-left-radius: var(--r-section);
+  border-bottom-right-radius: var(--r-section);
+}
+
+.ig-boxscene__stage {
+  position: absolute;
+  right: 6%;
+  bottom: -14%;
+  width: min(45%, 460px);
+  aspect-ratio: 398 / 459;
 }
 .ig-boxscene__box {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   width: 100%;
-  height: auto;
-  transform-origin: 50% 80%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: 50% 90%;
+  rotate: calc(14deg - 17deg * var(--land));
+  translate: 0 calc((1 - var(--land)) * 70px);
+  scale: calc(0.9 + 0.1 * var(--land));
 }
 
-/* the fan: five cards stand up out of the box. positions per card */
-.ig-boxscene__card {
+/* the shadow on the ground: soft and wide while it's in the air, smaller and sharper when it lands */
+.ig-boxscene__shadow {
   position: absolute;
-  z-index: 0;
-  bottom: var(--ig-fan-bottom, 38%);
+  z-index: 1;
+  left: 8%;
+  right: 8%;
+  bottom: 2%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(42 24 16 / 0.32), rgb(42 24 16 / 0.12) 60%, transparent);
+  opacity: calc(0.35 + 0.65 * var(--land));
+  scale: calc(1.25 - 0.25 * var(--land)) calc(1.6 - 0.6 * var(--land));
+}
+
+/* the cards fan out of the top of the box, one by one (--i = 0..4) */
+.ig-boxscene__card {
+  --k: clamp(0, calc((var(--out) - var(--i) * 0.12) / 0.4), 1);
+  position: absolute;
+  z-index: 1;
   left: 50%;
+  top: 12%;
   width: 34%;
   height: auto;
+  border: 5px solid #fff;
+  border-radius: 10px;
   transform-origin: 50% 100%;
-  transform: translateX(-50%) rotate(var(--r)) translateY(var(--y));
-}
-.ig-boxscene__card:nth-child(1) { --r: -26deg; --y: -16%; }
-.ig-boxscene__card:nth-child(2) { --r: -13deg; --y: -26%; }
-.ig-boxscene__card:nth-child(3) { --r: 0deg; --y: -30%; }
-.ig-boxscene__card:nth-child(4) { --r: 13deg; --y: -26%; }
-.ig-boxscene__card:nth-child(5) { --r: 26deg; --y: -16%; }
-
-@keyframes ig-box-in {
-  from {
-    transform: rotate(12deg) scale(0.86);
-    opacity: 0.2;
-  }
-}
-@keyframes ig-card-out {
-  from {
-    transform: translateX(-50%) rotate(0deg) translateY(30%);
-    opacity: 0;
-  }
+  translate: -50% calc((1 - var(--k)) * 60%);
+  rotate: calc((var(--i) - 2) * 13deg * var(--k));
+  opacity: var(--k);
 }
 
-/* modern browsers: linked to the scroll position.
-   careful: no ancestor may have overflow: hidden (use overflow: clip), or the timeline stops moving.
-   the ranges use the same selector as the animation, because the shorthand resets animation-range */
-@supports (animation-timeline: view()) {
-  .ig-boxscene:not(.is-done) .ig-boxscene__box {
-    animation: ig-box-in linear both;
-    animation-timeline: --ig-box;
-    animation-range: entry 10% cover 30%;
-  }
-  .ig-boxscene:not(.is-done) .ig-boxscene__card {
-    animation: ig-card-out linear both;
-    animation-timeline: --ig-box;
-  }
-  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(1) { animation-range: cover 28% cover 38%; }
-  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(2) { animation-range: cover 30% cover 40%; }
-  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(3) { animation-range: cover 32% cover 42%; }
-  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(4) { animation-range: cover 34% cover 44%; }
-  .ig-boxscene:not(.is-done) .ig-boxscene__card:nth-child(5) { animation-range: cover 36% cover 46%; }
+/* the drawn arrow to the button draws itself once the box has landed */
+.ig-boxscene__pointer {
+  --pencil-draw: 500ms;
 }
 
-/* other browsers (firefox for now): plays on time once it's in view (boxscene.js adds .is-in) */
-@supports not (animation-timeline: view()) {
-  .ig-boxscene__box,
-  .ig-boxscene__card {
-    transition:
-      transform var(--dur-large) var(--ease-out),
-      opacity var(--dur-large) var(--ease-out);
+@container (max-width: 767px) {
+  .ig-boxscene {
+    height: 200svh;
   }
-  .ig-boxscene__card {
-    transition-delay: calc(400ms + var(--i, 0) * 90ms);
+  .ig-boxscene__panel {
+    align-items: start;
+    padding-top: 15svh;
   }
-  .ig-js .ig-boxscene:not(.is-in) .ig-boxscene__box {
-    transform: rotate(12deg) scale(0.86);
-    opacity: 0.2;
-  }
-  .ig-js .ig-boxscene:not(.is-in) .ig-boxscene__card {
-    transform: translateX(-50%) rotate(0deg) translateY(30%);
-    opacity: 0;
+  .ig-boxscene__stage {
+    right: 50%;
+    translate: 50% 0;
+    bottom: -8%;
+    width: min(70%, 300px);
   }
 }

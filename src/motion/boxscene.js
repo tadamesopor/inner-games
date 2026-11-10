@@ -1,37 +1,41 @@
-// .ig-boxscene: makes the scroll animation play once. css does the animation itself.
-// - is-in: the scene is in view (starts the time-based fallback in browsers without scroll timelines)
-// - is-done: every part has reached its end, so the animation is dropped and the end state stays,
-//   also when you scroll back up
+// .ig-boxscene: turns the scroll position inside the scene into --p (0 to 1). css does the rest.
+// .is-landed when the box is down, so the drawn arrow to the button can draw itself.
+// reduced motion: --p is always 1, the end state.
+
+import { isReduced, onReducedChange } from './prefs.js'
 
 export function initBoxscene(root) {
-  const parts = [...root.querySelectorAll('.ig-boxscene__box, .ig-boxscene__card')]
   let raf = 0
+  let active = false
+  const pointer = root.querySelector('.ig-boxscene__pointer')
 
-  const seen = new IntersectionObserver(([e]) => e.isIntersecting && root.classList.add('is-in'), { threshold: 0.35 })
-  seen.observe(root)
-
-  // done = all scroll animations at 100%. reading the animations themselves is more exact than
-  // guessing from the scroll position, because the ranges live in the css
-  const check = () => {
+  const update = () => {
     raf = 0
-    const anims = parts.flatMap((p) => p.getAnimations())
-    if (anims.length && anims.every((a) => (a.effect?.getComputedTiming().progress ?? 0) >= 0.999)) finish()
+    const r = root.getBoundingClientRect()
+    const range = Math.max(1, r.height - window.innerHeight)
+    const p = isReduced() ? 1 : Math.min(1, Math.max(0, -r.top / range))
+    root.style.setProperty('--p', p.toFixed(4))
+    const landed = p > 0.72
+    root.classList.toggle('is-landed', landed)
+    pointer?.classList.toggle('is-drawn', landed)
   }
   const onScroll = () => {
-    if (!raf) raf = requestAnimationFrame(check)
+    if (active && !raf) raf = requestAnimationFrame(update)
   }
-  const finish = () => {
-    root.classList.add('is-done')
-    stop()
-  }
-  const stop = () => {
-    window.removeEventListener('scroll', onScroll)
-    cancelAnimationFrame(raf)
-  }
-  if (CSS.supports('animation-timeline: view()')) window.addEventListener('scroll', onScroll, { passive: true })
+  const io = new IntersectionObserver(([e]) => {
+    active = e.isIntersecting
+    onScroll()
+  })
+  io.observe(root)
+  window.addEventListener('scroll', onScroll, { passive: true })
+  const off = onReducedChange(update)
+  update()
 
   return () => {
-    seen.disconnect()
-    stop()
+    io.disconnect()
+    window.removeEventListener('scroll', onScroll)
+    off()
+    cancelAnimationFrame(raf)
+    root.style.removeProperty('--p')
   }
 }
