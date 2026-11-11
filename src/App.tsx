@@ -1,8 +1,9 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Ctx, type PageId } from './wf'
 import TestMode from './test'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
-import { initCards } from './motion'
+import { igNavigate, initCards } from './motion'
 import { Contact, Home, Projects, Trainer, Workshop, Workshops } from './pages'
 import { Game, Games, Preview } from './shop'
 import { Team } from './team'
@@ -54,9 +55,16 @@ export default function App() {
       </Suspense>
     )
 
+  // every page change goes through the pencil transition (src/motion/transition.js). the page itself
+  // changes while the screen is orange. in test mode the short version (460ms, no wave), so it doesn't
+  // slow the tasks down. reduced motion: a short fade. the first page load has no transition
   const go = (p: PageId, id = '') => {
-    setPage(p)
-    setSel(id)
+    const update = () =>
+      flushSync(() => {
+        setPage(p)
+        setSel(id)
+      })
+    igNavigate(update, { mode: tasks ? 'short' : 'full', fadeTarget: view.current ?? undefined })
   }
   const toggleCart = (id: string) => setCart((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]))
   const Page = PAGES[page]
