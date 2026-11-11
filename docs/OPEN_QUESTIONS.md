@@ -61,3 +61,40 @@
   "Spellen en lessen voor in de klas."). Check if they still say what you mean.
 - **Menu.** "home" is gone (the logo is home), and "ons team" and "projecten" are under "over ons". Watch in the
   user test whether people still find the team (task D2).
+
+## Fixes round 4: TODOs for Ariën
+
+Everything that is still a placeholder on the site has a dashed frame with "nog aan te leveren", so nobody in a
+test reads it as real.
+
+- **Homepage title.** "spellen en workshops die teams, klassen en zorg in beweging brengen", with "inner growth for
+  outer change" as the small label above it. Is that how you want to say what InnerGames does?
+- **Zo werkt het (homepage) and "dit kun je verwachten" (workshop pages).** The steps are written from the brief:
+  vertel ons over je groep → we stellen samen een sessie samen → we komen spelen, and kennismaking → sessie op maat →
+  nagesprek. Is that how it really goes?
+- **Quote.** The quote on the homepage ("Na afloop praatten we anders met elkaar...") was an example, not a real one.
+  It's now a placeholder. We need one or more real quotes, with name and organisation, and permission to use them.
+- **Cases per workshop.** One short real case or quote per workshop (who, the question, what it gave).
+- **Social media.** Only LinkedIn is known. Which other channels does InnerGames use (Instagram, YouTube ...)?
+- **Newsletter.** Do you want a "blijf op de hoogte" field in the footer? Not built yet.
+- **Legal texts.** Algemene voorwaarden, privacybeleid, cookiebeleid, verzending en retour: these pages exist as
+  placeholders. The texts must come from you (or a template from a branch organisation or a lawyer).
+- **KvK-nummer and btw-nummer.** Needed in the footer of a Dutch webshop.
+- **Shipping.** Shipping costs, and the delivery text under the cart button. Impact Imperium and Kansen Keren
+  include shipping in the Netherlands in their price (innergames.nl), the other games don't say: is shipping extra?
+- **Prices and units.** Still open from round 3: € 350, € 423,50 and € 1.800 for De Klimaat Collage, Hoezo Raar?!,
+  Positive Masculinity, Het Impact Imperium and MemoryStory: per group, per session or per person?
+- **Client logos.** "o.a. gespeeld met" in the hero shows ASML, Fontys, HAN and Summa (from clients.png).
+  May we show these, and which organisation is the "V" logo?
+
+### Photos we need
+
+The pages now use the brightest photos we have. Better ones would help a lot:
+
+- **A training in progress** (train-de-trainer): now a group from Hoezo Raar?! in a light room.
+- **Games on a table, from above or close by** (spellen): now the Kansen Keren board.
+- **Bright session photos** with faces in the light (workshops, homepage): now MemoryStory and the team at work.
+- The old homepage photo and the old spellen photo were dark and backlit; the trainer photo showed two people at an
+  event, not a training.
+- **Cut-outs** of each game box (only Sociality has one), and the five card-1s of The Elemental Five.
+- Portraits of Carinda and Wies, and a larger version of the team photo (it's also used on several pages).
