@@ -41,11 +41,12 @@ function WorkshopCard({ w }: { w: WS }) {
 
 export function Home() {
   const { go } = useContext(Ctx)
-  const audCards: { key: Aud; text: string; cta: string; act: () => void }[] = [
-    { key: 'onderwijs', text: 'Spellen en lessen die je zo in de klas inzet, met een handleiding erbij.', cta: 'workshops voor onderwijs', act: () => go('workshops', 'onderwijs') },
-    { key: 'organisaties', text: 'Workshops voor teams die dichter bij elkaar en bij zichzelf willen komen.', cta: 'workshops voor organisaties', act: () => go('workshops', 'organisaties') },
-    { key: 'zorg', text: 'Spel maakt zorg effectiever en prettiger.', cta: 'workshops voor zorg', act: () => go('workshops', 'zorg') },
-    { key: 'trainers', text: 'Leer zelf spel-workshops geven en werk met onze methodes.', cta: 'train-de-trainer', act: () => go('trainer') },
+  // photo: a real InnerGames photo from a workshop for that group, shown softly behind the card
+  const audCards: { key: Aud; text: string; cta: string; photo: string; act: () => void }[] = [
+    { key: 'onderwijs', text: 'Spellen en lessen die je zo in de klas inzet, met een handleiding erbij.', cta: 'workshops voor onderwijs', photo: WORKSHOPS[7].photo, act: () => go('workshops', 'onderwijs') },
+    { key: 'organisaties', text: 'Workshops voor teams die dichter bij elkaar en bij zichzelf willen komen.', cta: 'workshops voor organisaties', photo: WORKSHOPS[0].photo, act: () => go('workshops', 'organisaties') },
+    { key: 'zorg', text: 'Spel maakt zorg effectiever en prettiger.', cta: 'workshops voor zorg', photo: WORKSHOPS[8].photo, act: () => go('workshops', 'zorg') },
+    { key: 'trainers', text: 'Leer zelf spel-workshops geven en werk met onze methodes.', cta: 'train-de-trainer', photo: PHOTOS.trainerHero, act: () => go('trainer') },
   ]
   return (
     <>
@@ -71,11 +72,14 @@ export function Home() {
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
         <div className="mt-10 grid gap-6 @3xl:grid-cols-4">
           {audCards.map((c) => (
-            <div key={c.key} className={`${cardStatic} flex flex-col gap-4 p-6`}>
+            <div key={c.key} className={`${cardStatic} relative isolate flex min-h-[340px] flex-col gap-4 p-6`}>
+              <Photo src={c.photo} alt="" sizes="(min-width: 1024px) 25vw, 100vw" className="absolute inset-x-0 top-0 -z-10 h-[62%] w-full opacity-70" />
+              {/* the photo fades into white where the text starts, so the text stays easy to read */}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/10 via-white via-60% to-white" aria-hidden />
               <AudIcon aud={c.key} />
               <h3 className="text-3xl font-semibold tracking-tight">{AUD_LABEL[c.key]}</h3>
               <p className="text-[15px] leading-relaxed text-neutral-700">{c.text}</p>
-              <Btn variant="ghost" className="mt-auto" onClick={c.act}>{c.cta} →</Btn>
+              <Btn variant="ghost" className="mt-auto whitespace-nowrap px-4!" onClick={c.act}>{c.cta} →</Btn>
             </div>
           ))}
         </div>
