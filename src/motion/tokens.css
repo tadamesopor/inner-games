@@ -1,15 +1,41 @@
-/* InnerGames motion: shared tokens.
+/* InnerGames: all shared tokens in one file. colours, shapes, spacing, shadows, type and motion.
+   the React app reads them through @theme in index.css (bg-ig-orange, rounded-box, text-lead ...), so
+   nothing in the components has its own colour or size.
    Plain CSS so it can go into the Enfold child theme as is.
    Rule for every effect: the normal style IS the end state. Animations only describe where something
    comes from. So with reduced motion (animations off) you always see the finished picture. */
 
 :root {
+  /* colours (brand guide) */
   --ig-orange: #ea561f;
-  --ig-orange-text: #c84413;
+  --ig-orange-text: #c84413; /* small orange text on a light background, and white text on orange (AA) */
   --ig-yellow: #fab512;
+  --ig-yellow-light: #fde7b0; /* hover boxes, the hand on white cards */
   --ig-ink: #2a1810;
   --ig-cream: #fff6e6;
   --ig-font: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif;
+
+  /* type: six sizes, no more. h1 and h2 grow with the width of the page */
+  --fs-meta: 14px; /* tags, duration, price notes, small labels */
+  --fs-body: 16px; /* running text */
+  --fs-lead: 22px; /* intro text, card titles, h3 */
+  --fs-h2: clamp(32px, 5cqi, 56px); /* section titles */
+  --fs-h1: clamp(40px, 6.5cqi, 72px); /* page titles */
+  --fs-display: clamp(40px, 4.2cqi, 54px); /* only the homepage hero title, so it fits next to the table */
+
+  /* spacing: everything on an 8px scale */
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 32px;
+  --sp-6: 48px;
+  --sp-8: 64px;
+  --sp-12: 96px;
+  --section-pad: 96px; /* top and bottom of every section, 64px on a phone */
+
+  /* shadows: soft and warm, never a hard black offset */
+  --ig-shadow-soft: 0 10px 30px rgb(42 24 16 / 0.12); /* floating bars, menus, search results */
+  --ig-shadow-lift: 0 18px 40px rgb(42 24 16 / 0.2); /* things that lie on top, like the cart drawer */
 
   /* named easing curves, nothing else is used */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1); /* things arriving */
@@ -23,6 +49,7 @@
   --r-section: 56px; /* bottom of big coloured sections */
   --r-box: 12px; /* cards, buttons, menu items, fields, image frames */
   --r-tag: 999px; /* small tags like onderwijs or zorg */
+  --r-media: 8px; /* a photo inside a card */
   /* full circles (50%) only for icon buttons */
 
   --dur-ui: 150ms; /* hover, focus, small things */
@@ -33,6 +60,7 @@
 @media (max-width: 767px) {
   :root {
     --r-section: 28px;
+    --section-pad: 64px;
   }
 }
 

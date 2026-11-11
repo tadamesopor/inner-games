@@ -13,7 +13,7 @@
 .ig-card {
   --edge: var(--ig-edge, #f0dcc0);
   --card-bg: #fff;
-  --hand-color: #fde7b0; /* a white hand would disappear on cream: the light yellow of the menu */
+  --hand-color: var(--ig-yellow-light); /* a white hand would disappear on cream: the light yellow of the menu */
   --hand-size: 84px; /* the hand drawing is about 75px tall at this width */
   --hand-x: 0px;
   --hand-tilt: 0deg;

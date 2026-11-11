@@ -8,16 +8,20 @@
   border-bottom-left-radius: var(--r-section);
   border-bottom-right-radius: var(--r-section);
 }
+/* the next section keeps the normal section padding (96px, 64px on a phone) below the rounded edge */
 .ig-section--rounded + * {
   position: relative;
   margin-top: calc(var(--r-section) * -1);
-  padding-top: calc(var(--r-section) + var(--ig-next-pad, 48px));
+  padding-top: calc(var(--r-section) + var(--ig-next-pad, 96px));
 }
 
 @container (max-width: 767px) {
   .ig-section--rounded,
   .ig-section--rounded + * {
     --r-section: 28px;
+  }
+  .ig-section--rounded + * {
+    padding-top: calc(var(--r-section) + var(--ig-next-pad, 64px));
   }
 }
 

@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import { PHOTOS, ALT } from './data'
-import { Btn, Ctx, ContactCta, Header, Img, Photo, Section } from './wf'
+import { Btn, chip, Ctx, ContactCta, H2, Header, Img, Photo, Section, Tag } from './wf'
 
 type Member = {
   first: string
@@ -82,8 +82,8 @@ function MemberCard({ m }: { m: Member }) {
           <Img label={`portret ${m.first} ${m.last} · foto nog aanleveren`} className="absolute inset-0 h-full w-full" />
         )}
         {m.founder && (
-          <span className="absolute left-3 top-3 rounded-[var(--r-tag)] bg-ig-yellow px-3 py-1 text-[13px] font-medium leading-none">
-            oprichter
+          <span className="absolute left-3 top-3">
+            <Tag>oprichter</Tag>
           </span>
         )}
       </div>
@@ -94,15 +94,15 @@ function MemberCard({ m }: { m: Member }) {
         </h3>
         <ul className="flex flex-wrap gap-1.5">
           {m.roles.map((r) => (
-            <li key={r} className="rounded-full bg-ig-cream px-2.5 py-0.5 text-[13px]">
-              {r}
+            <li key={r}>
+              <Tag tone="cream">{r}</Tag>
             </li>
           ))}
         </ul>
         <p className="ig-card__text">{m.bio}</p>
         <a
           href={`mailto:info@innergames.nl?subject=Vraag%20voor%20${encodeURIComponent(m.first)}`}
-          className="mt-auto inline-flex items-center gap-2 self-start border-b-2 border-ig-orange pb-0.5 text-sm font-semibold text-ig-ink hover:border-ig-ink"
+          className="mt-auto inline-flex items-center gap-2 self-start border-b-2 border-ig-orange pb-0.5 text-meta font-semibold text-ig-ink hover:border-ig-ink"
         >
           stuur me mail <span aria-hidden>→</span>
         </a>
@@ -124,9 +124,9 @@ export function Team() {
       <Section id="A" label="hero + groepsfoto" className="bg-ig-yellow text-ig-ink" note="PORTRETFOTO (vrijgesteld, groep)">
         <div className="grid items-center gap-8 @3xl:grid-cols-[1.1fr_1fr] @3xl:gap-12">
           <div>
-            <p className="mb-4 text-base font-medium">spelen om te leren · spelen om te groeien</p>
-            <h1 className="text-[3.5rem] font-bold lowercase leading-[0.95] tracking-tight @3xl:text-[7rem]">ons team</h1>
-            <p className="mt-6 max-w-lg text-xl font-medium leading-snug @3xl:text-2xl">
+            <p className="mb-4 text-body font-medium">spelen om te leren · spelen om te groeien</p>
+            <h1 className="text-h1 font-bold lowercase tracking-tight">ons team</h1>
+            <p className="mt-6 max-w-lg text-lead font-medium leading-snug">
               {/* TODO Ariën: check this intro */}
               Vijf mensen die spellen ontwikkelen, workshops geven en trainers opleiden, vanuit Eindhoven.
             </p>
@@ -139,7 +139,7 @@ export function Team() {
               </Btn>
             </div>
           </div>
-          <div className="relative h-[340px] overflow-hidden rounded-[var(--r-box)] bg-ig-cream @3xl:h-[440px]">
+          <div className="relative h-[340px] overflow-hidden rounded-box bg-ig-cream @3xl:h-[440px]">
             <img
               src="/assets/team-group.png"
               alt="Ariën, Sanne en Aron van InnerGames staan lachend naast elkaar"
@@ -152,7 +152,7 @@ export function Team() {
       <Section id="B" label="de vijf" className="bg-white" note="foto + quote-kaart behouden · filter op expertise · Carinda en Wies: foto ontbreekt">
         <div id="leden" className="scroll-mt-24">
           <div className="mb-8 mt-4 flex flex-col gap-5 @3xl:flex-row @3xl:items-end @3xl:justify-between">
-            <h2 className="max-w-xl text-4xl font-bold lowercase leading-none tracking-tight @3xl:text-5xl">vijf spelers, één idee</h2>
+            <H2 className="max-w-xl">vijf spelers, één idee</H2>
             <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter op expertise">
               {FILTERS.map((f) => (
                 <button
@@ -160,7 +160,7 @@ export function Team() {
                   role="tab"
                   aria-selected={filter === f}
                   onClick={() => setFilter(f)}
-                  className={`rounded-full px-4 py-1.5 text-[15px] transition ${filter === f ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow'}`}
+                  className={chip(filter === f)}
                 >
                   {f}
                 </button>
@@ -172,7 +172,7 @@ export function Team() {
               <MemberCard key={m.first} m={m} />
             ))}
           </div>
-          <p className="mt-4 text-sm text-neutral-500">
+          <p className="mt-4 text-meta text-ig-ink/70">
             {shown.length} van {MEMBERS.length} teamleden
           </p>
         </div>
@@ -181,14 +181,14 @@ export function Team() {
       <Section id="C" label="onze aanpak" className="bg-ig-cream text-ig-ink" note="serieus, speels, lichamelijk">
         <div className="mt-4 grid gap-10 @3xl:grid-cols-[1fr_2fr]">
           <div>
-            <h2 className="text-4xl font-bold lowercase leading-none tracking-tight @3xl:text-5xl">hoe we werken</h2>
-            <p className="mt-4 max-w-sm text-neutral-700">Een serieuze organisatie die speelse dingen doet: inner growth for outer change.</p>
+            <H2>hoe we werken</H2>
+            <p className="mt-4 max-w-sm text-ig-ink/80">Een serieuze organisatie die speelse dingen doet: inner growth for outer change.</p>
           </div>
           <div className="grid gap-4 @3xl:grid-cols-3">
             {PILLARS.map(([t, d], i) => (
               <div key={t} className="ig-card ig-card--still ig-card--text">
                 <div className="ig-card__body">
-                  <p className="text-3xl text-[#C84413]">0{i + 1}</p>
+                  <p className="text-lead text-ig-orange-text">0{i + 1}</p>
                   <h3 className="ig-card__title mt-3">{t}</h3>
                   <p className="ig-card__text mt-2">{d}</p>
                 </div>
@@ -202,7 +202,7 @@ export function Team() {
         <div className="relative h-72 overflow-hidden @3xl:h-[520px]">
           <Photo src={PHOTOS.tafel} alt={ALT[PHOTOS.tafel]} sizes="100vw" className="absolute inset-0 h-full w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-          <p className="absolute bottom-6 left-5 max-w-xl text-3xl font-bold lowercase leading-none tracking-tight text-white @3xl:bottom-12 @3xl:left-16 @3xl:text-6xl">
+          <p className="absolute bottom-6 left-5 max-w-xl text-lead font-bold lowercase leading-none tracking-tight text-white @3xl:bottom-12 @3xl:left-16 @3xl:text-h2">
             samen aan tafel, vanuit eindhoven
           </p>
         </div>

@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type React
 import { initBoxscene, initHeroTable, initHeroWaves, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { AudIcon, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
+import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -29,10 +29,10 @@ function WorkshopCard({ w }: { w: WS }) {
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <div>
             <p className="ig-card__meta">{w.duration} · {w.group}</p>
-            <p className="mt-0.5 text-base font-semibold text-ig-ink">{w.price}</p>
+            <p className="mt-0.5 text-body font-semibold text-ig-ink">{w.price}</p>
           </div>
           <button
-            className="shrink-0 border-b-2 border-ig-orange pb-0.5 text-sm font-semibold text-ig-ink"
+            className="shrink-0 border-b-2 border-ig-orange pb-0.5 text-meta font-semibold text-ig-ink"
             onClick={(e) => { e.stopPropagation(); go('workshop', w.slug) }}
           >
             bekijk →
@@ -92,10 +92,10 @@ function HeroNew() {
       <div className="ig-hero__body grid items-center gap-12 @6xl:grid-cols-[minmax(0,520px)_1fr] @6xl:gap-12">
         <div className="max-w-[640px]">
           {/* TODO Ariën: check this title. white on orange only passes as large text, so everything here is big */}
-          <h1 className="text-[2.5rem] font-bold leading-[1.02] tracking-tight @3xl:text-[3.4rem]">
+          <h1 className="text-display font-bold tracking-tight">
             spellen en workshops voor teams, klassen en zorg
           </h1>
-          <p className="mt-8 text-2xl leading-snug">Spelen om te leren, spelen om te groeien. Vanuit Eindhoven.</p>
+          <p className="mt-8 text-lead leading-snug">Spelen om te leren, spelen om te groeien. Vanuit Eindhoven.</p>
           <div className="mt-10">
             <Btn split variant="light" onClick={() => go('workshops')}>boek een workshop</Btn>
           </div>
@@ -126,7 +126,7 @@ function ProofStrip() {
   return (
     <div className="bg-ig-cream px-5 pb-6 @3xl:px-16 [--ig-next-pad:28px]">
       <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-10 gap-y-4">
-        <p className="text-[15px] font-semibold text-ig-ink/70">o.a. gespeeld met</p>
+        <p className="text-body font-semibold text-ig-ink/70">o.a. gespeeld met</p>
         <ul className="flex flex-wrap items-center gap-x-10 gap-y-4" aria-label="opdrachtgevers">
           {proof.map((c) => (
             <li key={c.file}>
@@ -156,12 +156,12 @@ export function Home() {
       {hero === 'nieuw' && <HeroNew />}
       {/* option B (round 3): text on cream, the photo in its own box */}
       {hero === 'oud' && (
-      <Section id="A" label="hero" className="bg-ig-cream pb-6! pt-8! @3xl:pb-10! @3xl:pt-12!" note="tekst op crème · foto in een eigen kader rechts">
+      <Section id="A" label="hero" className="bg-ig-cream" note="tekst op crème · foto in een eigen kader rechts">
         <div className="grid items-center gap-8 @3xl:grid-cols-[1.05fr_1fr] @3xl:gap-14">
           <div>
-            <p className="mb-5 text-base font-medium">spelen om te leren · spelen om te groeien</p>
+            <p className="mb-5 text-body font-medium">spelen om te leren · spelen om te groeien</p>
             <H1 className="max-w-4xl">inner growth for outer change.</H1>
-            <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">
+            <p className="mt-6 max-w-xl text-lead leading-snug">
               Spelen is een mooie manier om te leren, te veranderen, om jezelf te ontwikkelen, om jezelf te leren kennen en te groeien.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
@@ -169,7 +169,7 @@ export function Home() {
               <Btn variant="ghost" onClick={() => go('preview', 'elemental-five-compleet')}>speel een preview</Btn>
             </div>
           </div>
-          <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="(min-width: 1024px) 50vw, 100vw" eager className="aspect-[4/3] w-full rounded-[var(--r-box)] @3xl:aspect-[5/4]" />
+          <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="(min-width: 1024px) 50vw, 100vw" eager className="aspect-[4/3] w-full rounded-box @3xl:aspect-[5/4]" />
         </div>
       </Section>
       )}
@@ -215,14 +215,14 @@ export function Home() {
         <div className="grid gap-10 @4xl:grid-cols-[1fr_2fr]">
           <div>
             <H2>zo werkt het</H2>
-            <p className="mt-4 max-w-sm text-lg leading-snug">Een workshop boeken gaat in drie stappen.</p>
+            <p className="mt-4 max-w-sm text-lead leading-snug">Een workshop boeken gaat in drie stappen.</p>
             <Btn split variant="dark" className="mt-7" onClick={() => go('contact')}>vertel over je groep</Btn>
           </div>
           <ol className="grid gap-5 @3xl:grid-cols-3">
             {HOW.map(([t, d], i) => (
               <li key={t} className="ig-card ig-card--still ig-card--text">
                 <div className="ig-card__body">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ig-orange text-lg font-bold text-ig-ink">{i + 1}</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ig-orange text-lead font-bold text-ig-ink">{i + 1}</span>
                   <h3 className="ig-card__title mt-4">{t}</h3>
                   <p className="ig-card__text mt-2">{d}</p>
                 </div>
@@ -236,9 +236,9 @@ export function Home() {
           the photo is the cut-out of box + cards + floor cards, there's no photo of only the box yet */}
       <Section id="D" label="uitgelicht spel" className="ig-section--rounded bg-ig-yellow pb-0!" innerClassName="ig-boxscene" innerRef={box} note="enige gele sectie op deze pagina">
           <div className="ig-boxscene__text">
-            <p className="mb-3 text-sm font-medium">uitgelicht spel</p>
+            <p className="mb-3 text-meta font-medium">uitgelicht spel</p>
             <H2>the elemental five</H2>
-            <p className="mt-5 max-w-lg text-lg leading-snug">Vijf elementen, vijf manieren om naar jezelf en elkaar te kijken. Speel eerst 30 seconden en voel het verschil.</p>
+            <p className="mt-5 max-w-lg text-lead leading-snug">Vijf elementen, vijf manieren om naar jezelf en elkaar te kijken. Speel eerst 30 seconden en voel het verschil.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Btn split variant="dark" onClick={() => go('preview', 'elemental-five-compleet')}>speel de preview</Btn>
               <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
@@ -263,7 +263,7 @@ export function Home() {
         <div className="grid items-center gap-10 @3xl:grid-cols-[1fr_1.3fr]">
           <div>
             <H2>vijf spelers, één idee</H2>
-            <p className="mt-4 max-w-md text-lg">Een serieuze organisatie die speelse dingen doet, vanuit Eindhoven.</p>
+            <p className="mt-4 max-w-md text-lead">Een serieuze organisatie die speelse dingen doet, vanuit Eindhoven.</p>
             <Btn variant="dark" className="mt-7" onClick={() => go('team')}>ontmoet het team →</Btn>
           </div>
           <div className="flex gap-4">
@@ -274,10 +274,10 @@ export function Home() {
                   {m.photo ? (
                     <Photo src={m.photo} alt={m.first} sizes="200px" className="h-full w-full" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-ig-cream text-xs text-neutral-500">foto volgt</div>
+                    <div className="flex h-full w-full items-center justify-center bg-ig-cream text-meta text-ig-ink/70">foto volgt</div>
                   )}
                 </div>
-                <p className="px-1 pt-2 text-sm font-semibold">{m.first}</p>
+                <p className="px-1 pt-2 text-meta font-semibold">{m.first}</p>
                 </div>
               </div>
             ))}
@@ -319,12 +319,12 @@ export function Workshops() {
               role="tab"
               aria-selected={f === t}
               onClick={() => setF(t)}
-              className={`rounded-full px-4 py-1.5 text-[15px] transition ${f === t ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow'}`}
+              className={chip(f === t)}
             >
               {t}
             </button>
           ))}
-          <span className="ml-auto text-sm text-neutral-500">{list.length} van {WORKSHOPS.length}</span>
+          <span className="ml-auto text-meta text-ig-ink/70">{list.length} van {WORKSHOPS.length}</span>
         </div>
         <div className="ig-grid">
           {list.map((w) => <WorkshopCard key={w.slug} w={w} />)}
@@ -360,18 +360,18 @@ export function Workshop() {
   return (
     <>
       <Header active="workshop" />
-      <Section id="A" label="workshop-kop" className="bg-white py-10! @3xl:py-16!" note="titel + feiten + boekknop boven de vouw">
-        <button onClick={() => go('workshops')} className="mb-6 text-sm underline">← alle workshops</button>
+      <Section id="A" label="workshop-kop" className="bg-white" note="titel + feiten + boekknop boven de vouw">
+        <button onClick={() => go('workshops')} className="mb-6 text-meta underline">← alle workshops</button>
         <div className="grid items-center gap-8 @3xl:grid-cols-[1.2fr_1fr] @3xl:gap-14">
           <div>
             <AudTags aud={w.aud} />
-            <H1 className="mt-5 text-[2.5rem]! @3xl:text-[4.5rem]!">{w.title}</H1>
-            <p className="mt-5 max-w-xl text-xl leading-snug">{w.tagline}</p>
-            <dl className="mt-6 grid grid-cols-2 gap-3 rounded-2xl bg-ig-cream p-4 text-sm">
+            <H1 className="mt-5">{w.title}</H1>
+            <p className="mt-5 max-w-xl text-lead leading-snug">{w.tagline}</p>
+            <dl className="mt-6 grid grid-cols-2 gap-3 rounded-box bg-ig-cream p-4 text-meta">
               {facts.map(([k, v]) => (
                 <div key={k} className={wide.includes(k) ? 'col-span-2' : ''}>
-                  <dt className="text-neutral-600">{k}</dt>
-                  <dd className="text-base font-semibold">{v}</dd>
+                  <dt className="text-ig-ink/70">{k}</dt>
+                  <dd className="text-body font-semibold">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -380,19 +380,19 @@ export function Workshop() {
               {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
             </div>
           </div>
-          <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} eager className="h-64 w-full rounded-2xl @3xl:h-[460px]" />
+          <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} eager className="h-64 w-full rounded-box @3xl:h-[460px]" />
         </div>
       </Section>
 
       <Section id="B" label="verhaal" className="bg-ig-cream" note="lopende tekst + voor wie">
         <div className="grid gap-12 @3xl:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-5 text-lg leading-relaxed">
+          <div className="space-y-5 text-lead leading-relaxed">
             <H2 className="mb-6">waar gaat het over?</H2>
             {w.story.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           <aside className="ig-card ig-card--still ig-card--text self-start">
             <div className="ig-card__body">
-              <p className="text-sm font-medium text-[#C84413]">voor wie</p>
+              <p className="text-meta font-medium text-ig-orange-text">voor wie</p>
               <ul className="mt-4 space-y-3">
                 {w.who.map((x) => (
                   <li key={x} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{x}</li>
@@ -412,8 +412,8 @@ export function Workshop() {
               <li key={t} className="flex gap-4">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ig-orange font-bold text-ig-ink">{i + 1}</span>
                 <div>
-                  <h3 className="text-xl font-semibold leading-tight">{t}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+                  <h3 className="text-lead font-semibold leading-tight">{t}</h3>
+                  <p className="mt-2 text-body leading-relaxed text-ig-ink/80">{d}</p>
                 </div>
               </li>
             ))}
@@ -427,7 +427,7 @@ export function Workshop() {
           {w.gets.map(([t, d], i) => (
             <div key={t} className="ig-card ig-card--still ig-card--text">
               <div className="ig-card__body">
-                <p className="text-3xl text-[#C84413]">0{i + 1}</p>
+                <p className="text-lead text-ig-orange-text">0{i + 1}</p>
                 <h3 className="ig-card__title mt-3">{t}</h3>
                 <p className="ig-card__text mt-2">{d}</p>
               </div>
@@ -444,10 +444,10 @@ export function Workshop() {
             <ol className="mt-8 space-y-6">
               {EXPECT.map(([t, d], i) => (
                 <li key={t} className="flex gap-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ig-orange text-lg font-bold text-ig-ink">{i + 1}</span>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ig-orange text-lead font-bold text-ig-ink">{i + 1}</span>
                   <div>
-                    <h3 className="text-xl font-bold leading-tight">{t}</h3>
-                    <p className="mt-1 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+                    <h3 className="text-lead font-bold leading-tight">{t}</h3>
+                    <p className="mt-1 text-body leading-relaxed text-ig-ink/80">{d}</p>
                   </div>
                 </li>
               ))}
@@ -461,28 +461,28 @@ export function Workshop() {
       <Section id="D" label="gerelateerd" className="bg-white" note="het bijbehorende spel + andere sessies">
         <div className="grid gap-12 @3xl:grid-cols-2">
           <div>
-            <h3 className="text-2xl font-semibold">{game ? 'speel het zelf' : 'bij elkaar horend'}</h3>
+            <h3 className="text-lead font-semibold">{game ? 'speel het zelf' : 'bij elkaar horend'}</h3>
             <div className="mt-5 space-y-4">
               {game ? (
                 <button onClick={() => go('game', game.slug)} className="ig-card mt-12 block w-full text-left">
                   <span className="ig-card__body flex items-center gap-4">
-                    <Photo src={game.photo} alt="" sizes="80px" contain className="h-20 w-20 shrink-0 rounded-[8px]" />
+                    <Photo src={game.photo} alt="" sizes="80px" contain className="h-20 w-20 shrink-0 rounded-media" />
                     <span className="ig-card__title">{game.title}</span>
                     <span className="ml-auto pr-2">→</span>
                   </span>
                 </button>
               ) : (
-                <p className="text-[15px] text-neutral-700">Voor deze workshop is geen apart spel. Bekijk onze andere spellen.</p>
+                <p className="text-body text-ig-ink/80">Voor deze workshop is geen apart spel. Bekijk onze andere spellen.</p>
               )}
               <Btn variant="ghost" onClick={() => go('games')}>alle spellen</Btn>
             </div>
           </div>
           <div>
-            <h3 className="text-2xl font-semibold">ook interessant</h3>
+            <h3 className="text-lead font-semibold">ook interessant</h3>
             <ul className="mt-5 divide-y divide-ig-ink/15 border-y border-ig-ink/15">
               {others.map((o) => (
                 <li key={o.slug}>
-                  <button onClick={() => go('workshop', o.slug)} className="flex w-full items-center justify-between px-1 py-4 text-left text-lg font-semibold hover:bg-white">
+                  <button onClick={() => go('workshop', o.slug)} className="flex w-full items-center justify-between px-1 py-4 text-left text-lead font-semibold hover:bg-white">
                     {o.title}<span>→</span>
                   </button>
                 </li>
@@ -517,21 +517,21 @@ export function Projects() {
           TODO Ariën: one result or quote from the HAN (only with permission) */}
       <Section id="B" label="uitgelichte case" className="bg-ig-cream" note="case: opdrachtgever · vraag · wat we maakten">
         <article className="grid gap-8 @3xl:grid-cols-[1fr_1.1fr] @3xl:gap-14">
-          <Photo src={soc.photo} alt={ALT[soc.photo]} contain className="aspect-square w-full rounded-[var(--r-box)] bg-white" />
+          <Photo src={soc.photo} alt={ALT[soc.photo]} contain className="aspect-square w-full rounded-box bg-white" />
           <div className="self-center">
-            <p className="text-sm font-medium text-[#C84413]">case · met de HAN</p>
+            <p className="text-meta font-medium text-ig-orange-text">case · met de HAN</p>
             <H2 className="mt-2">sociality</H2>
-            <dl className="mt-8 space-y-6 text-lg leading-relaxed">
+            <dl className="mt-8 space-y-6 text-lead leading-relaxed">
               <div>
-                <dt className="text-sm font-semibold text-neutral-600">opdrachtgever</dt>
+                <dt className="text-meta font-semibold text-ig-ink/70">opdrachtgever</dt>
                 <dd>Het lectoraat Versterken van Sociale Kwaliteit van de HAN</dd>
               </div>
               <div>
-                <dt className="text-sm font-semibold text-neutral-600">de vraag</dt>
+                <dt className="text-meta font-semibold text-ig-ink/70">de vraag</dt>
                 <dd>Het model Sociale Kwaliteit is waardevol, maar ook abstract. Hoe oefen je het in echte situaties?</dd>
               </div>
               <div>
-                <dt className="text-sm font-semibold text-neutral-600">wat we maakten</dt>
+                <dt className="text-meta font-semibold text-ig-ink/70">wat we maakten</dt>
                 <dd>Een bordspel met praktijkcasussen, gemaakt door het lectoraat samen met Ariën Kingma. Nu maken we nieuwe casussen met studenten sociaal werk.</dd>
               </div>
             </dl>
@@ -554,7 +554,7 @@ export function Projects() {
                   <Tag tone="cream">{p.when}</Tag>
                 </div>
                 <h3 className="ig-card__title">{p.title}</h3>
-                {p.with && <p className="ig-card__meta font-semibold text-[#C84413]!">met {p.with}</p>}
+                {p.with && <p className="ig-card__meta font-semibold text-ig-orange-text!">met {p.with}</p>}
                 <p className="ig-card__text">{p.text}</p>
               </div>
               </div>
@@ -596,8 +596,8 @@ export function Trainer() {
         label="paginakop"
         kicker="train-de-trainer"
         title="train-de-trainer"
-        // one line: never break after the hyphens. smaller than the other page titles so it fits
-        titleClass="whitespace-nowrap text-[2.3rem]! @3xl:text-[3.4rem]! @6xl:text-[4.6rem]!"
+        // one line: never break after the hyphens
+        titleClass="whitespace-nowrap"
         sub="Leer spel-workshops geven. Van zelf spelen tot zelf begeleiden."
         // a group at work, not the team photo again. TODO Ariën: a photo of a train-de-trainer day
         photo={BRIGHT.trainer}
@@ -614,7 +614,7 @@ export function Trainer() {
             <div key={k} className="ig-card ig-card--still ig-card--text">
               <div className="ig-card__body">
                 <p className="ig-card__meta">{k}</p>
-                <p className={`mt-1 ${k === 'opbouw' ? 'text-base' : 'text-3xl'} font-semibold leading-snug`}>{v}</p>
+                <p className={`mt-1 ${k === 'opbouw' ? 'text-body' : 'text-lead'} font-semibold leading-snug`}>{v}</p>
               </div>
             </div>
           ))}
@@ -627,7 +627,7 @@ export function Trainer() {
           {TRAIN.map(([t, d], i) => (
             <div key={t} className="ig-card ig-card--still ig-card--text">
               <div className="ig-card__body">
-                <p className="text-3xl text-[#C84413]">0{i + 1}</p>
+                <p className="text-lead text-ig-orange-text">0{i + 1}</p>
                 <h3 className="ig-card__title mt-3">{t}</h3>
                 <p className="ig-card__text mt-2">{d}</p>
               </div>
@@ -643,7 +643,7 @@ export function Trainer() {
               <span className="ig-card__body block">
                 <h3 className="ig-card__title">{t}</h3>
                 <p className="ig-card__text mt-2">{d}</p>
-                <p className="mt-4 text-sm font-semibold text-[#C84413]">meer lezen →</p>
+                <p className="mt-4 text-meta font-semibold text-ig-orange-text">meer lezen →</p>
               </span>
             </button>
           ))}
@@ -655,10 +655,10 @@ export function Trainer() {
           <div className="border-y border-ig-ink/30">
             {faq.map(([q, a], i) => (
               <div key={q} className="border-b border-ig-ink/20 last:border-0">
-                <button onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i} className="flex w-full items-center justify-between py-5 text-left text-xl font-semibold">
-                  {q}<span className="text-2xl">{open === i ? '–' : '+'}</span>
+                <button onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i} className="flex w-full items-center justify-between py-5 text-left text-lead font-semibold">
+                  {q}<span className="text-lead">{open === i ? '–' : '+'}</span>
                 </button>
-                {open === i && <p className="pb-5 pr-8 text-lg leading-relaxed">{a}</p>}
+                {open === i && <p className="pb-5 pr-8 text-lead leading-relaxed">{a}</p>}
               </div>
             ))}
           </div>
@@ -677,7 +677,7 @@ export function Legal() {
     <>
       <Header active="legal" />
       <Section id="A" label="juridische pagina" className="bg-white" note="dummy · tekst volgt">
-        <H1 className="text-[2.5rem]! @3xl:text-[4rem]!">{title}</H1>
+        <H1>{title}</H1>
         <Todo className="mt-8 max-w-2xl">
           De tekst van het {title} komt hier. In WordPress maak je deze pagina met een sjabloon (bijvoorbeeld van de branchevereniging of een jurist) en
           vul je de gegevens van InnerGames in: KvK-nummer, btw-nummer, adres en contact.
@@ -693,7 +693,7 @@ export function Contact() {
   const from = WORKSHOPS.find((x) => x.slug === sel)
   const [sent, setSent] = useState(false)
   // a clear focus: 2px orange around the field (instead of the general ink outline)
-  const input = 'w-full rounded-[var(--r-box)] bg-ig-cream px-4 py-2.5 text-base focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
+  const input = 'w-full rounded-box bg-ig-cream px-4 py-2.5 text-body focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
   return (
     <>
       <Header active="contact" />
@@ -701,8 +701,8 @@ export function Contact() {
         <div className="grid gap-12 @3xl:grid-cols-[1fr_1.1fr]">
           <div>
             <H1>contact</H1>
-            <p className="mt-6 max-w-md text-xl leading-snug">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
-            <div className="mt-8 space-y-1 text-lg">
+            <p className="mt-6 max-w-md text-lead leading-snug">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
+            <div className="mt-8 space-y-1 text-lead">
               <p className="font-semibold">InnerGames</p>
               <p>Bezoekadres: Kronehoefstraat 87, 5612 HL Eindhoven</p>
               <p>Postadres: Westrik 3, 5629 CE Eindhoven</p>
@@ -719,25 +719,25 @@ export function Contact() {
             </a>
           </div>
           {sent ? (
-            <div role="status" className="self-start rounded-[var(--r-box)] bg-ig-cream p-8">
-              <h2 className="text-3xl font-bold">dank je!</h2>
+            <div role="status" className="self-start rounded-box bg-ig-cream p-8">
+              <h2 className="text-lead font-bold">dank je!</h2>
               {/* TODO Ariën: check the response time */}
-              <p className="mt-3 text-lg">We reageren binnen 2 werkdagen.</p>
-              <p className="mt-4 text-sm text-neutral-600">(dit is een test, er is niets verzonden)</p>
+              <p className="mt-3 text-lead">We reageren binnen 2 werkdagen.</p>
+              <p className="mt-4 text-meta text-ig-ink/70">(dit is een test, er is niets verzonden)</p>
             </div>
           ) : (
             <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="ig-card ig-card--still ig-card--text self-start">
               <div className="ig-card__body space-y-4">
               {/* naam and organisatie side by side, so the whole form fits on one desktop screen */}
               <div className="grid gap-4 @xl:grid-cols-2">
-                <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
-                <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
+                <label className="block text-meta font-semibold">Naam<input required className={`${input} mt-1`} /></label>
+                <label className="block text-meta font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
               </div>
-              <label className="block text-sm font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
+              <label className="block text-meta font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
               {from && (
-                <label className="block text-sm font-semibold">Workshop<input name="workshop" defaultValue={from.title} className={`${input} mt-1`} /></label>
+                <label className="block text-meta font-semibold">Workshop<input name="workshop" defaultValue={from.title} className={`${input} mt-1`} /></label>
               )}
-              <label className="block text-sm font-semibold">Waar kunnen we je mee helpen?
+              <label className="block text-meta font-semibold">Waar kunnen we je mee helpen?
                 <select className={`${input} mt-1`} defaultValue={from ? 'een workshop voor mijn team' : undefined}>
                   <option>een workshop voor mijn team</option>
                   <option>een les of spel voor mijn klas</option>
@@ -746,7 +746,7 @@ export function Contact() {
                   <option>iets anders</option>
                 </select>
               </label>
-              <label className="block text-sm font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
+              <label className="block text-meta font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
               <Btn split type="submit" variant="dark">verstuur</Btn>
               </div>
             </form>

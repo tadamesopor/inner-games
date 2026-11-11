@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, btnLink, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { Btn, btnLink, chip, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
 /** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
@@ -34,7 +34,7 @@ function GameCard({ g }: { g: G }) {
         <h3 className="ig-card__title">{g.title}</h3>
         <p className="ig-card__text">{g.short}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-3">
-          <span className="text-lg font-semibold">{g.price}</span>
+          <span className="text-lead font-semibold">{g.price}</span>
           {!g.status ? (
             <span onClick={(e) => e.stopPropagation()}>
               <Btn
@@ -81,12 +81,12 @@ export function Games() {
               role="tab"
               aria-selected={f === t}
               onClick={() => setF(t)}
-              className={`rounded-full px-4 py-1.5 text-[15px] transition ${f === t ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow'}`}
+              className={chip(f === t)}
             >
               {t}
             </button>
           ))}
-          <span className="ml-auto text-sm text-neutral-500">{list.length} van {GAMES.length}</span>
+          <span className="ml-auto text-meta text-ig-ink/70">{list.length} van {GAMES.length}</span>
         </div>
         <div className="ig-grid">
           {list.map((g) => <GameCard key={g.slug} g={g} />)}
@@ -118,20 +118,20 @@ function Teaser({ game }: { game: G }) {
   if (!s) return null
 
   return (
-    <div className="rounded-[var(--r-box)] bg-ig-cream p-5 text-ig-ink @3xl:p-8">
+    <div className="rounded-box bg-ig-cream p-5 text-ig-ink @3xl:p-8">
       <div className="mb-6 flex items-center gap-1.5" aria-label={`Stap ${Math.min(i + 1, steps.length)} van ${steps.length}`}>
         {steps.map((_, k) => <span key={k} className={`h-1.5 flex-1 rounded-full ${k < i ? 'bg-ig-orange' : k === i && !done ? 'bg-ig-yellow' : 'bg-white'}`} />)}
       </div>
       {!done ? (
         <div className="[perspective:1000px]">
-          <div key={i} className="animate-[flipIn_.5s_ease-out] rounded-2xl bg-white p-6 text-center @3xl:p-10">
-            <p className="text-sm font-medium text-ig-orange">{s.kind}</p>
-            <p className="mx-auto mt-4 max-w-xl text-2xl font-semibold leading-tight @3xl:text-4xl">{s.prompt}</p>
-            {s.body && <p className="mx-auto mt-4 max-w-lg text-lg leading-snug text-neutral-700">{s.body}</p>}
+          <div key={i} className="animate-[flipIn_.5s_ease-out] rounded-box bg-white p-6 text-center @3xl:p-10">
+            <p className="text-meta font-medium text-ig-orange-text">{s.kind}</p>
+            <p className="mx-auto mt-4 max-w-xl text-lead font-semibold leading-tight @3xl:text-h2">{s.prompt}</p>
+            {s.body && <p className="mx-auto mt-4 max-w-lg text-lead leading-snug text-ig-ink/80">{s.body}</p>}
             {s.bars && (
               <div className="mx-auto mt-6 max-w-md space-y-3 text-left">
                 {s.legend && (
-                  <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-neutral-600">
+                  <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-meta text-ig-ink/70">
                     <span className="flex items-center gap-1.5"><span className={`h-2.5 w-5 rounded-full ${lightBar}`} />{s.legend.light}</span>
                     <span className="flex items-center gap-1.5"><span className="h-2.5 w-5 rounded-full bg-ig-orange" />{s.legend.full}</span>
                   </div>
@@ -141,7 +141,7 @@ function Teaser({ game }: { game: G }) {
                   const lightOnTop = b.before !== undefined && b.before < b.value
                   return (
                     <div key={b.label}>
-                      <div className="flex justify-between gap-3 text-sm"><span>{b.label}</span><span className="text-neutral-500">{b.text ?? `${b.value}%`}</span></div>
+                      <div className="flex justify-between gap-3 text-meta"><span>{b.label}</span><span className="text-ig-ink/70">{b.text ?? `${b.value}%`}</span></div>
                       <div className="relative mt-1 h-3 overflow-hidden rounded-full bg-ig-cream">
                         <span className={`absolute inset-y-0 left-0 rounded-full bg-ig-orange transition-all duration-700 ${lightOnTop ? 'z-0' : 'z-10'}`} style={{ width: `${b.value}%` }} />
                         {b.before !== undefined && <span className={`absolute inset-y-0 left-0 rounded-full ${lightBar} ${lightOnTop ? 'z-10' : 'z-0'}`} style={{ width: `${b.before}%` }} />}
@@ -156,7 +156,7 @@ function Teaser({ game }: { game: G }) {
                 <button
                   key={o}
                   onClick={() => next(o)}
-                  className={`rounded-full px-5 py-2.5 text-base font-semibold transition hover:-translate-y-0.5 hover:bg-ig-yellow ${picked === o ? 'bg-ig-orange' : 'bg-ig-cream'}`}
+                  className={`rounded-tag px-5 py-2.5 text-body font-semibold transition hover:-translate-y-0.5 hover:bg-ig-yellow ${picked === o ? 'bg-ig-orange' : 'bg-ig-cream'}`}
                 >
                   {o}
                 </button>
@@ -165,10 +165,10 @@ function Teaser({ game }: { game: G }) {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl bg-white p-6 text-center @3xl:p-10" role="status">
+        <div className="rounded-box bg-white p-6 text-center @3xl:p-10" role="status">
           <img src="/assets/meeple.png" alt="" aria-hidden className="mx-auto h-14 w-14 object-contain mix-blend-multiply" />
-          <p className="mt-3 text-2xl font-semibold lowercase @3xl:text-4xl">dat was een voorproefje.</p>
-          <p className="mx-auto mt-3 max-w-md text-lg">Wil je het hele spel met je team of klas spelen?</p>
+          <p className="mt-3 text-lead font-semibold lowercase @3xl:text-h2">dat was een voorproefje.</p>
+          <p className="mx-auto mt-3 max-w-md text-lead">Wil je het hele spel met je team of klas spelen?</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Btn split variant="dark" onClick={() => { if (!cart[game.slug]) addToCart(game.slug, 1); go('game', game.slug) }}>koop het spel · {game.price}</Btn>
             <Btn split variant="primary" onClick={() => (matching.length === 1 ? go('workshop', matching[0].slug) : go('contact'))}>boek een workshop</Btn>
@@ -198,13 +198,13 @@ export function Game() {
     <>
       <Header active="game" tone="cream" />
       <Section id="A" label="product" className="bg-ig-cream" note="galerij + titel + koopknop (WooCommerce product)">
-        <button onClick={() => go('games')} className="mb-6 text-sm underline">← alle spellen</button>
+        <button onClick={() => go('games')} className="mb-6 text-meta underline">← alle spellen</button>
         <div className="grid gap-10 @3xl:grid-cols-2 @3xl:gap-14">
           <div>
-            <Photo src={g.gallery[img]} alt={ALT[g.gallery[img]] ?? g.title} eager contain className="aspect-[4/3] w-full rounded-[var(--r-box)]" />
+            <Photo src={g.gallery[img]} alt={ALT[g.gallery[img]] ?? g.title} eager contain className="aspect-[4/3] w-full rounded-box" />
             <div className={`mt-5 flex gap-3 ${g.gallery.length < 2 ? 'hidden' : ''}`}>
               {g.gallery.map((p, k) => (
-                <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-[8px] ${img === k ? 'ring-3 ring-ig-orange' : 'ring-1 ring-ig-ink/12'}`}>
+                <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-media ${img === k ? 'ring-3 ring-ig-orange' : 'ring-1 ring-ig-ink/12'}`}>
                   {/* all thumbnails the same: square, the same crop, the same white background */}
                   <Photo src={p} alt={ALT[p] ?? ''} sizes="80px" className="aspect-square w-20 bg-white!" />
                 </button>
@@ -216,18 +216,18 @@ export function Game() {
               {g.aud.map((a) => <Tag key={a} tone="white">{AUD_LABEL[a]}</Tag>)}
               {g.status && <Tag tone="yellow">{g.status}</Tag>}
             </div>
-            <h1 className="mt-4 text-4xl font-bold leading-[1] tracking-tight @3xl:text-6xl">{g.title}</h1>
-            <p className="mt-5 text-xl leading-snug">{g.short}</p>
-            <dl className="mt-6 grid grid-cols-1 gap-3 text-sm @3xl:grid-cols-2">
+            <h1 className="mt-4 text-h1 font-bold tracking-tight">{g.title}</h1>
+            <p className="mt-5 text-lead leading-snug">{g.short}</p>
+            <dl className="mt-6 grid grid-cols-1 gap-3 text-meta @3xl:grid-cols-2">
               {facts.map(([k, v]) => (
-                <div key={k} className="rounded-xl bg-white p-3">
-                  <dt className="text-neutral-600">{k}</dt>
+                <div key={k} className="rounded-box bg-white p-3">
+                  <dt className="text-ig-ink/70">{k}</dt>
                   <dd className="mt-1 font-semibold">{v}</dd>
                 </div>
               ))}
             </dl>
-            <p className="mt-8 text-3xl font-semibold">{g.price}</p>
-            <p className="text-sm text-neutral-600">{g.priceNote ?? 'incl. btw'}</p>
+            <p className="mt-8 text-lead font-semibold">{g.price}</p>
+            <p className="text-meta text-ig-ink/70">{g.priceNote ?? 'incl. btw'}</p>
             {/* TODO Ariën: the delivery text under the button (for example "verzonden binnen 2 werkdagen") */}
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Qty value={qty} onChange={setQty} label={g.title} disabled={!!g.status} />
@@ -255,7 +255,7 @@ export function Game() {
               )}
             </div>
             {added !== null && (
-              <p role="status" className="mt-4 rounded-[var(--r-box)] bg-white px-4 py-3 text-base">
+              <p role="status" className="mt-4 rounded-box bg-white px-4 py-3 text-body">
                 <span className="font-semibold">{added}× {g.title} toegevoegd.</span>{' '}
                 <button type="button" onClick={openCart} className="underline underline-offset-2">bekijk winkelmand</button>
                 {' · '}
@@ -270,11 +270,11 @@ export function Game() {
         // with a cut-out of the box: the box scene. the box lands next to the text and steps over the
         // rounded edge into the preview section (src/motion/boxscene.css)
         <Section id="B" label="omschrijving" className="ig-section--rounded bg-white pb-0!" innerClassName="ig-boxscene" innerRef={box} note="tekst + inhoud van de doos · doos landt bij scrollen">
-          <div className="ig-boxscene__text space-y-5 pb-12 text-lg leading-relaxed">
+          <div className="ig-boxscene__text space-y-5 pb-12 text-lead leading-relaxed">
             <H2 className="mb-6">over dit spel</H2>
             {g.story.map((p, i) => <p key={i}>{p}</p>)}
-            <div className="rounded-[var(--r-box)] bg-ig-cream p-6 text-base">
-              <p className="text-sm font-medium text-[#C84413]">wat zit er in de doos</p>
+            <div className="rounded-box bg-ig-cream p-6 text-body">
+              <p className="text-meta font-medium text-ig-orange-text">wat zit er in de doos</p>
               <ul className="mt-4 space-y-2">
                 {g.contents.map((c) => <li key={c} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{c}</li>)}
               </ul>
@@ -288,13 +288,13 @@ export function Game() {
       ) : (
       <Section id="B" label="omschrijving" className="bg-white" note="tekst + inhoud van de doos">
         <div className="grid gap-12 @3xl:grid-cols-[1.2fr_1fr]">
-          <div className="space-y-5 text-lg leading-relaxed">
+          <div className="space-y-5 text-lead leading-relaxed">
             <H2 className="mb-6">over dit spel</H2>
             {g.story.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           <aside className="ig-card ig-card--still ig-card--text self-start">
             <div className="ig-card__body">
-              <p className="text-sm font-medium text-[#C84413]">wat zit er in de doos</p>
+              <p className="text-meta font-medium text-ig-orange-text">wat zit er in de doos</p>
               <ul className="mt-4 space-y-3">
                 {g.contents.map((c) => <li key={c} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{c}</li>)}
               </ul>
@@ -311,7 +311,7 @@ export function Game() {
         ) : (
           <div className="ig-card ig-card--still ig-card--text text-ig-ink">
             <div className="ig-card__body">
-              <p className="text-xl font-semibold">Voor dit spel is nog geen preview. Het wordt herzien.</p>
+              <p className="text-lead font-semibold">Voor dit spel is nog geen preview. Het wordt herzien.</p>
               <Btn variant="dark" className="mt-5" onClick={() => go('contact')}>laat het me weten</Btn>
             </div>
           </div>
@@ -328,7 +328,7 @@ export function Game() {
                   <span className="ig-card__body block">
                     <h3 className="ig-card__title">{w.title}</h3>
                     <p className="ig-card__meta mt-1">{w.duration} · {w.price}</p>
-                    <p className="mt-3 text-sm font-semibold text-[#C84413]">bekijk de workshop →</p>
+                    <p className="mt-3 text-meta font-semibold text-ig-orange-text">bekijk de workshop →</p>
                   </span>
                 </button>
               ))}
@@ -354,9 +354,9 @@ export function Preview() {
     <>
       <Header active="preview" tone="orange" />
       <Section id="A" label="speelbare preview" className="min-h-[640px] bg-ig-orange text-white" note="± 30 sec · 4 à 5 stappen · eindigt in CTA">
-        <button onClick={() => go('game', g.slug)} className="mb-6 text-sm underline">← terug naar {g.title}</button>
-        <p className="text-base font-medium">preview · {g.previewKey}</p>
-        <h1 className="mb-8 mt-2 text-4xl font-bold leading-none tracking-tight @3xl:text-7xl">speel 30 seconden</h1>
+        <button onClick={() => go('game', g.slug)} className="mb-6 text-meta underline">← terug naar {g.title}</button>
+        <p className="text-body font-medium">preview · {g.previewKey}</p>
+        <h1 className="mb-8 mt-2 text-h1 font-bold tracking-tight">speel 30 seconden</h1>
         <div className="mx-auto max-w-3xl"><Teaser game={g} /></div>
       </Section>
     </>
@@ -368,9 +368,9 @@ export function Qty({ value, onChange, label, disabled }: { value: number; onCha
   const [text, setText] = useState(String(value))
   useEffect(() => setText(String(value)), [value])
   const clamp = (n: number) => Math.max(1, Math.min(99, Math.round(n) || 1))
-  const step = 'flex h-11 w-10 items-center justify-center text-lg font-semibold disabled:opacity-40'
+  const step = 'flex h-11 w-10 items-center justify-center text-lead font-semibold disabled:opacity-40'
   return (
-    <div className={`inline-flex h-11 items-center rounded-[var(--r-box)] bg-white ring-1 ring-ig-ink/20 ${disabled ? 'opacity-50' : ''}`}>
+    <div className={`inline-flex h-11 items-center rounded-box bg-white ring-1 ring-ig-ink/20 ${disabled ? 'opacity-50' : ''}`}>
       <button type="button" className={step} onClick={() => onChange(clamp(value - 1))} disabled={disabled || value <= 1} aria-label={`${label}: één minder`}>
         −
       </button>
@@ -388,7 +388,7 @@ export function Qty({ value, onChange, label, disabled }: { value: number; onCha
           if (!Number.isNaN(n)) onChange(clamp(n))
         }}
         onBlur={() => setText(String(value))}
-        className="h-11 w-10 bg-transparent text-center text-base font-semibold outline-none [appearance:textfield] focus-visible:ring-2 focus-visible:ring-ig-orange [&::-webkit-inner-spin-button]:appearance-none"
+        className="h-11 w-10 bg-transparent text-center text-body font-semibold outline-none [appearance:textfield] focus-visible:ring-2 focus-visible:ring-ig-orange [&::-webkit-inner-spin-button]:appearance-none"
       />
       <button type="button" className={step} onClick={() => onChange(clamp(value + 1))} disabled={disabled || value >= 99} aria-label={`${label}: één meer`}>
         +
@@ -416,16 +416,16 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-label="Winkelmand">
       <button type="button" className="absolute inset-0 bg-ig-ink/30" onClick={onClose} aria-label="Sluit de winkelmand" tabIndex={-1} />
-      <div className="absolute inset-y-0 right-0 flex w-[min(440px,100%)] flex-col bg-white shadow-[0_0_40px_rgb(42_24_16/0.2)]">
+      <div className="absolute inset-y-0 right-0 flex w-[min(440px,100%)] flex-col bg-white shadow-lift">
         <div className="flex items-center justify-between border-b border-ig-ink/10 px-5 py-4">
-          <h2 className="text-2xl font-semibold">winkelmand</h2>
-          <button ref={close} type="button" onClick={onClose} className="h-11 rounded-[var(--r-box)] bg-ig-cream px-4 text-sm font-semibold hover:bg-[#fde7b0]">
+          <h2 className="text-lead font-semibold">winkelmand</h2>
+          <button ref={close} type="button" onClick={onClose} className="h-11 rounded-box bg-ig-cream px-4 text-meta font-semibold hover:bg-ig-yellow-light">
             sluit
           </button>
         </div>
         {rows.length === 0 ? (
           <div className="flex-1 px-5 py-6">
-            <p className="text-base">Je winkelmand is nog leeg.</p>
+            <p className="text-body">Je winkelmand is nog leeg.</p>
             <Btn variant="ghost" className="mt-4" onClick={() => { onClose(); go('games') }}>bekijk de spellen</Btn>
           </div>
         ) : (
@@ -434,16 +434,16 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               const each = priceOf(g)
               return (
                 <li key={g.slug} className="grid grid-cols-[64px_1fr] gap-4 py-4">
-                  <Photo src={g.photo} alt="" sizes="64px" contain className="aspect-square w-16 rounded-[8px]" />
+                  <Photo src={g.photo} alt="" sizes="64px" contain className="aspect-square w-16 rounded-media" />
                   <div>
                     <div className="flex items-start justify-between gap-3">
                       <p className="font-semibold leading-snug">{g.title}</p>
                       <p className="shrink-0 font-semibold">{each === null ? '' : euro(each * n)}</p>
                     </div>
-                    <p className="text-sm text-neutral-600">{g.price} per stuk</p>
+                    <p className="text-meta text-ig-ink/70">{g.price} per stuk</p>
                     <div className="mt-2 flex items-center gap-3">
                       <Qty value={n} onChange={(x) => setQty(g.slug, x)} label={g.title} />
-                      <button type="button" onClick={() => setQty(g.slug, 0)} className="text-sm underline underline-offset-2">
+                      <button type="button" onClick={() => setQty(g.slug, 0)} className="text-meta underline underline-offset-2">
                         verwijder
                       </button>
                     </div>
@@ -455,11 +455,11 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         )}
         {rows.length > 0 && (
           <div className="border-t border-ig-ink/10 px-5 py-5">
-            <div className="flex justify-between text-lg font-semibold">
+            <div className="flex justify-between text-lead font-semibold">
               <span>subtotaal</span>
               <span>{euro(sub)}</span>
             </div>
-            <p className="text-sm text-neutral-600">incl. btw · verzendkosten: berekend bij afrekenen</p>
+            <p className="text-meta text-ig-ink/70">incl. btw · verzendkosten: berekend bij afrekenen</p>
             <Btn
               split
               variant="dark"
@@ -471,7 +471,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             >
               naar afrekenen
             </Btn>
-            <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
+            <p className="mt-3 text-meta text-ig-ink/70">prototype · afrekenen verloopt straks via WooCommerce</p>
           </div>
         )}
       </div>
@@ -488,15 +488,15 @@ export function Checkout() {
     .map(([slug, n]) => ({ g: GAMES.find((x) => x.slug === slug), n }))
     .filter((r): r is { g: G; n: number } => !!r.g)
   const sub = rows.reduce((t, r) => t + (priceOf(r.g) ?? 0) * r.n, 0)
-  const input = 'mt-1 w-full rounded-[var(--r-box)] bg-ig-cream px-4 py-2.5 text-base focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
+  const input = 'mt-1 w-full rounded-box bg-ig-cream px-4 py-2.5 text-body focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
   return (
     <>
       <Header active="checkout" />
       <Section id="A" label="afrekenen" className="bg-white" note="dummy · WooCommerce afrekenen">
-        <button onClick={() => go('games')} className="mb-6 text-sm underline">← verder winkelen</button>
-        <H1 className="text-[2.5rem]! @3xl:text-[4rem]!">afrekenen</H1>
+        <button onClick={() => go('games')} className="mb-6 text-meta underline">← verder winkelen</button>
+        <H1>afrekenen</H1>
         {rows.length === 0 ? (
-          <p className="mt-6 text-lg">Je winkelmand is leeg.</p>
+          <p className="mt-6 text-lead">Je winkelmand is leeg.</p>
         ) : (
           <div className="mt-10 grid gap-10 @4xl:grid-cols-[1.2fr_1fr]">
             <form
@@ -506,31 +506,31 @@ export function Checkout() {
               }}
               className="space-y-4"
             >
-              <h2 className="text-2xl font-bold">je gegevens</h2>
+              <h2 className="text-lead font-bold">je gegevens</h2>
               <div className="grid gap-4 @xl:grid-cols-2">
-                <label className="block text-sm font-semibold">Naam<input className={input} autoComplete="name" /></label>
-                <label className="block text-sm font-semibold">E-mail<input type="email" className={input} autoComplete="email" /></label>
+                <label className="block text-meta font-semibold">Naam<input className={input} autoComplete="name" /></label>
+                <label className="block text-meta font-semibold">E-mail<input type="email" className={input} autoComplete="email" /></label>
               </div>
-              <label className="block text-sm font-semibold">Adres<input className={input} autoComplete="street-address" /></label>
+              <label className="block text-meta font-semibold">Adres<input className={input} autoComplete="street-address" /></label>
               <div className="grid gap-4 @xl:grid-cols-[1fr_2fr]">
-                <label className="block text-sm font-semibold">Postcode<input className={input} autoComplete="postal-code" /></label>
-                <label className="block text-sm font-semibold">Plaats<input className={input} autoComplete="address-level2" /></label>
+                <label className="block text-meta font-semibold">Postcode<input className={input} autoComplete="postal-code" /></label>
+                <label className="block text-meta font-semibold">Plaats<input className={input} autoComplete="address-level2" /></label>
               </div>
               <Btn split type="submit" variant="dark">bestelling plaatsen</Btn>
               {stop ? (
-                <p role="status" className="rounded-[8px] bg-ig-yellow px-3 py-2 text-sm font-semibold">hier stopt de test</p>
+                <p role="status" className="rounded-media bg-ig-yellow px-3 py-2 text-meta font-semibold">hier stopt de test</p>
               ) : (
-                <p className="text-xs text-neutral-500">prototype · er wordt niets besteld of betaald</p>
+                <p className="text-meta text-ig-ink/70">prototype · er wordt niets besteld of betaald</p>
               )}
             </form>
-            <aside className="self-start rounded-[var(--r-box)] bg-ig-cream p-6">
-              <h2 className="text-2xl font-bold">je bestelling</h2>
+            <aside className="self-start rounded-box bg-ig-cream p-6">
+              <h2 className="text-lead font-bold">je bestelling</h2>
               <ul className="mt-4 divide-y divide-ig-ink/10">
                 {rows.map(({ g, n }) => {
                   const each = priceOf(g)
                   return (
                     <li key={g.slug} className="flex items-center gap-4 py-3">
-                      <Photo src={g.photo} alt="" sizes="56px" className="aspect-square w-14 shrink-0 rounded-[8px] bg-white!" />
+                      <Photo src={g.photo} alt="" sizes="56px" className="aspect-square w-14 shrink-0 rounded-media bg-white!" />
                       <span className="flex-1 font-semibold leading-snug">
                         {n}× {g.title}
                       </span>
@@ -539,13 +539,13 @@ export function Checkout() {
                   )
                 })}
               </ul>
-              <div className="mt-4 flex justify-between border-t border-ig-ink/15 pt-4 text-lg font-bold">
+              <div className="mt-4 flex justify-between border-t border-ig-ink/15 pt-4 text-lead font-bold">
                 <span>subtotaal</span>
                 <span>{euro(sub)}</span>
               </div>
-              <p className="text-sm text-neutral-600">incl. btw</p>
+              <p className="text-meta text-ig-ink/70">incl. btw</p>
               {/* TODO Ariën: shipping costs */}
-              <p className="mt-3 inline-block rounded-[var(--r-tag)] border border-dashed border-ig-ink/40 px-2.5 py-1 text-sm">verzendkosten: nog aan te leveren</p>
+              <p className="mt-3 inline-block rounded-tag border border-dashed border-ig-ink/40 px-2.5 py-1 text-meta">verzendkosten: nog aan te leveren</p>
             </aside>
           </div>
         )}

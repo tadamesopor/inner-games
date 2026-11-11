@@ -2,13 +2,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+/* the tokens themselves live in src/motion/tokens.css; this only makes Tailwind classes of them */
 @theme static {
   --font-sans: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif;
   --font-mono: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif; /* no monospace anywhere: tags and labels use the brand font too */
-  --color-ig-orange: #ea561f;
-  --color-ig-yellow: #fab512;
-  --color-ig-ink: #2a1810;
-  --color-ig-cream: #fff6e6;
+  --color-ig-orange: var(--ig-orange);
+  --color-ig-orange-text: var(--ig-orange-text);
+  --color-ig-yellow: var(--ig-yellow);
+  --color-ig-yellow-light: var(--ig-yellow-light);
+  --color-ig-ink: var(--ig-ink);
+  --color-ig-cream: var(--ig-cream);
+  --radius-box: var(--r-box);
+  --radius-tag: var(--r-tag);
+  --radius-media: var(--r-media);
+  --shadow-soft: var(--ig-shadow-soft);
+  --shadow-lift: var(--ig-shadow-lift);
+  --text-meta: var(--fs-meta);
+  --text-meta--line-height: 1.4;
+  --text-body: var(--fs-body);
+  --text-body--line-height: 1.55;
+  --text-lead: var(--fs-lead);
+  --text-lead--line-height: 1.3;
+  --text-h2: var(--fs-h2);
+  --text-h2--line-height: 1;
+  --text-h1: var(--fs-h1);
+  --text-h1--line-height: 0.98;
+  --text-display: var(--fs-display);
+  --text-display--line-height: 1.02;
 }
 
 html,

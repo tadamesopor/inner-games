@@ -151,7 +151,7 @@
   transition: background-color var(--dur-ui) var(--ease-soft);
 }
 .ig-table__label:hover {
-  background: #fde7b0;
+  background: var(--ig-yellow-light);
 }
 .ig-table.is-live .ig-table__labels {
   position: absolute;

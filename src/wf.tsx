@@ -70,14 +70,14 @@ export function Section({
   const { ann } = useContext(Ctx)
   return (
     <section
-      className={`relative px-5 py-14 @3xl:px-16 @3xl:py-24 ${className} ${ann ? 'outline-dashed outline-1 -outline-offset-1 outline-black/60' : ''}`}
+      className={`relative px-5 py-16 @3xl:px-16 @3xl:py-24 ${className} ${ann ? 'outline-dashed outline-1 -outline-offset-1 outline-black/60' : ''}`}
     >
       {ann && label && (
         <div className="absolute left-0 top-0 z-30 flex max-w-full items-start">
-          <span className="bg-black px-2 py-1 text-[11px] text-white">
+          <span className="bg-black px-2 py-1 text-meta text-white">
             {id} · {label}
           </span>
-          {note && <span className="hidden bg-yellow-200 px-2 py-1 text-[11px] text-black @3xl:block">{note}</span>}
+          {note && <span className="hidden bg-yellow-200 px-2 py-1 text-meta text-black @3xl:block">{note}</span>}
         </div>
       )}
       {/* content stops at 1280px, so cards and text don't stretch on a wide screen. not positioned on purpose:
@@ -93,9 +93,9 @@ export function Section({
     as real. the text says what goes here; the real content comes from Ariën (see docs/OPEN_QUESTIONS.md) */
 export function Todo({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[var(--r-box)] border-[1.5px] border-dashed border-current/35 p-5 ${className}`}>
-      <p className="mb-2 inline-block rounded-[var(--r-tag)] bg-ig-yellow px-2.5 py-1 text-[12px] font-semibold leading-none text-ig-ink">nog aan te leveren</p>
-      <div className="text-[15px] leading-relaxed opacity-80">{children}</div>
+    <div className={`rounded-box border-[1.5px] border-dashed border-current/35 p-5 ${className}`}>
+      <p className="mb-2 inline-block rounded-tag bg-ig-yellow px-2.5 py-1 text-meta font-semibold leading-none text-ig-ink">nog aan te leveren</p>
+      <div className="text-body leading-relaxed opacity-80">{children}</div>
     </div>
   )
 }
@@ -146,7 +146,7 @@ export function Photo({
 export function Img({ label, className = 'aspect-[4/3]' }: { label: string; className?: string }) {
   return (
     <div className={`relative overflow-hidden border border-dashed border-ig-ink/40 bg-ig-cream ${className}`}>
-      <span className="absolute left-1/2 top-1/2 w-[85%] -translate-x-1/2 -translate-y-1/2 bg-white/90 px-2 py-1 text-center text-xs leading-tight">
+      <span className="absolute left-1/2 top-1/2 w-[85%] -translate-x-1/2 -translate-y-1/2 bg-white/90 px-2 py-1 text-center text-meta leading-tight">
         {label}
       </span>
     </div>
@@ -198,7 +198,7 @@ const VARIANT: Record<Variant, string> = {
   ghostLight: 'border-ig-cream/80 bg-transparent text-ig-cream hover:bg-ig-cream hover:text-ig-ink',
 }
 /** the secondary button look, for links (like the WhatsApp link) */
-export const btnLink = `inline-flex items-center justify-center gap-2 rounded-[var(--r-box)] border-[1.5px] px-5 py-3 text-[15px] font-semibold lowercase transition-colors duration-150 ${OUTLINE}`
+export const btnLink = `inline-flex items-center justify-center gap-2 rounded-box border-[1.5px] px-5 py-3 text-body font-semibold lowercase transition-colors duration-150 ${OUTLINE}`
 
 export function Btn({
   children,
@@ -229,7 +229,7 @@ export function Btn({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--r-box)] border-[1.5px] px-5 py-3 text-[15px] font-semibold lowercase transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ig-ink disabled:opacity-50 @3xl:w-auto ${VARIANT[variant]} ${className}`}
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-box border-[1.5px] px-5 py-3 text-body font-semibold lowercase transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ig-ink disabled:opacity-50 @3xl:w-auto ${VARIANT[variant]} ${className}`}
     >
       {children}
     </button>
@@ -237,11 +237,11 @@ export function Btn({
 }
 
 export function H1({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <h1 className={`text-[2.8rem] font-bold lowercase leading-[0.95] tracking-tight @3xl:text-[6.5rem] ${className}`}>{children}</h1>
+  return <h1 className={`text-h1 font-bold lowercase tracking-tight ${className}`}>{children}</h1>
 }
 
 export function H2({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <h2 className={`text-[2rem] font-bold lowercase leading-[1] tracking-tight @3xl:text-6xl ${className}`}>{children}</h2>
+  return <h2 className={`text-h2 font-bold lowercase tracking-tight ${className}`}>{children}</h2>
 }
 
 export function Tag({ children, tone = 'yellow' }: { children: ReactNode; tone?: 'yellow' | 'white' | 'orange' | 'cream' }) {
@@ -251,8 +251,11 @@ export function Tag({ children, tone = 'yellow' }: { children: ReactNode; tone?:
     orange: 'bg-ig-orange',
     cream: 'bg-ig-cream',
   }[tone]
-  return <span className={`ig-tag inline-block rounded-[var(--r-tag)] px-3 py-1 text-[13px] font-medium lowercase leading-none text-ig-ink ${t}`}>{children}</span>
+  return <span className={`ig-tag inline-block rounded-tag px-3 py-1 text-meta font-medium lowercase leading-none text-ig-ink ${t}`}>{children}</span>
 }
+
+/** a filter button above a list (doelgroep, rol): the same everywhere */
+export const chip = (on: boolean) => `rounded-tag px-4 py-1.5 text-body transition-colors ${on ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow-light'}`
 
 export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string }) {
   const paths: Record<Aud, string> = {
@@ -268,7 +271,7 @@ export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string 
     trainers: 'bg-ig-ink text-ig-yellow',
   }
   return (
-    <span className={`flex h-14 w-14 items-center justify-center rounded-[var(--r-box)] ${bg[aud]} ${className}`}>
+    <span className={`flex h-14 w-14 items-center justify-center rounded-box ${bg[aud]} ${className}`}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d={paths[aud]} />
       </svg>
@@ -306,14 +309,14 @@ export function PageHero({
   tone?: Tone
 }) {
   return (
-    <Section id={id} label={label} className={`ig-section--rounded py-10! @3xl:py-16! ${TONE[tone]}`}>
+    <Section id={id} label={label} className={`ig-section--rounded ${TONE[tone]}`}>
       <div className="grid items-center gap-8 @3xl:grid-cols-[1.2fr_1fr] @3xl:gap-14">
         <div>
-          {kicker !== title && <p className="mb-4 text-sm font-medium">{kicker}</p>}
+          {kicker !== title && <p className="mb-4 text-meta font-medium">{kicker}</p>}
           <H1 className={titleClass}>{title}</H1>
-          <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">{sub}</p>
+          <p className="mt-6 max-w-xl text-lead leading-snug @3xl:text-lead">{sub}</p>
         </div>
-        <Photo src={photo} alt={alt} className="h-60 w-full rounded-[var(--r-box)] @3xl:h-[400px]" />
+        <Photo src={photo} alt={alt} className="h-60 w-full rounded-box @3xl:h-[400px]" />
       </div>
     </Section>
   )
@@ -322,7 +325,7 @@ export function PageHero({
 export function ClientStrip() {
   return (
     <Section id="LOGO" label="logo’s opdrachtgevers" className="bg-white" note="vertrouwen">
-      <p className="mb-8 text-center text-sm font-medium">zij speelden al met ons</p>
+      <p className="mb-8 text-center text-meta font-medium">zij speelden al met ons</p>
       {/* every logo in one calm ink tone at the same height, instead of one big image */}
       <ul className="mx-auto grid max-w-6xl grid-cols-4 items-center justify-items-center gap-x-4 gap-y-6 @3xl:grid-cols-8 @3xl:gap-y-10" aria-label="opdrachtgevers">
         {CLIENTS.map((c) => (
@@ -343,12 +346,12 @@ export function ClientStrip() {
 
 export function PartnerStrip() {
   return (
-    <Section id="PARTNERS" label="partners" className="bg-ig-cream py-12! @3xl:py-16!" note="partners · onder de logo’s">
-      <p className="mb-6 text-center text-sm font-medium">onze partners</p>
+    <Section id="PARTNERS" label="partners" className="bg-ig-cream" note="partners · onder de logo’s">
+      <p className="mb-6 text-center text-meta font-medium">onze partners</p>
       <ul className="mx-auto flex max-w-5xl flex-wrap justify-center gap-2.5">
         {PARTNERS.map((p) => (
-          <li key={p} className="rounded-[var(--r-tag)] bg-white px-4 py-2 text-[15px] font-medium">
-            {p}
+          <li key={p}>
+            <Tag tone="white">{p}</Tag>
           </li>
         ))}
       </ul>
@@ -359,11 +362,11 @@ export function PartnerStrip() {
 export function ContactCta({ id = 'CTA' }: { id?: string }) {
   const { go } = useContext(Ctx)
   return (
-    <Section id={id} label="contact-cta" className="bg-white py-10! @3xl:py-16!" note="gewone knop, geen handjes-afbeelding">
-      <div className="flex flex-col items-start justify-between gap-8 rounded-[var(--r-box)] bg-ig-orange p-7 text-ig-ink @3xl:flex-row @3xl:items-center @3xl:p-14">
+    <Section id={id} label="contact-cta" className="bg-white" note="gewone knop, geen handjes-afbeelding">
+      <div className="flex flex-col items-start justify-between gap-8 rounded-box bg-ig-orange p-7 text-ig-ink @3xl:flex-row @3xl:items-center @3xl:p-14">
         <div>
           <H2 className="max-w-2xl">benieuwd wat spelen voor jou doet?</H2>
-          <p className="mt-4 max-w-lg text-lg">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
+          <p className="mt-4 max-w-lg text-lead">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
         </div>
         <Btn split variant="dark" className="shrink-0" onClick={() => go('contact')}>
           boek een workshop
@@ -398,7 +401,7 @@ const GROUP: Record<PageId, PageId> = {
   checkout: 'games',
 }
 
-const iconBtn = 'flex h-11 items-center justify-center gap-2 rounded-[var(--r-box)] bg-ig-cream px-3 text-sm font-semibold transition-colors hover:bg-ig-yellow'
+const iconBtn = 'flex h-11 items-center justify-center gap-2 rounded-box bg-ig-cream px-3 text-meta font-semibold transition-colors hover:bg-ig-yellow'
 
 /** Zoekt op titels van workshops en spellen. */
 export function Search({ placeholder, autoFocus, onDark }: { placeholder: string; autoFocus?: boolean; onDark?: boolean }) {
@@ -414,17 +417,17 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
   return (
     <form onSubmit={(e) => { e.preventDefault(); hits[0]?.to() }} role="search" className="relative">
       <div className="flex gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 rounded-[var(--r-box)] border border-ig-ink/25 bg-white px-4 text-base outline-none focus-visible:border-ig-orange focus-visible:ring-2 focus-visible:ring-ig-orange" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 rounded-box border border-ig-ink/25 bg-white px-4 text-body outline-none focus-visible:border-ig-orange focus-visible:ring-2 focus-visible:ring-ig-orange" />
         <Btn type="submit" variant={onDark ? 'ghostLight' : 'ghost'} className="w-auto! py-2!">zoek</Btn>
       </div>
       {term && (
-        <ul className="mt-2 overflow-hidden rounded-[var(--r-box)] bg-white text-sm text-ig-ink shadow-[0_14px_34px_rgb(42_24_16/0.14)]" aria-label="Zoekresultaten">
-          {hits.length === 0 && <li className="px-4 py-3 text-neutral-600">Niets gevonden voor “{q.trim()}”.</li>}
+        <ul className="mt-2 overflow-hidden rounded-box bg-white text-meta text-ig-ink shadow-soft" aria-label="Zoekresultaten">
+          {hits.length === 0 && <li className="px-4 py-3 text-ig-ink/70">Niets gevonden voor “{q.trim()}”.</li>}
           {hits.map((h) => (
             <li key={h.key} className="border-b border-ig-ink/10 last:border-0">
               <button type="button" onClick={h.to} className="flex w-full items-baseline justify-between gap-3 px-4 py-2.5 text-left hover:bg-ig-yellow">
                 <span className="font-semibold">{h.title}</span>
-                <span className="shrink-0 text-[13px] text-neutral-600">{h.kind}</span>
+                <span className="shrink-0 text-meta text-ig-ink/70">{h.kind}</span>
               </button>
             </li>
           ))}
@@ -454,7 +457,7 @@ export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'whi
   const current = (to: PageId) => (GROUP[active] === to ? ('page' as const) : undefined)
   return (
     <header ref={nav} className={`ig-nav ig-nav--${tone}`}>
-      {ann && <span className="pointer-events-auto absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
+      {ann && <span className="pointer-events-auto absolute left-0 top-0 z-50 bg-black px-2 py-1 text-meta text-white">NAV · header + navigatie</span>}
       <div className="ig-nav__inner">
         <div className="ig-nav__bar">
           <Link to="home" className="ig-nav__logo" aria-label="InnerGames home">
@@ -490,7 +493,7 @@ export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'whi
           </div>
         </div>
         {searchOpen && (
-          <div className="pointer-events-auto mt-2 rounded-[var(--r-box)] bg-ig-cream p-3 shadow-[0_14px_34px_rgb(42_24_16/0.12)]">
+          <div className="pointer-events-auto mt-2 rounded-box bg-ig-cream p-3 shadow-soft">
             <Search autoFocus placeholder="zoek in spellen en workshops" />
           </div>
         )}
@@ -533,13 +536,13 @@ export function Footer() {
     <footer ref={ref} className={`ig-footer ${foto ? 'ig-footer--orange' : 'ig-footer--ink'}`}>
       {ann && (
         <div className="absolute left-0 top-0 z-30 flex">
-          <span className="bg-black px-2 py-1 text-[11px] text-white">FOOT · footer</span>
-          <span className="hidden bg-yellow-200 px-2 py-1 text-[11px] text-black @3xl:block">zelfde op elke pagina · {foto ? 'optie B: teamfoto' : 'optie A: hand'}</span>
+          <span className="bg-black px-2 py-1 text-meta text-white">FOOT · footer</span>
+          <span className="hidden bg-yellow-200 px-2 py-1 text-meta text-black @3xl:block">zelfde op elke pagina · {foto ? 'optie B: teamfoto' : 'optie A: hand'}</span>
         </div>
       )}
       <div className="relative mx-auto max-w-[calc(1280px+8rem)] px-5 pb-4 pt-14 @3xl:px-16 @3xl:pb-36">
         <div className="relative z-[1] grid grid-cols-1 gap-10 @3xl:grid-cols-4">
-          <div className="space-y-1 text-[15px]">
+          <div className="space-y-1 text-body">
             <p className="font-semibold">bezoekadres</p>
             <p>InnerGames</p>
             <p>Kronehoefstraat 87</p>
@@ -548,7 +551,7 @@ export function Footer() {
             <p>Westrik 3</p>
             <p>5629 CE Eindhoven</p>
           </div>
-          <div className="space-y-1 text-[15px]">
+          <div className="space-y-1 text-body">
             <p className="font-semibold">bel, app of mail ons</p>
             <p>Telefoon: +31 (0)6 – 215 27 855</p>
             <p>WhatsApp: +31 (0)6 – 215 27 855</p>
@@ -560,7 +563,7 @@ export function Footer() {
               </a>
             </p>
           </div>
-          <div className="text-[15px]">
+          <div className="text-body">
             <p className="font-semibold">navigatie</p>
             <Link to="workshops" className={link}>workshops</Link>
             <Link to="games" className={link}>spellen</Link>
@@ -569,7 +572,7 @@ export function Footer() {
             <Link to="team" className={link}>ons team</Link>
             <Link to="contact" className={link}>contact</Link>
           </div>
-          <div className="space-y-5 text-[15px]">
+          <div className="space-y-5 text-body">
             <div>
               {/* TODO Ariën: which other channels (Instagram, YouTube ...)? only LinkedIn is known */}
               <p className="font-semibold">volg ons</p>
@@ -596,11 +599,11 @@ export function Footer() {
           <span className="ig-footer-hand ig-footer-hand--right" aria-hidden />
         )}
       </div>
-      <div className={`relative border-t px-5 py-3 text-xs @3xl:px-16 ${foto ? 'border-ig-ink/15' : 'border-ig-cream/15 text-ig-cream/70'}`}>
+      <div className={`relative border-t px-5 py-3 text-meta @3xl:px-16 ${foto ? 'border-ig-ink/15' : 'border-ig-cream/15 text-ig-cream/70'}`}>
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-2">
           <span>© 2026 InnerGames{ann ? ' · Enfold WordPress Theme' : ''}</span>
           {/* TODO Ariën: KvK-nummer and btw-nummer */}
-          <span className="rounded-[var(--r-tag)] border border-dashed border-current/40 px-2.5 py-1">KvK-nummer en btw-nummer: nog aan te leveren</span>
+          <span className="rounded-tag border border-dashed border-current/40 px-2.5 py-1">KvK-nummer en btw-nummer: nog aan te leveren</span>
         </div>
       </div>
     </footer>

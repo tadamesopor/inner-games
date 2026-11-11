@@ -28,7 +28,7 @@
 .ig-nav {
   --nav-h: 88px;
   --item-h: 44px;
-  --item-hover: #fde7b0; /* light yellow */
+  --item-hover: var(--ig-yellow-light); /* light yellow */
   position: sticky;
   top: 0;
   z-index: 60;
