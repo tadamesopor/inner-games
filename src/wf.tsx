@@ -354,19 +354,13 @@ export function ContactCta({ id = 'CTA' }: { id?: string }) {
   )
 }
 
-// five items, short labels. home is the logo. "over ons" holds the team and the projects
-type NavLink = { label: string; to: PageId }
-const NAV: (NavLink | { label: string; sub: NavLink[] })[] = [
+// six separate items with short labels, the same names in the menu and the footer. home is the logo
+const NAV: { label: string; to: PageId }[] = [
   { label: 'workshops', to: 'workshops' },
   { label: 'spellen', to: 'games' },
+  { label: 'projecten', to: 'projects' },
   { label: 'train-de-trainer', to: 'trainer' },
-  {
-    label: 'over ons',
-    sub: [
-      { label: 'ons team', to: 'team' },
-      { label: 'projecten', to: 'projects' },
-    ],
-  },
+  { label: 'ons team', to: 'team' },
   { label: 'contact', to: 'contact' },
 ]
 
@@ -419,9 +413,9 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
   )
 }
 
-// the header: one bar on the content grid (src/motion/header.css). the logo is the home link, five quiet
+// the header: one bar on the content grid (src/motion/header.css). the logo is the home link, six quiet
 // items in the middle, search, cart and the one orange button on the right. after 200px it becomes a
-// compact floating bar; narrower than 1180px the items move into a full screen menu (src/motion/menu.js)
+// compact floating bar; narrower than 1024px the items move into a full screen menu (src/motion/menu.js)
 export function Header({ active }: { active: PageId }) {
   const { go, cart, ann, openCart } = useContext(Ctx)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -435,11 +429,6 @@ export function Header({ active }: { active: PageId }) {
     prev.current = count
   }, [count])
   const current = (to: PageId) => (GROUP[active] === to ? ('page' as const) : undefined)
-  const caret = (
-    <svg className="ig-nav__caret" viewBox="0 0 10 10" aria-hidden>
-      <path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
   return (
     <header ref={nav} className="ig-nav">
       {ann && <span className="pointer-events-auto absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
@@ -449,27 +438,11 @@ export function Header({ active }: { active: PageId }) {
             <img src="/assets/logo-clear.png" alt="" width={804} height={391} />
           </Link>
           <nav className="ig-nav__menu" aria-label="Hoofdmenu">
-            {NAV.map((n) =>
-              'sub' in n ? (
-                <div key={n.label} className="ig-nav__drop">
-                  <button type="button" className="ig-nav__item" aria-expanded="false" aria-current={n.sub.some((s) => current(s.to)) ? 'page' : undefined}>
-                    {n.label}
-                    {caret}
-                  </button>
-                  <div className="ig-nav__sub">
-                    {n.sub.map((s) => (
-                      <Link key={s.to} to={s.to} className="ig-nav__subitem" aria-current={current(s.to)}>
-                        {s.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <Link key={n.to} to={n.to} className="ig-nav__item" aria-current={current(n.to)}>
-                  {n.label}
-                </Link>
-              ),
-            )}
+            {NAV.map((n) => (
+              <Link key={n.to} to={n.to} className="ig-nav__item" aria-current={current(n.to)}>
+                {n.label}
+              </Link>
+            ))}
           </nav>
           <div className="ig-nav__tools">
             <button type="button" onClick={() => setSearchOpen(!searchOpen)} aria-expanded={searchOpen} aria-label="Zoeken" className="ig-nav__icon ig-nav__search">
@@ -512,22 +485,11 @@ export function Header({ active }: { active: PageId }) {
         <div className="mb-4">
           <Search placeholder="zoek in spellen en workshops" />
         </div>
-        {NAV.map((n) =>
-          'sub' in n ? (
-            <div key={n.label}>
-              <p className="ig-nav__sheet-label">{n.label}</p>
-              {n.sub.map((s) => (
-                <Link key={s.to} to={s.to} className="ig-nav__sheet-item ig-nav__sheet-sub" aria-current={current(s.to)}>
-                  {s.label}
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <Link key={n.to} to={n.to} className="ig-nav__sheet-item" aria-current={current(n.to)}>
-              {n.label}
-            </Link>
-          ),
-        )}
+        {NAV.map((n) => (
+          <Link key={n.to} to={n.to} className="ig-nav__sheet-item" aria-current={current(n.to)}>
+            {n.label}
+          </Link>
+        ))}
         <div className="ig-nav__sheet-cta">
           <SplitBtn onClick={() => go('workshops')}>boek een workshop</SplitBtn>
         </div>
@@ -579,8 +541,8 @@ export function Footer() {
           </div>
           <div className="text-[15px]">
             <p className="font-semibold">navigatie</p>
-            <Link to="workshops" className={link}>sessies en workshops</Link>
-            <Link to="games" className={link}>onze spellen</Link>
+            <Link to="workshops" className={link}>workshops</Link>
+            <Link to="games" className={link}>spellen</Link>
             <Link to="projects" className={link}>projecten</Link>
             <Link to="trainer" className={link}>train-de-trainer</Link>
             <Link to="team" className={link}>ons team</Link>

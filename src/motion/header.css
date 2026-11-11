@@ -4,16 +4,15 @@
    InnerGames hand pops up. the current page keeps the box and the hand. only the button is solid orange.
    after 200px of scrolling the whole bar becomes a compact floating bar with its own cream background
    (menu.js adds .is-compact), so it never sits loose on top of photos.
-   narrower than 1180px: logo, cart and a "menu" button; the menu opens full screen (.is-open).
+   from 1024 to 1279px the items are a little tighter and the search icon moves into the phone menu.
+   narrower than 1024px: logo, cart and a "menu" button; the menu opens full screen (.is-open).
 
    markup:
    <header class="ig-nav">
      <div class="ig-nav__inner"><div class="ig-nav__bar">
        <a class="ig-nav__logo" aria-label="InnerGames home"><img></a>
        <nav class="ig-nav__menu">
-         <a class="ig-nav__item" aria-current="page">workshops</a> ...
-         <div class="ig-nav__drop"><button class="ig-nav__item" aria-expanded="false">over ons</button>
-           <div class="ig-nav__sub"><a class="ig-nav__subitem">ons team</a>...</div></div>
+         <a class="ig-nav__item" aria-current="page">workshops</a> ... (six items)
        </nav>
        <div class="ig-nav__tools">search, cart, <a class="ig-btn-split">...</a>
          <button class="ig-nav__toggle" data-nav-open>menu</button></div>
@@ -150,8 +149,7 @@
     opacity 0ms linear 200ms;
 }
 .ig-nav__item:hover,
-.ig-nav__item[aria-current],
-.ig-nav__drop.is-open > .ig-nav__item {
+.ig-nav__item[aria-current] {
   --item-bg: var(--item-hover);
 }
 .ig-nav__item:hover::before,
@@ -165,57 +163,11 @@
     opacity 0ms;
 }
 .ig-nav__item:focus-visible,
-.ig-nav__subitem:focus-visible,
 .ig-nav__icon:focus-visible,
 .ig-nav__sheet-item:focus-visible {
   outline: 3px solid var(--ig-ink);
   outline-offset: 2px;
 }
-/* the small arrow of the dropdown item */
-.ig-nav__caret {
-  width: 10px;
-  height: 10px;
-  margin-left: 6px;
-  transition: rotate var(--dur-ui) var(--ease-soft);
-}
-.ig-nav__drop.is-open .ig-nav__caret {
-  rotate: 180deg;
-}
-
-/* "over ons": a small dropdown with ons team and projecten */
-.ig-nav__drop {
-  position: relative;
-}
-.ig-nav__sub {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  display: none;
-  min-width: 190px;
-  padding: 6px;
-  border-radius: var(--r-box);
-  background: var(--ig-cream);
-  box-shadow: 0 14px 34px rgb(42 24 16 / 0.16);
-}
-.ig-nav__drop.is-open .ig-nav__sub {
-  display: grid;
-  gap: 2px;
-}
-.ig-nav__subitem {
-  display: flex;
-  align-items: center;
-  height: var(--item-h);
-  padding: 0 12px;
-  border-radius: 8px;
-  color: var(--ig-ink);
-  font: 500 16px/1 var(--ig-font);
-  text-decoration: none;
-}
-.ig-nav__subitem:hover,
-.ig-nav__subitem[aria-current] {
-  background: var(--item-hover);
-}
-
 .ig-nav__tools {
   justify-self: end;
   display: flex;
@@ -347,8 +299,31 @@
   flex: 1;
 }
 
-/* narrower than 1180px: the items and the button don't fit next to the logo any more */
-@container (max-width: 1179px) {
+/* 1024 to 1279px: six items, cart and the button still fit when the items are a little tighter */
+@container (max-width: 1279px) {
+  .ig-nav__bar {
+    gap: 10px;
+  }
+  .ig-nav__menu {
+    gap: 0;
+  }
+  .ig-nav__item {
+    padding: 0 9px;
+    font-size: 15px;
+  }
+  .ig-nav__logo img {
+    height: 34px;
+  }
+  .ig-nav__search {
+    display: none;
+  }
+  .ig-nav__tools .ig-btn-split__label {
+    padding: 0 12px;
+  }
+}
+
+/* narrower than 1024px: the items and the button don't fit next to the logo any more */
+@container (max-width: 1023px) {
   .ig-nav__bar {
     grid-template-columns: auto 1fr;
   }

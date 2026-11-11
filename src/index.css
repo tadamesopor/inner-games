@@ -23,6 +23,11 @@ body {
   color: #fab512;
 }
 
+/* jumping to a section or heading with an id: stop below the sticky menu bar */
+[id] {
+  scroll-margin-top: 96px;
+}
+
 :focus-visible {
   outline: 3px solid #2a1810;
   outline-offset: 2px;

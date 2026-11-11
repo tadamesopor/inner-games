@@ -8,8 +8,8 @@ export const menu: Effect = {
   n: '10',
   name: 'menu',
   cls: '.ig-nav',
-  what: 'Eén balk op het raster van de pagina: links het logo (dat is home), in het midden vijf rustige items, rechts zoeken, de winkelmand en de oranje knop. Bij hover komt een lichtgeel vlak achter het item en een mini-hand op. Scroll in het voorbeeld: na 200px wordt het een compacte crème balk met een eigen achtergrond.',
-  why: 'Eén luid ding in het menu, de knop. Smaller dan 1180px: logo, mand en een menuknop die het menu over het hele scherm opent.',
+  what: 'Eén balk op het raster van de pagina: links het logo (dat is home), in het midden zes rustige items, rechts zoeken, de winkelmand en de oranje knop. Bij hover komt een lichtgeel vlak achter het item en een mini-hand op. Scroll in het voorbeeld: na 200px wordt het een compacte crème balk met een eigen achtergrond.',
+  why: 'Eén luid ding in het menu, de knop. Smaller dan 1024px: logo, mand en een menuknop die het menu over het hele scherm opent.',
 }
 
 export function MenuDemo({ on }: { on: boolean }) {
@@ -21,7 +21,7 @@ export function MenuDemo({ on }: { on: boolean }) {
         ) : (
           <div className="flex items-center justify-between px-6 py-5">
             <img src="/assets/logo.png" alt="InnerGames" className="h-10 w-auto" />
-            <span className="text-[15px]">workshops · spellen · train-de-trainer · over ons · contact</span>
+            <span className="text-[15px]">workshops · spellen · projecten · train-de-trainer · ons team · contact</span>
           </div>
         )}
 
