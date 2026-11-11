@@ -120,7 +120,7 @@ export function Team() {
 
   return (
     <div>
-      <Header active="team" />
+      <Header active="team" tone="yellow" />
 
       <Section id="A" label="hero + groepsfoto" className="bg-ig-yellow text-ig-ink" note="PORTRETFOTO (vrijgesteld, groep)">
         <div className="grid items-center gap-8 @3xl:grid-cols-[1.1fr_1fr] @3xl:gap-12">

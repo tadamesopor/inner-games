@@ -2,7 +2,11 @@
    cart and the "boek een workshop" split button. everything on one 44px line.
    the items are quiet: ink text, no box. hover: a light yellow box comes behind the item and a mini
    InnerGames hand pops up. the current page keeps the box and the hand. only the button is solid orange.
-   after 200px of scrolling the whole bar becomes a compact floating bar with its own cream background
+   the strip behind the bar has the colour of the first section, so menu and page are one thing:
+   .ig-nav--white, --cream, --yellow or --orange. on an orange page (--orange, or --hero when the hero slides
+   up under a transparent strip) the menu sits on the orange: cream logo, cream text, a cream button.
+   every other page has the floating cream bar from the start.
+   after 120px of scrolling the whole bar becomes a compact floating cream bar
    (menu.js adds .is-compact), so it never sits loose on top of photos.
    from 1024 to 1279px the items are a little tighter and the search icon moves into the phone menu.
    narrower than 1024px: logo, cart and a "menu" button; the menu opens full screen (.is-open).
@@ -28,12 +32,25 @@
   position: sticky;
   top: 0;
   z-index: 60;
+  display: flow-root; /* the floating bar's top margin stays inside the strip */
   height: var(--nav-h);
   padding: 0 20px;
-  background: #fff;
-  transition: background-color var(--dur-move) var(--ease-soft);
+  background: var(--nav-strip, #fff);
+  transition: background-color 200ms var(--ease-soft);
 }
-/* before 200px the bar is a white strip, so content never slides under the logo. compact, only the
+.ig-nav--cream {
+  --nav-strip: var(--ig-cream);
+}
+.ig-nav--yellow {
+  --nav-strip: var(--ig-yellow);
+}
+.ig-nav--orange {
+  --nav-strip: var(--ig-orange);
+}
+.ig-nav--hero {
+  --nav-strip: transparent;
+}
+/* before 120px the bar sits on a strip, so content never slides under the logo. compact, only the
    floating bar is left: the empty space around it must not catch clicks */
 .ig-nav.is-compact {
   background: transparent;
@@ -60,20 +77,25 @@
   padding: 0;
   border-radius: var(--r-box);
   transition:
-    height var(--dur-move) var(--ease-out),
-    margin var(--dur-move) var(--ease-out),
-    padding var(--dur-move) var(--ease-out),
-    background-color var(--dur-move) var(--ease-soft),
-    box-shadow var(--dur-move) var(--ease-soft);
+    height 200ms var(--ease-out),
+    margin 200ms var(--ease-out),
+    padding 200ms var(--ease-out),
+    background-color 200ms var(--ease-soft),
+    box-shadow 200ms var(--ease-soft);
 }
+/* the floating cream bar: cream at 92% with a blur and a soft shadow */
+.ig-nav:not(.ig-nav--orange, .ig-nav--hero) .ig-nav__bar,
 .ig-nav.is-compact .ig-nav__bar {
-  height: 60px;
+  height: 68px;
   margin: 10px -16px 0;
   padding: 0 8px 0 16px;
   background: color-mix(in srgb, var(--ig-cream) 92%, transparent);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 30px rgb(42 24 16 / 0.12);
+}
+.ig-nav.is-compact .ig-nav__bar {
+  height: 60px;
 }
 
 .ig-nav__logo {
@@ -88,6 +110,39 @@
 }
 .ig-nav.is-compact .ig-nav__logo img {
   height: 28px;
+}
+/* two logos: the cream one only on the orange */
+.ig-nav__logo .ig-nav__logo--cream {
+  display: none;
+}
+
+/* on the orange, before the bar turns cream */
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) {
+  --item-hover: rgb(255 246 230 / 0.2); /* the box and the mini hand: cream at 20% */
+  --nav-ink: var(--ig-cream);
+}
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__logo img {
+  display: none;
+}
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__logo .ig-nav__logo--cream {
+  display: block;
+}
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__icon {
+  background: rgb(255 246 230 / 0.2);
+  color: var(--ig-cream);
+}
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__icon:hover {
+  background: rgb(255 246 230 / 0.32);
+}
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__count:not(.is-full) {
+  background: var(--ig-cream);
+  color: var(--ig-ink);
+}
+/* the button turns cream with ink text, like the button in the hero */
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__tools .ig-btn-split {
+  --c: var(--ig-cream);
+  --c-hover: color-mix(in srgb, var(--ig-cream) 90%, var(--ig-ink));
+  --fg: var(--ig-ink);
 }
 
 .ig-nav__menu {
@@ -110,11 +165,12 @@
   border: 0;
   border-radius: var(--r-box);
   background: none;
-  color: var(--ig-ink);
+  color: var(--nav-ink, var(--ig-ink));
   font: 500 16px/1 var(--ig-font);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  transition: color 200ms var(--ease-soft);
 }
 .ig-nav__item::after {
   content: '';

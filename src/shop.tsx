@@ -61,7 +61,7 @@ export function Games() {
   const list = GAMES.filter((g) => f === 'alle' || g.aud.includes(f))
   return (
     <>
-      <Header active="games" />
+      <Header active="games" tone="orange" />
       <PageHero
         id="A"
         label="paginakop"
@@ -196,7 +196,7 @@ export function Game() {
   ].filter((f): f is [string, string] => !!f[1])
   return (
     <>
-      <Header active="game" />
+      <Header active="game" tone="cream" />
       <Section id="A" label="product" className="bg-ig-cream" note="galerij + titel + koopknop (WooCommerce product)">
         <button onClick={() => go('games')} className="mb-6 text-sm underline">← alle spellen</button>
         <div className="grid gap-10 @3xl:grid-cols-2 @3xl:gap-14">
@@ -346,7 +346,7 @@ export function Preview() {
   useEffect(() => { window.scrollTo(0, 0) }, [])
   return (
     <>
-      <Header active="preview" />
+      <Header active="preview" tone="orange" />
       <Section id="A" label="speelbare preview" className="min-h-[640px] bg-ig-orange text-white" note="± 30 sec · 4 à 5 stappen · eindigt in CTA">
         <button onClick={() => go('game', g.slug)} className="mb-6 text-sm underline">← terug naar {g.title}</button>
         <p className="text-base font-medium">preview · {g.previewKey}</p>

@@ -438,9 +438,11 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
 }
 
 // the header: one bar on the content grid (src/motion/header.css). the logo is the home link, six quiet
-// items in the middle, search, cart and the one orange button on the right. after 200px it becomes a
-// compact floating bar; narrower than 1024px the items move into a full screen menu (src/motion/menu.js)
-export function Header({ active }: { active: PageId }) {
+// items in the middle, search, cart and the one orange button on the right. tone = the colour of the first
+// section, so the strip behind the bar matches it ('hero': the homepage hero slides up under the menu).
+// after 120px it becomes a compact floating bar; narrower than 1024px the items move into a full screen
+// menu (src/motion/menu.js)
+export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'white' | 'cream' | 'yellow' | 'orange' | 'hero' }) {
   const { go, cart, ann, openCart } = useContext(Ctx)
   const [searchOpen, setSearchOpen] = useState(false)
   const nav = useMotion<HTMLElement>(initNav)
@@ -454,12 +456,13 @@ export function Header({ active }: { active: PageId }) {
   }, [count])
   const current = (to: PageId) => (GROUP[active] === to ? ('page' as const) : undefined)
   return (
-    <header ref={nav} className="ig-nav">
+    <header ref={nav} className={`ig-nav ig-nav--${tone}`}>
       {ann && <span className="pointer-events-auto absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
       <div className="ig-nav__inner">
         <div className="ig-nav__bar">
           <Link to="home" className="ig-nav__logo" aria-label="InnerGames home">
             <img src="/assets/logo-clear.png" alt="" width={804} height={391} />
+            <img src="/assets/logo-cream.png" alt="" width={400} height={192} className="ig-nav__logo--cream" />
           </Link>
           <nav className="ig-nav__menu" aria-label="Hoofdmenu">
             {NAV.map((n) => (

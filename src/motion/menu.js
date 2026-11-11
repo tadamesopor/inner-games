@@ -1,8 +1,8 @@
-// .ig-nav: makes the bar compact after 200px of scrolling (.is-compact), opens and closes the
+// .ig-nav: makes the bar compact after 120px of scrolling (.is-compact), opens and closes the
 // "over ons" dropdown, and the full screen menu on small screens (.is-open). Escape closes everything.
 // works on a normal page and inside a scrolling box (the motion lab demo).
 
-const COMPACT_AT = 200
+const COMPACT_AT = 120
 
 function scrollParent(el) {
   for (let p = el.parentElement; p; p = p.parentElement) {

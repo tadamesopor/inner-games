@@ -152,7 +152,7 @@ export function Home() {
   ]
   return (
     <>
-      <Header active="home" />
+      <Header active="home" tone={hero === 'nieuw' ? 'hero' : 'cream'} />
       {hero === 'nieuw' && <HeroNew />}
       {/* option B (round 3): text on cream, the photo in its own box */}
       {hero === 'oud' && (
@@ -295,7 +295,7 @@ export function Workshops() {
   const list = WORKSHOPS.filter((w) => f === 'alle' || w.aud.includes(f))
   return (
     <>
-      <Header active="workshops" />
+      <Header active="workshops" tone="cream" />
       <PageHero
         id="A"
         label="paginakop"
@@ -578,7 +578,7 @@ export function Trainer() {
   ]
   return (
     <>
-      <Header active="trainer" />
+      <Header active="trainer" tone="cream" />
       <PageHero
         id="A"
         label="paginakop"
