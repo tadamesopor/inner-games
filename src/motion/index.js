@@ -9,7 +9,7 @@ import './cards.css'
 import './transition.css'
 import './boxscene.css'
 import './footer.css'
-import './pile.css'
+import './hero.css'
 import './header.css'
 
 import { initSpeelpad } from './speelpad.js'
@@ -17,13 +17,12 @@ import { initBoxscene } from './boxscene.js'
 import { initCards } from './cards.js'
 import { initFooterReveal } from './footer.js'
 import { initNav } from './menu.js'
-import { initPile } from './pile.js'
 
 export { isReduced, forceReduced, onReducedChange } from './prefs.js'
 export { igNavigate, initPageLinks } from './transition.js'
 export { createPawn, PAWN_SRC } from './pawn.js'
 export { loadMark, markMarkup, hydrateMarks, setPencilBase, ensurePencilDefs } from './pencil.js'
-export { initSpeelpad, initBoxscene, initCards, initFooterReveal, initNav, initPile }
+export { initSpeelpad, initBoxscene, initCards, initFooterReveal, initNav }
 
 /** WordPress: finds every element with a motion class and starts it */
 export function init(scope = document) {
@@ -33,7 +32,6 @@ export function init(scope = document) {
     '.ig-card': initCards,
     '.ig-footer': initFooterReveal,
     '.ig-nav': initNav,
-    '.ig-pile': initPile,
   }
   const stops = []
   for (const sel in map) scope.querySelectorAll(sel).forEach((el) => stops.push(map[sel](el)))

@@ -9,7 +9,6 @@ export function initSpeelpad(root: HTMLElement, opts?: { pawn?: string }): Stop
 export function initCards(root?: HTMLElement): Stop
 export function initFooterReveal(footer: HTMLElement): Stop
 export function initNav(nav: HTMLElement): Stop
-export function initPile(pile: HTMLElement): Stop
 export function initBoxscene(root: HTMLElement): Stop
 export function init(scope?: ParentNode): Stop
 export type Mark = { viewBox: string; inner: string }

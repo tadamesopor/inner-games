@@ -67,8 +67,10 @@
 Everything that is still a placeholder on the site has a dashed frame with "nog aan te leveren", so nobody in a
 test reads it as real.
 
-- **Homepage title.** "spellen en workshops die teams, klassen en zorg in beweging brengen", with "inner growth for
-  outer change" as the small label above it. Is that how you want to say what InnerGames does?
+- **Homepage title.** "spellen en workshops voor teams, klassen en zorg", with "Spelen om te leren, spelen om te groeien.
+  Vanuit Eindhoven." under it. Is that how you want to say what InnerGames does?
+- **Homepage photo.** The hero uses the photo from Energiek team! (the brightest we have). A bright photo of people
+  playing a game together would be better.
 - **Zo werkt het (homepage) and "dit kun je verwachten" (workshop pages).** The steps are written from the brief:
   vertel ons over je groep → we stellen samen een sessie samen → we komen spelen, and kennismaking → sessie op maat →
   nagesprek. Is that how it really goes?
@@ -84,7 +86,7 @@ test reads it as real.
   include shipping in the Netherlands in their price (innergames.nl), the other games don't say: is shipping extra?
 - **Prices and units.** Still open from round 3: € 350, € 423,50 and € 1.800 for De Klimaat Collage, Hoezo Raar?!,
   Positive Masculinity, Het Impact Imperium and MemoryStory: per group, per session or per person?
-- **Client logos.** "o.a. gespeeld met" in the hero shows ASML, Fontys, HAN and Summa (from clients.png).
+- **Client logos.** "o.a. gespeeld met" under the hero shows ASML, Fontys, HAN and Summa (from clients.png).
   May we show these, and which organisation is the "V" logo?
 
 ### Photos we need

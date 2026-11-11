@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { initBoxscene, initPile, initSpeelpad } from './motion'
+import { initBoxscene, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { AudIcon, LEGAL, Todo, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
@@ -56,85 +56,64 @@ function Speelpad({ children }: { children: ReactNode }) {
   )
 }
 
-// the homepage hero: orange with the big rounded bottom, what InnerGames does in plain Dutch, the routes
-// straight in the hero, and a pile of real InnerGames things on the right (src/motion/pile.css)
-const ROUTES: [string, Aud][] = [
-  ['mijn team', 'organisaties'],
-  ['mijn klas', 'onderwijs'],
-  ['zorg', 'zorg'],
-  ['ik ben trainer', 'trainers'],
-]
-// file -> width / height of the cut-out logo, so each keeps its own shape
+// the homepage hero: orange with the big rounded bottom, and only what's needed. a title that says what
+// InnerGames does, one sentence, one button and a text link. on the right one bright photo, with the hand
+// peeking out from behind it (src/motion/hero.css). the routes are in "waar kom jij voor?" right below
 // TODO Ariën: check the three steps
 const HOW: [string, string][] = [
   ['vertel ons over je groep', 'Wie zijn jullie, hoe groot is de groep en wat wil je bereiken? Via het formulier, WhatsApp of de telefoon.'],
   ['we stellen samen een sessie samen', 'We kiezen samen de workshop of het spel dat past, en stemmen het af op jouw groep.'],
   ['we komen spelen', 'Op jullie locatie of bij ons in Eindhoven. Daarna kijken we samen terug.'],
 ]
-const PROOF: Record<string, number> = { asml: 108 / 52, fontys: 122 / 77, han: 90 / 77, summa: 155 / 76 }
 
 function HeroNew() {
   const { go } = useContext(Ctx)
-  const pile = useMotion<HTMLDivElement>(initPile)
-  const e5 = GAMES[0]
-  const proof = CLIENTS.filter((c) => c.file in PROOF)
+  // TODO Ariën: a better photo of people playing a game together. now the brightest session photo we have
+  const photo = WORKSHOPS[0].photo
   return (
-    <Section id="A" label="hero" className="ig-section--rounded bg-ig-orange pb-14! pt-10! text-ig-cream @3xl:pb-20! @3xl:pt-14!" note="oranje · wat we doen · routes · stapel echte spullen">
-      <div className="grid items-center gap-10 @4xl:grid-cols-[1.1fr_1fr] @4xl:gap-14">
-        <div>
-          {/* small labels in ink: cream on orange is only readable when the text is big */}
-          <p className="mb-4 text-base font-semibold text-ig-ink">inner growth for outer change</p>
-          {/* TODO Ariën: check this title */}
-          <h1 className="text-[2.3rem] font-bold leading-[1.02] tracking-tight @3xl:text-[2.8rem] @6xl:text-[3.3rem]">
-            spellen en workshops die teams, klassen en zorg in beweging brengen
+    <Section id="A" label="hero" className="ig-section--rounded bg-ig-orange pb-16! pt-12! text-white @3xl:pb-24! @3xl:pt-16!" note="oranje · titel, zin, één knop · één foto met de hand">
+      <div className="grid items-center gap-12 @4xl:grid-cols-[minmax(0,640px)_1fr] @4xl:gap-16">
+        <div className="max-w-[640px]">
+          {/* TODO Ariën: check this title. white on orange only passes as large text, so everything here is big */}
+          <h1 className="text-[2.5rem] font-bold leading-[1.02] tracking-tight @3xl:text-[3.4rem]">
+            spellen en workshops voor teams, klassen en zorg
           </h1>
-          <p className="mt-5 max-w-xl text-xl font-semibold leading-snug @3xl:text-2xl @3xl:font-medium">
-            Van een workshop voor je team tot een spel voor in de klas. Gemaakt en begeleid vanuit Eindhoven.
-          </p>
-          <div className="mt-7">
-            <p className="text-base font-semibold text-ig-ink">ik zoek iets voor:</p>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {ROUTES.map(([label, aud]) => (
-                <li key={aud}>
-                  <button type="button" onClick={() => go('workshops', aud)} className="h-11 rounded-[var(--r-tag)] bg-ig-cream px-4 text-base font-semibold text-ig-ink transition-colors hover:bg-[#fde7b0]">
-                    {label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <p className="mt-8 text-2xl leading-snug">Spelen om te leren, spelen om te groeien. Vanuit Eindhoven.</p>
+          <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-5">
             <Btn split variant="light" onClick={() => go('workshops')}>boek een workshop</Btn>
-            <Btn variant="ghostLight" onClick={() => go('preview', 'elemental-five-compleet')}>speel het spel</Btn>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <p className="text-sm font-semibold text-ig-ink">o.a. gespeeld met</p>
-            {proof.map((c) => (
-              <span
-                key={c.file}
-                role="img"
-                aria-label={c.name}
-                className="ig-proof-logo"
-                style={{ '--src': `url(/assets/img/clients/${c.file}.png)`, '--h': c.h, aspectRatio: PROOF[c.file] } as CSSProperties}
-              />
-            ))}
+            <button type="button" onClick={() => go('preview', 'elemental-five-compleet')} className="text-xl font-semibold underline decoration-2 underline-offset-[6px] hover:decoration-ig-cream/60">
+              of speel the elemental five →
+            </button>
           </div>
         </div>
-
-        <div ref={pile} className="ig-pile mx-auto max-w-[560px]">
-          <span className="ig-pile__hand" aria-hidden />
-          <figure className="ig-pile__item ig-pile__item--photo" style={{ '--i': 0, '--x': '0%', '--y': '6%', '--w': '64%', '--tilt': '-6deg', '--depth': 0.5 } as CSSProperties}>
-            <img src={`${PHOTOS.tafel}-800.webp`} alt={ALT[PHOTOS.tafel]} width={800} height={600} />
-          </figure>
-          <figure className="ig-pile__item ig-pile__item--cutout" style={{ '--i': 1, '--x': '50%', '--y': '0%', '--w': '46%', '--tilt': '4deg', '--depth': 0.8 } as CSSProperties}>
-            <img src={`${e5.photo}-800.webp`} alt={ALT[e5.photo]} width={800} height={800} />
-          </figure>
-          <figure className="ig-pile__item ig-pile__item--cutout" style={{ '--i': 2, '--x': '28%', '--y': '46%', '--w': '40%', '--tilt': '-2deg', '--depth': 1 } as CSSProperties}>
-            <img src="/assets/img/games/sociality-box.png" alt="Speldoos van Sociality" width={398} height={459} />
-          </figure>
-        </div>
+        <figure className="ig-hero-photo mx-auto w-full max-w-[560px]">
+          <span className="ig-hero-photo__hand" aria-hidden />
+          <img src={`${photo}-1600.webp`} srcSet={`${photo}-800.webp 800w, ${photo}-1600.webp 1600w`} sizes="(min-width: 1024px) 560px, 100vw" alt={ALT[photo]} width={1600} height={1200} />
+        </figure>
       </div>
     </Section>
+  )
+}
+
+// file -> width / height of the cut-out logo, so each keeps its own shape
+const PROOF: Record<string, number> = { asml: 108 / 52, fontys: 122 / 77, han: 90 / 77, summa: 155 / 76 }
+
+/** a calm strip right under the hero: a few clients, in one ink tone, on cream */
+function ProofStrip() {
+  const proof = CLIENTS.filter((c) => c.file in PROOF)
+  return (
+    <div className="bg-ig-cream px-5 pb-6 @3xl:px-16 [--ig-next-pad:28px]">
+      <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-10 gap-y-4">
+        <p className="text-[15px] font-semibold text-ig-ink/70">o.a. gespeeld met</p>
+        <ul className="flex flex-wrap items-center gap-x-10 gap-y-4" aria-label="opdrachtgevers">
+          {proof.map((c) => (
+            <li key={c.file}>
+              <img src={`/assets/img/clients/${c.file}.png`} alt={c.name} className="ig-proof-logo" style={{ height: c.h * 0.5, aspectRatio: PROOF[c.file] }} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   )
 }
 
@@ -173,8 +152,9 @@ export function Home() {
       </Section>
       )}
 
+      <ProofStrip />
+
       <Speelpad>
-      {hero === 'oud' && (
       <Section id="B" label="vier doelgroepen" stop note="onderwijs · organisaties · zorg · trainers">
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
         <div className="mt-10 grid gap-x-6 gap-y-20 pt-12 @xl:grid-cols-2 @5xl:grid-cols-4">
@@ -197,7 +177,6 @@ export function Home() {
           ))}
         </div>
       </Section>
-      )}
 
       <Section id="C" label="uitgelichte workshops" stop note="3 van 9 · link naar overzicht">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
