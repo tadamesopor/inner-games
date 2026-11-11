@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, card, cardStatic, ContactCta, Ctx, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { Btn, btnLink, card, cardStatic, ContactCta, Ctx, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
 /** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
@@ -202,11 +202,12 @@ export function Game() {
         <button onClick={() => go('games')} className="mb-6 text-sm underline">← alle spellen</button>
         <div className="grid gap-10 @3xl:grid-cols-2 @3xl:gap-14">
           <div>
-            <Photo src={g.gallery[img]} alt={ALT[g.gallery[img]] ?? g.title} eager contain className="aspect-[4/3] w-full rounded-2xl" />
+            <Photo src={g.gallery[img]} alt={ALT[g.gallery[img]] ?? g.title} eager contain className="aspect-[4/3] w-full rounded-[var(--r-box)]" />
             <div className={`mt-5 flex gap-3 ${g.gallery.length < 2 ? 'hidden' : ''}`}>
               {g.gallery.map((p, k) => (
-                <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-xl ${img === k ? 'ring-4 ring-ig-orange' : ''}`}>
-                  <Photo src={p} alt="" sizes="80px" contain className="h-16 w-20" />
+                <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-[8px] ${img === k ? 'ring-3 ring-ig-orange' : 'ring-1 ring-ig-ink/12'}`}>
+                  {/* all thumbnails the same: square, the same crop, the same white background */}
+                  <Photo src={p} alt="" sizes="80px" className="aspect-square w-20 bg-white!" />
                 </button>
               ))}
             </div>
@@ -247,6 +248,12 @@ export function Game() {
                 <Btn variant="primary" onClick={() => document.getElementById('workshops-bij-spel')?.scrollIntoView({ behavior: 'smooth' })}>bekijk de workshops</Btn>
               )}
               {matching.length === 0 && <Btn variant="primary" onClick={() => go('contact')}>vraag een sessie aan</Btn>}
+              {/* the playable game. until it is inside the prototype (step 8): the online version, in a new tab */}
+              {g.slug.startsWith('elemental-five') && (
+                <a href="https://elemental-five-two.vercel.app" target="_blank" rel="noreferrer" className={btnLink}>
+                  speel het spel online ↗
+                </a>
+              )}
             </div>
             {added !== null && (
               <p role="status" className="mt-4 rounded-[var(--r-box)] bg-white px-4 py-3 text-base">
