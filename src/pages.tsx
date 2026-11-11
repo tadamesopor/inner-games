@@ -448,12 +448,15 @@ export function Trainer() {
         label="paginakop"
         kicker="train-de-trainer"
         title="train-de-trainer"
+        // one line: never break after the hyphens. smaller than the other page titles so it fits
+        titleClass="whitespace-nowrap text-[2.3rem]! @3xl:text-[3.4rem]! @6xl:text-[4.6rem]!"
         sub="Leer spel-workshops geven. Van zelf spelen tot zelf begeleiden."
-        photo={PHOTOS.trainerHero}
-        alt={ALT[PHOTOS.trainerHero]}
+        // a photo of a session with a trainer, not the team photo again. TODO Ariën: a photo of a train-de-trainer day
+        photo={WORKSHOPS[6].photo}
+        alt={ALT[WORKSHOPS[6].photo]}
         tone="cream"
       />
-      <Section id="B" label="het aanbod" className="bg-white py-10! @3xl:py-14!" note="echt aanbod: € 1.800 · 8 uur">
+      <Section id="B" label="het aanbod" className="bg-white" note="echt aanbod: € 1.800 · 8 uur">
         <div className="grid gap-4 @3xl:grid-cols-3">
           {[
             ['prijs', '€ 1.800 per persoon'],

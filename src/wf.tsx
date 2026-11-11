@@ -273,11 +273,14 @@ export function PageHero({
   photo,
   alt,
   tone = 'cream',
+  titleClass = '',
 }: {
   id: string
   label: string
   kicker: string
   title: string
+  /** extra classes for the title, for example to keep a hyphenated word on one line */
+  titleClass?: string
   sub: string
   photo: string
   alt: string
@@ -288,7 +291,7 @@ export function PageHero({
       <div className="grid items-center gap-8 @3xl:grid-cols-[1.2fr_1fr] @3xl:gap-14">
         <div>
           {kicker !== title && <p className="mb-4 text-sm font-medium">{kicker}</p>}
-          <H1>{title}</H1>
+          <H1 className={titleClass}>{title}</H1>
           <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">{sub}</p>
         </div>
         <Photo src={photo} alt={alt} className="h-60 w-full rounded-[var(--r-box)] @3xl:h-[400px]" />
