@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
-import { CLIENTS_ALT, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
+import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react'
+import { CLIENTS, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
 export type PageId =
   | 'home'
@@ -252,7 +252,20 @@ export function ClientStrip() {
   return (
     <Section id="LOGO" label="logo’s opdrachtgevers" className="bg-white" note="vertrouwen">
       <p className="mb-8 text-center text-sm font-medium">zij speelden al met ons</p>
-      <img src="/assets/clients.png" alt={CLIENTS_ALT} className="mx-auto w-full max-w-4xl mix-blend-multiply" />
+      {/* every logo in one calm ink tone at the same height, instead of one big image */}
+      <ul className="mx-auto grid max-w-6xl grid-cols-4 items-center justify-items-center gap-x-4 gap-y-6 @3xl:grid-cols-8 @3xl:gap-y-10" aria-label="opdrachtgevers">
+        {CLIENTS.map((c) => (
+          <li key={c.file}>
+            <img
+              src={`/assets/img/clients/${c.file}.png`}
+              alt={c.name}
+              loading="lazy"
+              style={{ '--h': c.h } as CSSProperties}
+              className="h-[calc(var(--h)*0.48px)] w-auto opacity-60 brightness-0 @3xl:h-[calc(var(--h)*0.75px)]"
+            />
+          </li>
+        ))}
+      </ul>
     </Section>
   )
 }

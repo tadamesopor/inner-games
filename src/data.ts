@@ -431,7 +431,27 @@ export const QUOTE = {
   note: 'voorbeeldquote · vervangen door echte review',
 }
 
-export const CLIENTS_ALT = 'Logo’s van opdrachtgevers, onder andere ASML, Philips, Fontys, HAN, TU/e en Summa College'
+// the client logos, cut one by one out of clients.png (same order). name is the alt text,
+// h is the height in the original image, so the logos keep the sizes the designer gave them
+// the v-logo has no name yet: we don't know which organisation it is, so it stays without alt text
+export const CLIENTS: { name: string; file: string; h: number }[] = [
+  { name: 'ASML', file: 'asml', h: 52 },
+  { name: 'Avans Hogeschool', file: 'avans', h: 52 },
+  { name: 'Curio', file: 'curio', h: 52 },
+  { name: 'Gemeente Eindhoven', file: 'gemeente-eindhoven', h: 52 },
+  { name: 'Fontys', file: 'fontys', h: 77 },
+  { name: 'GGzE', file: 'ggze', h: 77 },
+  { name: 'HAN', file: 'han', h: 77 },
+  { name: 'Met GGZ', file: 'metggz', h: 77 },
+  { name: 'Novadic-Kentron', file: 'novadic-kentron', h: 76 },
+  { name: 'Philips', file: 'philips', h: 76 },
+  { name: 'Summa College', file: 'summa', h: 76 },
+  { name: 'TU/e', file: 'tue', h: 76 },
+  { name: 'UWV', file: 'uwv', h: 63 },
+  { name: '', file: 'v-logo', h: 63 },
+  { name: 'WAVE', file: 'wave', h: 63 },
+  { name: 'WIJeindhoven', file: 'wijeindhoven', h: 63 },
+]
 
 export const PARTNERS = [
   'BreathCompany',
