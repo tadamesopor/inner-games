@@ -23,8 +23,13 @@
 .ig-card--yellow {
   --card-bg: var(--ig-yellow);
 }
+/* a white card: a white hand would disappear on cream, so the hand is the light yellow of the menu */
 .ig-card--white {
   --card-bg: #fff;
+  --hand-color: #fde7b0;
+}
+.ig-card--white.ig-card--outline::after {
+  display: none; /* the yellow hand needs no outline */
 }
 
 /* the hand, hidden behind the top edge, about 20px in from the left corner.

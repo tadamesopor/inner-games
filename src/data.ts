@@ -190,7 +190,7 @@ export const WORKSHOPS: Workshop[] = [
     aud: ['organisaties', 'trainers'],
     duration: '± 4 uur',
     group: 'tot 12 personen',
-    price: '€ 950',
+    price: '€ 950 per groep',
     photo: img('workshops/ontdek-jouw-drijfveren'),
     gameSlug: 'elemental-five-compleet',
     story: [
@@ -213,7 +213,7 @@ export const WORKSHOPS: Workshop[] = [
     aud: ['organisaties', 'zorg', 'trainers'],
     duration: '± 4 uur (halve of hele dag mogelijk)',
     group: 'tot 12 personen, 1 trainer',
-    price: '€ 950',
+    price: '€ 950 per groep',
     photo: img('workshops/hoofd-en-lichaam'),
     gameSlug: 'elemental-five-compleet',
     story: [
