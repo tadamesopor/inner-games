@@ -235,7 +235,7 @@ export function PageHero({
   tone?: Tone
 }) {
   return (
-    <Section id={id} label={label} className={`py-10! @3xl:py-16! ${TONE[tone]}`}>
+    <Section id={id} label={label} className={`ig-section--rounded py-10! @3xl:py-16! ${TONE[tone]}`}>
       <div className="grid items-center gap-8 @3xl:grid-cols-[1.2fr_1fr] @3xl:gap-14">
         <div>
           <p className="mb-4 text-sm font-medium">{kicker}</p>
@@ -529,7 +529,7 @@ export function Footer() {
 
 export function Marquee({ text }: { text: string }) {
   return (
-    <div className="overflow-hidden border-y-2 border-ig-ink bg-ig-yellow py-3 text-ig-ink" aria-label={text}>
+    <div className="overflow-hidden bg-ig-yellow py-3 text-ig-ink [--ig-next-pad:12px]" aria-label={text}>
       <div className="flex w-max animate-[marquee_40s_linear_infinite] motion-reduce:animate-none">
         {[0, 1].map((k) => (
           <div key={k} className="flex shrink-0 items-center" aria-hidden>

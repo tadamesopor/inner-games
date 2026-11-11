@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Ctx, type PageId } from './wf'
 import TestMode from './test'
+// the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
+import './motion'
 import { Contact, Home, Projects, Trainer, Workshop, Workshops } from './pages'
 import { Game, Games, Preview } from './shop'
 import { Team } from './team'

@@ -51,7 +51,7 @@ export function Home() {
   return (
     <>
       <Header active="home" />
-      <Section id="A" label="hero" className="relative overflow-hidden bg-ig-orange py-0! text-white" note="FULL-WIDTH ACHTERGRONDFOTO met oranje overlay">
+      <Section id="A" label="hero" className="ig-section--rounded relative overflow-hidden bg-ig-orange py-0! text-white" note="FULL-WIDTH ACHTERGRONDFOTO met oranje overlay">
         <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="100vw" eager className="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 bg-ig-orange/80" />
         <div className="relative flex min-h-[560px] flex-col justify-center py-16 @3xl:min-h-[720px]">
