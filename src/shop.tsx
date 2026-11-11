@@ -6,13 +6,14 @@ function GameCard({ g }: { g: G }) {
   const { go, cart, toggleCart } = useContext(Ctx)
   const inCart = cart.includes(g.slug)
   return (
-    <article className={`${card} flex cursor-pointer flex-col`} onClick={() => go('game', g.slug)}>
-      <div className="relative">
+    <article className="ig-card ig-card--white ig-card--outline cursor-pointer" onClick={() => go('game', g.slug)}>
+      <div className="ig-card__body flex flex-col">
+      <div className="ig-card__media relative">
         <Photo src={g.photo} alt={ALT[g.photo] ?? g.title} sizes="(min-width: 1024px) 33vw, 100vw" contain className="aspect-[4/3] w-full" />
         {g.previewKey && <span className="absolute left-3 top-3"><Tag tone="orange">preview</Tag></span>}
         {g.status && <span className="absolute left-3 top-3"><Tag tone="white">{g.status}</Tag></span>}
       </div>
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-3 px-2 pb-2 pt-4">
         <div className="flex flex-wrap gap-1.5">
           {g.aud.map((a) => <Tag key={a} tone="cream">{AUD_LABEL[a]}</Tag>)}
         </div>
@@ -32,6 +33,7 @@ function GameCard({ g }: { g: G }) {
             <Btn variant="dark" className="w-auto! py-2!" disabled>preview volgt</Btn>
           )}
         </div>
+      </div>
       </div>
     </article>
   )
@@ -68,7 +70,7 @@ export function Games() {
           ))}
           <span className="ml-auto text-sm text-neutral-500">{list.length} van {GAMES.length}</span>
         </div>
-        <div className="grid gap-7 @3xl:grid-cols-3">
+        <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">
           {list.map((g) => <GameCard key={g.slug} g={g} />)}
         </div>
       </Section>
@@ -263,7 +265,7 @@ export function Game() {
 
       <Section id="E" label="meer spellen" className="bg-ig-cream" note="cross-sell">
         <H2 className="mb-8">meer om te spelen</H2>
-        <div className="grid gap-7 @3xl:grid-cols-3">{more.map((x) => <GameCard key={x.slug} g={x} />)}</div>
+        <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">{more.map((x) => <GameCard key={x.slug} g={x} />)}</div>
       </Section>
       <Footer />
     </>

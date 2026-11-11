@@ -17,9 +17,12 @@ function AudTags({ aud }: { aud: Aud[] }) {
 function WorkshopCard({ w }: { w: WS }) {
   const { go } = useContext(Ctx)
   return (
-    <article className={`${card} group flex cursor-pointer flex-col`} onClick={() => go('workshop', w.slug)}>
-      <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
-      <div className="flex flex-1 flex-col gap-3 p-5">
+    <article className="ig-card ig-card--white ig-card--outline cursor-pointer" onClick={() => go('workshop', w.slug)}>
+      <div className="ig-card__body flex flex-col">
+      <div className="ig-card__media">
+        <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
+      </div>
+      <div className="flex flex-1 flex-col gap-3 px-2 pb-2 pt-4">
         <AudTags aud={w.aud} />
         <h3 className="text-xl font-semibold leading-tight tracking-tight">{w.title}</h3>
         <p className="text-[15px] text-neutral-700">{w.tagline}</p>
@@ -35,6 +38,7 @@ function WorkshopCard({ w }: { w: WS }) {
             bekijk →
           </button>
         </div>
+      </div>
       </div>
     </article>
   )
@@ -104,7 +108,7 @@ export function Home() {
           <H2>uit onze sessies</H2>
           <Btn variant="ghost" onClick={() => go('workshops')}>alle 9 workshops →</Btn>
         </div>
-        <div className="grid gap-7 @3xl:grid-cols-3">
+        <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">
           {[WORKSHOPS[0], WORKSHOPS[3], WORKSHOPS[7]].map((w) => <WorkshopCard key={w.slug} w={w} />)}
         </div>
       </Section>
@@ -199,7 +203,7 @@ export function Workshops() {
           ))}
           <span className="ml-auto text-sm text-neutral-500">{list.length} van {WORKSHOPS.length}</span>
         </div>
-        <div className="grid gap-7 @3xl:grid-cols-3">
+        <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">
           {list.map((w) => <WorkshopCard key={w.slug} w={w} />)}
         </div>
       </Section>

@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Ctx, type PageId } from './wf'
 import TestMode from './test'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
-import './motion'
+import { initCards } from './motion'
 import { Contact, Home, Projects, Trainer, Workshop, Workshops } from './pages'
 import { Game, Games, Preview } from './shop'
 import { Team } from './team'
@@ -34,8 +34,10 @@ export default function App() {
   const bus = useRef<(() => void) | undefined>(undefined)
   const [lab, setLab] = useState(isLab)
 
+  const view = useRef<HTMLDivElement>(null)
   useEffect(() => {
     window.scrollTo(0, 0)
+    return view.current ? initCards(view.current) : undefined
   }, [page, sel])
 
   // the lab's own menu uses #fx-... links, so only ever switch the lab on here, never off
@@ -64,7 +66,7 @@ export default function App() {
   return (
     <Ctx.Provider value={{ ann, sel, cart, go, toggleCart }}>
       <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
-        <div className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
+        <div ref={view} className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
           <Page key={page + sel} />
         </div>
       </div>

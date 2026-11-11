@@ -23,6 +23,9 @@
 .ig-card--yellow {
   --card-bg: var(--ig-yellow);
 }
+.ig-card--white {
+  --card-bg: #fff;
+}
 
 /* the hand, hidden behind the top edge, about 20px in from the left corner.
    ::after is only the outline of the same hand, on top of it, only shown with .ig-card--outline */

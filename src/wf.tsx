@@ -24,10 +24,11 @@ type CtxT = {
 
 export const Ctx = createContext<CtxT>({ ann: false, sel: '', cart: [], go: () => {}, toggleCart: () => {} })
 
-// rounded corners on every card, so the site feels friendlier
-const SOFT = ' rounded-2xl bg-white border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]'
+// calm cards: white, a thin soft line, no black border or offset shadow (brand rule).
+// the workshop and game cards are .ig-card (the hand pops up on hover), see src/motion/cards.css
+const SOFT = ' rounded-[var(--r-box)] bg-white ring-1 ring-ig-ink/12'
 export const cardStatic = `${SOFT} overflow-hidden`
-export const card = `${cardStatic} transition duration-200 hover:-translate-y-1 hover:shadow-[8px_10px_0_#1f1a17]`
+export const card = `${cardStatic} transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgb(42_24_16/0.12)]`
 
 export function Section({
   id,
