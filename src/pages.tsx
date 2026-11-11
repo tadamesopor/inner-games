@@ -20,7 +20,7 @@ function WorkshopCard({ w }: { w: WS }) {
       <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
       <div className="flex flex-1 flex-col gap-3 p-5">
         <AudTags aud={w.aud} />
-        <h3 className="text-2xl font-semibold leading-tight tracking-tight">{w.title}</h3>
+        <h3 className="text-xl font-semibold leading-tight tracking-tight">{w.title}</h3>
         <p className="text-[15px] text-neutral-700">{w.tagline}</p>
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <div className="text-sm text-neutral-600">

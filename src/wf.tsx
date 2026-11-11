@@ -54,7 +54,9 @@ export function Section({
           {note && <span className="hidden bg-yellow-200 px-2 py-1 text-[11px] text-black @3xl:block">{note}</span>}
         </div>
       )}
-      {children}
+      {/* content stops at 1280px, so cards and text don't stretch on a wide screen. not positioned on purpose:
+          absolute backgrounds (the hero photo) still fill the whole section */}
+      <div className="mx-auto w-full max-w-[1280px]">{children}</div>
     </section>
   )
 }
@@ -356,7 +358,7 @@ export function Header({ active }: { active: PageId }) {
   return (
     <header className="sticky top-0 z-40 border-b-2 border-ig-ink bg-white">
       {ann && <span className="absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
-      <div className="flex items-center justify-between gap-4 px-5 py-2.5 @3xl:px-16">
+      <div className="mx-auto flex max-w-[calc(1280px+8rem)] items-center justify-between gap-4 px-5 py-2.5 @3xl:px-16">
         <Link to="home" className="shrink-0">
           <img src="/assets/logo.png" alt="InnerGames, naar de homepage" className="h-11 w-auto @3xl:h-14" />
         </Link>
