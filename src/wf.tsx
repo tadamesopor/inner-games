@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react'
+import { SplitBtn } from './motionui'
 import { CLIENTS, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
 export type PageId =
@@ -138,12 +139,14 @@ export function Link({
 }
 
 type Variant = 'primary' | 'dark' | 'light' | 'ghost' | 'ghostLight'
+// calm buttons: flat colour, no black offset shadow, no thick border (brand rule).
+// the main actions use the split button instead (Btn split)
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-ig-orange text-ig-ink',
-  dark: 'bg-ig-ink text-white hover:bg-ig-ink/90',
-  light: 'bg-white text-ig-ink hover:bg-ig-cream',
-  ghost: 'bg-transparent text-ig-ink hover:bg-ig-ink hover:text-white',
-  ghostLight: 'bg-transparent text-white border-white! hover:bg-white hover:text-ig-ink',
+  primary: 'border-transparent bg-ig-orange text-ig-ink hover:bg-[#d84f1c]',
+  dark: 'border-transparent bg-ig-ink text-white hover:bg-ig-ink/88',
+  light: 'border-transparent bg-white text-ig-ink hover:bg-ig-cream',
+  ghost: 'border-ig-ink/35 bg-transparent text-ig-ink hover:border-ig-ink hover:bg-ig-ink hover:text-white',
+  ghostLight: 'border-white/60 bg-transparent text-white hover:bg-white hover:text-ig-ink',
 }
 
 export function Btn({
@@ -153,6 +156,7 @@ export function Btn({
   className = '',
   type = 'button',
   disabled,
+  split = false,
 }: {
   children: ReactNode
   variant?: Variant
@@ -160,13 +164,21 @@ export function Btn({
   className?: string
   type?: 'button' | 'submit'
   disabled?: boolean
+  /** main actions only: the split button with the drawn arrow (src/motion/buttons.css) */
+  split?: boolean
 }) {
+  if (split)
+    return (
+      <SplitBtn tone={variant === 'dark' ? 'ink' : variant === 'light' ? 'cream' : 'orange'} type={type} disabled={disabled} onClick={onClick} className={className}>
+        {children}
+      </SplitBtn>
+    )
   return (
     <button
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-ig-ink px-5 py-3 text-sm font-bold lowercase transition disabled:opacity-50 @3xl:w-auto ${VARIANT[variant]} ${variant.startsWith('ghost') ? '' : 'shadow-[3px_3px_0_#1f1a17] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#1f1a17] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'} ${className}`}
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-[var(--r-box)] border-[1.5px] px-5 py-3 text-[15px] font-semibold lowercase transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ig-ink disabled:opacity-50 @3xl:w-auto ${VARIANT[variant]} ${className}`}
     >
       {children}
     </button>
@@ -299,7 +311,7 @@ export function ContactCta({ id = 'CTA' }: { id?: string }) {
           <H2 className="max-w-2xl">benieuwd wat spelen voor jou doet?</H2>
           <p className="mt-4 max-w-lg text-lg">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
         </div>
-        <Btn variant="dark" className="shrink-0" onClick={() => go('contact')}>
+        <Btn split variant="dark" className="shrink-0" onClick={() => go('contact')}>
           boek een workshop
         </Btn>
       </div>

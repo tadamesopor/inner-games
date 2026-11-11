@@ -74,7 +74,7 @@ export function Home() {
             Spelen is een mooie manier om te leren, te veranderen, om jezelf te ontwikkelen, om jezelf te leren kennen en te groeien.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Btn variant="dark" onClick={() => go('workshops')}>boek een workshop</Btn>
+            <Btn split variant="dark" onClick={() => go('workshops')}>boek een workshop</Btn>
             <Btn variant="light" onClick={() => go('preview', 'elemental-five-compleet')}>speel een preview</Btn>
           </div>
         </div>
@@ -116,7 +116,7 @@ export function Home() {
             <H2>the elemental five</H2>
             <p className="mt-5 max-w-lg text-lg leading-snug">Vijf elementen, vijf manieren om naar jezelf en elkaar te kijken. Speel eerst 30 seconden en voel het verschil.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Btn variant="dark" onClick={() => go('preview', 'elemental-five-compleet')}>speel de preview</Btn>
+              <Btn split variant="dark" onClick={() => go('preview', 'elemental-five-compleet')}>speel de preview</Btn>
               <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
             </div>
           </div>
@@ -244,7 +244,7 @@ export function Workshop() {
               ))}
             </dl>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Btn variant="primary" onClick={() => go('contact')}>boek of vraag aan</Btn>
+              <Btn split variant="primary" onClick={() => go('contact')}>boek of vraag aan</Btn>
               {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
             </div>
           </div>
@@ -421,7 +421,7 @@ export function Trainer() {
             </div>
           ))}
         </div>
-        <div className="mt-8 flex"><Btn variant="primary" onClick={() => go('contact')}>vraag de training aan</Btn></div>
+        <div className="mt-8 flex"><Btn split variant="primary" onClick={() => go('contact')}>vraag de training aan</Btn></div>
       </Section>
       <Section id="C" label="drie stappen" className="bg-ig-cream" note="spelen · begeleiden · ontwerpen">
         <H2>zo word je spelleider</H2>

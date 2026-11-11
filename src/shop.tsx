@@ -152,7 +152,7 @@ function Teaser({ game }: { game: G }) {
           <p className="mx-auto mt-3 max-w-md text-lg">Wil je het hele spel met je team of klas spelen?</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Btn variant="dark" onClick={() => { if (!cart.includes(game.slug)) toggleCart(game.slug); go('game', game.slug) }}>koop het spel · {game.price}</Btn>
-            <Btn variant="primary" onClick={() => (matching.length === 1 ? go('workshop', matching[0].slug) : go('contact'))}>boek een workshop</Btn>
+            <Btn split variant="primary" onClick={() => (matching.length === 1 ? go('workshop', matching[0].slug) : go('contact'))}>boek een workshop</Btn>
             <Btn variant="ghost" onClick={() => setAnswers([])}>opnieuw</Btn>
           </div>
         </div>
@@ -206,7 +206,7 @@ export function Game() {
             </dl>
             <p className="mt-8 text-3xl font-semibold">{g.price}</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Btn variant="dark" disabled={!!g.status} onClick={() => toggleCart(g.slug)}>{inCart ? 'in je mand ✓' : 'in winkelmand'}</Btn>
+              <Btn split variant="dark" disabled={!!g.status} onClick={() => toggleCart(g.slug)}>{inCart ? 'in je mand ✓' : 'in winkelmand'}</Btn>
               {matching.length === 1 && <Btn variant="primary" onClick={() => go('workshop', matching[0].slug)}>bekijk de workshop</Btn>}
               {matching.length > 1 && (
                 <Btn variant="primary" onClick={() => document.getElementById('workshops-bij-spel')?.scrollIntoView({ behavior: 'smooth' })}>bekijk de workshops</Btn>
