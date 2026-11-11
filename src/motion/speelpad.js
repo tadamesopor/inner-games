@@ -182,6 +182,8 @@ export function initSpeelpad(root) {
     const q = path.getPointAtLength(Math.min(total, at + 6))
     const dist = Math.hypot(q.x - p.x, q.y - p.y) || 1
     pawn.pose(p.x, p.y, ((q.x - p.x) / dist) * 10)
+    const onScreen = root.getBoundingClientRect().top + p.y
+    pawn.node.classList.toggle('is-away', onScreen < window.innerHeight * 0.15 || onScreen > window.innerHeight * 0.85)
 
     stops.forEach((s) => {
       const reached = at >= s.len - 1

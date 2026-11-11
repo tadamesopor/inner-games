@@ -17,7 +17,7 @@ function AudTags({ aud }: { aud: Aud[] }) {
 function WorkshopCard({ w }: { w: WS }) {
   const { go } = useContext(Ctx)
   return (
-    <article className="ig-card ig-card--white ig-card--outline cursor-pointer" onClick={() => go('workshop', w.slug)}>
+    <article className="ig-card ig-card--white ig-card--outline ig-card--hot cursor-pointer" onClick={() => go('workshop', w.slug)}>
       <div className="ig-card__body flex flex-col">
       <div className="ig-card__media">
         <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />

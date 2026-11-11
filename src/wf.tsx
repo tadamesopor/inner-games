@@ -192,13 +192,13 @@ export function Link({
 type Variant = 'primary' | 'dark' | 'light' | 'ghost' | 'ghostLight'
 // two kinds of buttons only. main actions: the split button (Btn split, the variant picks its colour).
 // everything else: one secondary style, an outline with ink text (cream on dark backgrounds)
-export const OUTLINE = 'border-ig-ink/40 bg-transparent text-ig-ink hover:border-ig-ink hover:bg-ig-ink hover:text-white'
+export const OUTLINE = 'border-ig-ink/70 bg-transparent text-ig-ink hover:border-ig-ink hover:bg-ig-ink hover:text-white'
 const VARIANT: Record<Variant, string> = {
   primary: OUTLINE,
   dark: OUTLINE,
   light: OUTLINE,
   ghost: OUTLINE,
-  ghostLight: 'border-ig-cream/60 bg-transparent text-ig-cream hover:bg-ig-cream hover:text-ig-ink',
+  ghostLight: 'border-ig-cream/80 bg-transparent text-ig-cream hover:bg-ig-cream hover:text-ig-ink',
 }
 /** the secondary button look, for links (like the WhatsApp link) */
 export const btnLink = `inline-flex items-center justify-center gap-2 rounded-[var(--r-box)] border-[1.5px] px-5 py-3 text-[15px] font-semibold lowercase transition-colors duration-150 ${OUTLINE}`
@@ -254,7 +254,7 @@ export function Tag({ children, tone = 'yellow' }: { children: ReactNode; tone?:
     orange: 'bg-ig-orange',
     cream: 'bg-ig-cream',
   }[tone]
-  return <span className={`inline-block rounded-[var(--r-tag)] px-3 py-1 text-[13px] font-medium lowercase leading-none text-ig-ink ${t}`}>{children}</span>
+  return <span className={`ig-tag inline-block rounded-[var(--r-tag)] px-3 py-1 text-[13px] font-medium lowercase leading-none text-ig-ink ${t}`}>{children}</span>
 }
 
 export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string }) {

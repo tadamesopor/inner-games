@@ -43,7 +43,14 @@
   --pencil-draw: 300ms;
 }
 
-/* the pawn (.ig-pawn, see pawn.js): a soft contact shadow that shrinks while it's in the air */
+/* the pawn (.ig-pawn, see pawn.js): a soft contact shadow that shrinks while it's in the air.
+   .is-away: near the top or bottom of the screen it fades out, so it never sits on fixed buttons */
+.ig-pawn {
+  transition: opacity var(--dur-move) var(--ease-soft);
+}
+.ig-pawn.is-away {
+  opacity: 0;
+}
 .ig-pawn__shadow {
   fill: var(--ig-ink);
   opacity: 0.2;

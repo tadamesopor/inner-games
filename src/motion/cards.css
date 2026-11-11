@@ -23,6 +23,33 @@
 .ig-card--yellow {
   --card-bg: var(--ig-yellow);
 }
+/* .ig-card--hot (the workshop cards): on hover the card turns dark orange with white text, and the hand
+   that pops up is the brand orange. #C84413 instead of #EA561F, so the white text passes AA (4.8:1) */
+@media (hover: hover) and (pointer: fine) {
+  .ig-card--hot:hover {
+    --hand-color: var(--ig-orange);
+  }
+  .ig-card--hot:hover .ig-card__body {
+    background: var(--ig-orange-text);
+    box-shadow: none;
+    transition:
+      transform 200ms var(--ease-out),
+      background-color var(--dur-ui) var(--ease-soft);
+  }
+  .ig-card--hot:hover .ig-card__body :is(h3, p, span, button, dd, dt) {
+    color: #fff;
+    border-color: #fff;
+  }
+  .ig-card--hot:hover .ig-card__body .ig-tag {
+    color: var(--ig-ink);
+  }
+}
+.ig-card--hot .ig-card__body {
+  transition:
+    transform 200ms var(--ease-out) 140ms,
+    background-color var(--dur-ui) var(--ease-soft);
+}
+
 /* a white card: a white hand would disappear on cream, so the hand is the light yellow of the menu */
 .ig-card--white {
   --card-bg: #fff;
