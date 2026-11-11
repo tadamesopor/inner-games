@@ -96,7 +96,7 @@ const TASKS_R1: Task[][] = [
     { t: 'Je havo 4-klas heeft over twee weken een projectweek over duurzaamheid. Zoek iets van InnerGames dat je in die week met je klas kunt doen.', code: 'D1, D4', expect: 'Het Impact Imperium (workshop) of Impact Imperium klassenset. De Klimaat Collage past ook.', ask: [CHOSEN] },
     { t: 'Jullie hebben € 500 voor die week en de klas heeft 28 leerlingen. Kan jouw keuze, ja of nee?', code: 'D3', expect: 'Impact Imperium € 423,50 tot 32 leerlingen: ja. Klassenset € 275: ja. Klimaat Collage € 1.800: nee.', ask: [canIf('Welke prijs en welke groepsgrootte zag je?')] },
     // "regel het": succes is het formulier bereiken, dat staat in het paginalog
-    { t: 'Je wilt donderdag 12 maart vastleggen. Regel dat via de website.', code: 'D5', expect: '"boek of vraag aan" → formulier, of WhatsApp, binnen 2 klikken.' },
+    { t: 'Je wilt donderdag 12 maart vastleggen. Regel dat via de website.', code: 'D5', expect: '"vraag deze workshop aan" → formulier (workshop al ingevuld), of WhatsApp, binnen 2 klikken.' },
     { t: 'Je wilt dit later ook zonder trainer met andere klassen doen. Kan dat, en wat kost het?', code: 'D12', expect: 'Ja: klassenset € 275.', ask: [canIf('Wat kost het?', ['ja'])] },
   ],
   [

@@ -329,6 +329,12 @@ export function Workshops() {
   )
 }
 
+const EXPECT: [string, string][] = [
+  ['kennismaking', 'We bespreken je groep, wat je wilt bereiken en wat er speelt.'],
+  ['sessie op maat', 'We stemmen de workshop af op jouw groep en komen spelen.'],
+  ['nagesprek', 'We kijken samen terug: wat werkte, en wat neem je mee?'],
+]
+
 export function Workshop() {
   const { sel, go } = useContext(Ctx)
   const w = WORKSHOPS.find((x) => x.slug === sel) ?? WORKSHOPS[0]
@@ -364,7 +370,7 @@ export function Workshop() {
               ))}
             </dl>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Btn split variant="primary" onClick={() => go('contact')}>boek of vraag aan</Btn>
+              <Btn split variant="primary" onClick={() => go('contact', w.slug)}>vraag deze workshop aan</Btn>
               {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
             </div>
           </div>
@@ -420,7 +426,29 @@ export function Workshop() {
         </div>
       </Section>
 
-      <Section id="D" label="gerelateerd" className="bg-ig-cream" note="het bijbehorende spel + andere sessies">
+      {/* TODO Ariën: check the three steps */}
+      <Section id="C2" label="dit kun je verwachten" className="bg-ig-cream" note="kennismaking · sessie op maat · nagesprek">
+        <div className="grid gap-10 @4xl:grid-cols-[1fr_1.4fr]">
+          <div>
+            <H2>dit kun je verwachten</H2>
+            <ol className="mt-8 space-y-6">
+              {EXPECT.map(([t, d], i) => (
+                <li key={t} className="flex gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ig-orange text-lg font-bold text-ig-ink">{i + 1}</span>
+                  <div>
+                    <h3 className="text-xl font-bold leading-tight">{t}</h3>
+                    <p className="mt-1 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+          {/* TODO Ariën: one short real case or quote per workshop (with permission) */}
+          <Todo className="self-start bg-white">Hier komt een korte case of quote van een groep die {w.title} heeft gespeeld: wie, wat was de vraag, en wat het opleverde.</Todo>
+        </div>
+      </Section>
+
+      <Section id="D" label="gerelateerd" className="bg-white" note="het bijbehorende spel + andere sessies">
         <div className="grid gap-12 @3xl:grid-cols-2">
           <div>
             <h3 className="text-2xl font-semibold">{game ? 'speel het zelf' : 'bij elkaar horend'}</h3>
@@ -640,6 +668,9 @@ export function Legal() {
 }
 
 export function Contact() {
+  const { sel } = useContext(Ctx)
+  // coming from "vraag deze workshop aan": that workshop is already filled in
+  const from = WORKSHOPS.find((x) => x.slug === sel)
   const [sent, setSent] = useState(false)
   // a clear focus: 2px orange around the field (instead of the general ink outline)
   const input = 'w-full rounded-[var(--r-box)] bg-ig-cream px-4 py-2.5 text-base focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
@@ -682,8 +713,11 @@ export function Contact() {
                 <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
               </div>
               <label className="block text-sm font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
+              {from && (
+                <label className="block text-sm font-semibold">Workshop<input name="workshop" defaultValue={from.title} className={`${input} mt-1`} /></label>
+              )}
               <label className="block text-sm font-semibold">Waar kunnen we je mee helpen?
-                <select className={`${input} mt-1`}>
+                <select className={`${input} mt-1`} defaultValue={from ? 'een workshop voor mijn team' : undefined}>
                   <option>een workshop voor mijn team</option>
                   <option>een les of spel voor mijn klas</option>
                   <option>iets voor mijn cliënten of zorgteam</option>
