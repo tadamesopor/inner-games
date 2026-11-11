@@ -8,9 +8,9 @@
    <footer class="ig-footer ig-footer--ink">...<span class="ig-footer-hand"></span>...</footer>
    in Enfold: the last color section gets ig-reveal-cover, the footer section ig-footer. */
 
-/* the cover: the class, or (when the class can't be set) simply the element right before the footer */
-.ig-reveal-cover,
-:has(+ .ig-footer) {
+/* the cover: everything above the footer. it must be one element (in Enfold: the main content wrapper),
+   because the sticky footer is painted over anything that isn't inside it */
+.ig-reveal-cover {
   position: relative;
   z-index: 1;
   border-bottom-left-radius: var(--r-section);

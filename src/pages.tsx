@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { initBoxscene, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag, useMotion } from './wf'
+import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -169,7 +169,6 @@ export function Home() {
       </Speelpad>
 
       <ContactCta />
-      <Footer />
     </>
   )
 }
@@ -213,7 +212,6 @@ export function Workshops() {
         </div>
       </Section>
       <ContactCta />
-      <Footer />
     </>
   )
 }
@@ -341,7 +339,6 @@ export function Workshop() {
         </div>
       </Section>
       <ContactCta />
-      <Footer />
     </>
   )
 }
@@ -378,7 +375,6 @@ export function Projects() {
         </div>
       </Section>
       <ContactCta />
-      <Footer />
     </>
   )
 }
@@ -472,7 +468,6 @@ export function Trainer() {
         </div>
       </Section>
       <ContactCta />
-      <Footer />
     </>
   )
 }
@@ -532,7 +527,6 @@ export function Contact() {
       <Section id="B" label="werkplek" className="p-0!" note="FULL-WIDTH · werkplek Eindhoven">
         <Photo src={PHOTOS.tafel} alt={ALT[PHOTOS.tafel]} sizes="100vw" className="h-64 w-full @3xl:h-96" />
       </Section>
-      <Footer />
     </>
   )
 }

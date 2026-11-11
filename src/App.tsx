@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { Ctx, type PageId } from './wf'
+import { Ctx, Footer, type PageId } from './wf'
 import TestMode from './test'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
 import { igNavigate, initCards } from './motion'
@@ -76,7 +76,12 @@ export default function App() {
     <Ctx.Provider value={{ ann, footer, sel, cart, go, toggleCart }}>
       <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
         <div ref={view} className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
-          <Page key={page + sel} />
+          {/* the page lies on top of the footer: when you reach the end, it slides up with a rounded
+              bottom and the footer appears underneath (src/motion/footer.css) */}
+          <div className="ig-reveal-cover bg-white">
+            <Page key={page + sel} />
+          </div>
+          <Footer />
         </div>
       </div>
       {tasks && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}

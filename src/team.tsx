@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import { PHOTOS, ALT } from './data'
-import { Ctx, ContactCta, Footer, Header, Img, Photo, Section } from './wf'
+import { Ctx, ContactCta, Header, Img, Photo, Section } from './wf'
 
 type Member = {
   first: string
@@ -209,8 +209,6 @@ export function Team() {
       </Section>
 
       <ContactCta id="E" />
-
-      <Footer />
     </div>
   )
 }

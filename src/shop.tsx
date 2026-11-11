@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, card, cardStatic, ContactCta, Ctx, Footer, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { Btn, card, cardStatic, ContactCta, Ctx, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
 function GameCard({ g }: { g: G }) {
@@ -76,7 +76,6 @@ export function Games() {
         </div>
       </Section>
       <ContactCta />
-      <Footer />
     </>
   )
 }
@@ -290,7 +289,6 @@ export function Game() {
         <H2 className="mb-8">meer om te spelen</H2>
         <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">{more.map((x) => <GameCard key={x.slug} g={x} />)}</div>
       </Section>
-      <Footer />
     </>
   )
 }
@@ -309,7 +307,6 @@ export function Preview() {
         <h1 className="mb-8 mt-2 text-4xl font-normal leading-none tracking-tight @3xl:text-7xl">speel 30 seconden</h1>
         <div className="mx-auto max-w-3xl"><Teaser game={g} /></div>
       </Section>
-      <Footer />
     </>
   )
 }
