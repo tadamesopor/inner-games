@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, btnLink, chip, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { Btn, btnLink, chip, ContactCta, Ctx, H1, H2, Header, logEvent, PageHero, Photo, Section, Tag, useMotion, type PageId } from './wf'
 import { initBoxscene } from './motion'
 
 /** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
@@ -180,6 +180,132 @@ function Teaser({ game }: { game: G }) {
   )
 }
 
+// the whole Elemental Five game (public/games/elemental-five, a copy of the game's own repo). it only loads
+// after a click, in an iframe, so its css and the site's never mix. on a phone it opens full screen.
+// the game sends postMessage: e5:link (koop / workshop) to open our own pages, and e5:start,
+// e5:element-done and e5:finished for the test tool.
+// WP: Code Block with the same iframe (see docs/WORDPRESS_ENFOLD_MAPPING.md)
+const E5_SLUG = 'elemental-five-compleet'
+const E5_SRC = '/games/elemental-five/index.html'
+const E5_FAN = ['vuur', 'lucht', 'aarde', 'water', 'ether']
+let openE5OnArrive = false
+
+/** the "speel het spel" label in the hero: go to the game page and open the game right away */
+export function playE5(go: (p: PageId, id?: string) => void) {
+  openE5OnArrive = true
+  go('game', E5_SLUG)
+}
+
+function FullGame() {
+  const { go } = useContext(Ctx)
+  const ref = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
+  const [phone, setPhone] = useState(false)
+
+  const start = () => {
+    // a phone gets the whole screen: the game is made for that
+    setPhone((ref.current?.closest('.\\@container')?.clientWidth ?? window.innerWidth) < 768)
+    setOpen(true)
+    logEvent('e5:open')
+  }
+  // from the hero label (after the page change has scrolled to the top) or the button higher on the page
+  useEffect(() => {
+    const show = () => {
+      ref.current?.scrollIntoView({ block: 'start' })
+      start()
+      // then the frame itself, so the whole game is in view under the menu
+      setTimeout(() => document.getElementById('spel')?.scrollIntoView({ block: 'start' }), 60)
+    }
+    // the flag is cleared when it really opens (React runs this effect twice in development)
+    const t = openE5OnArrive ? setTimeout(() => { openE5OnArrive = false; show() }, 120) : 0
+    window.addEventListener('ig:e5-open', show)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('ig:e5-open', show)
+    }
+  }, [])
+
+  // messages from the game
+  useEffect(() => {
+    if (!open) return
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== location.origin || typeof e.data?.type !== 'string' || !e.data.type.startsWith('e5:')) return
+      if (e.data.type === 'e5:link') {
+        logEvent('e5:link', e.data.detail)
+        setOpen(false)
+        if (e.data.detail === 'koop') go('game', E5_SLUG)
+        else go('workshop', 'ontdek-jouw-drijfveren')
+        return
+      }
+      logEvent(e.data.type, e.data.detail)
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [open, go])
+
+  // full screen on a phone: the page behind it stands still and doesn't scroll
+  useEffect(() => {
+    if (!open || !phone) return
+    const cover = document.querySelector('.ig-reveal-cover')
+    cover?.classList.add('ig-paused')
+    document.documentElement.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      cover?.classList.remove('ig-paused')
+      document.documentElement.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open, phone])
+
+  const frame = <iframe src={E5_SRC} title="The Elemental Five, het hele spel" allow="autoplay; fullscreen" className="block h-full w-full border-0" />
+  return (
+    <Section id="SPEL" label="speel het hele spel" className="bg-ig-cream" note="iframe · laadt pas na de klik">
+      <div ref={ref}>
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <H2>speel het hele spel</H2>
+            <p className="mt-4 max-w-xl text-lead">Kies per element de kaart die bij je past. Speel één element of alle vijf. Er is geen goed of fout.</p>
+          </div>
+          {open && !phone && <Btn variant="ghost" onClick={() => setOpen(false)}>sluit het spel</Btn>}
+        </div>
+        {open && !phone ? (
+          <div id="spel" className="h-[min(80vh,760px)] overflow-hidden rounded-box bg-ig-ink shadow-lift">{frame}</div>
+        ) : (
+          <div className="relative flex flex-col items-center gap-8 overflow-hidden rounded-box bg-ig-ink px-6 pb-10 pt-12">
+            {/* the five card-1s from the game, in a fan */}
+            <div className="flex justify-center" aria-hidden>
+              {E5_FAN.map((el, i) => (
+                <img
+                  key={el}
+                  src={`/games/elemental-five/assets/img/${el}1.jpg`}
+                  alt=""
+                  loading="lazy"
+                  className="-mx-3 w-[clamp(64px,14cqi,150px)] rounded-media shadow-soft"
+                  style={{ rotate: `${(i - 2) * 7}deg`, translate: `0 ${Math.abs(i - 2) * 10}px` }}
+                />
+              ))}
+            </div>
+            <Btn split variant="light" onClick={start}>speel het hele spel</Btn>
+          </div>
+        )}
+        {open && phone && (
+          <div className="fixed inset-0 z-[90] flex flex-col bg-ig-ink" role="dialog" aria-label="The Elemental Five">
+            {/* a bar of its own above the game, so the close button never covers the game's own buttons */}
+            <div className="flex h-14 shrink-0 items-center justify-between px-4 text-ig-cream">
+              <span className="text-body font-semibold">the elemental five</span>
+              <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-box bg-ig-cream px-4 text-meta font-semibold text-ig-ink">
+                sluit het spel
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">{frame}</div>
+          </div>
+        )}
+      </div>
+    </Section>
+  )
+}
+
 export function Game() {
   const { sel, go, addToCart, openCart } = useContext(Ctx)
   const g = GAMES.find((x) => x.slug === sel) ?? GAMES[0]
@@ -247,11 +373,9 @@ export function Game() {
                 <Btn variant="primary" onClick={() => document.getElementById('workshops-bij-spel')?.scrollIntoView({ behavior: 'smooth' })}>bekijk de workshops</Btn>
               )}
               {matching.length === 0 && <Btn variant="primary" onClick={() => go('contact')}>vraag een sessie aan</Btn>}
-              {/* the playable game. until it is inside the prototype (step 8): the online version, in a new tab */}
+              {/* the whole game is lower on this page (FullGame) */}
               {g.slug.startsWith('elemental-five') && (
-                <a href="https://elemental-five-two.vercel.app" target="_blank" rel="noreferrer" className={btnLink}>
-                  speel het spel online ↗
-                </a>
+                <Btn variant="ghost" onClick={() => window.dispatchEvent(new Event('ig:e5-open'))}>speel het hele spel ↓</Btn>
               )}
             </div>
             {added !== null && (
@@ -317,6 +441,8 @@ export function Game() {
           </div>
         )}
       </Section>
+
+      {g.slug.startsWith('elemental-five') && <FullGame />}
 
       {matching.length > 0 && (
         <Section id="D" label="workshops bij dit spel" className="bg-white" note="echte relatie spel ↔ workshop">

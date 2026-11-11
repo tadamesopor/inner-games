@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type React
 import { initBoxscene, initHeroTable, initHeroWaves, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
+import { playE5 } from './shop'
 import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
@@ -108,7 +109,7 @@ function HeroNew() {
           <div className="ig-table__labels">
             <button type="button" className="ig-table__label" data-for="ws" data-at="190,326" onClick={() => go('workshops')}>bekijk de workshops →</button>
             <button type="button" className="ig-table__label" data-for="box" data-at="396,284" onClick={() => go('games')}>bekijk de spellen →</button>
-            <button type="button" className="ig-table__label" data-for="e5" data-at="300,572" onClick={() => go('preview', e5.slug)}>speel het spel →</button>
+            <button type="button" className="ig-table__label" data-for="e5" data-at="300,572" onClick={() => playE5(go)}>speel het spel →</button>
           </div>
           <button type="button" className="ig-table__tidy" hidden>opruimen</button>
         </div>
