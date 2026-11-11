@@ -78,7 +78,8 @@ export function initSpeelpad(root) {
       return i % 2 === 0 ? b.left / 2 : b.right + (W - b.right) / 2
     }
 
-    const pts = [[margin(0) + wob(8), 6]]
+    // starts a little below the top, so the pawn (which stands on the line) stays inside the block
+    const pts = [[margin(0) + wob(8), Math.min(64, blocks[0].top)]]
     const stopIdx = []
     blocks.forEach((b, i) => {
       const x = margin(i)
