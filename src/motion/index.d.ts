@@ -17,3 +17,5 @@ export function markMarkup(mark: Mark): string
 export function hydrateMarks(root?: ParentNode): Promise<void>
 export function setPencilBase(url: string): void
 export function ensurePencilDefs(): void
+export function initHeroWaves(svg: SVGSVGElement): Stop
+export function initHeroTable(stage: HTMLElement): Stop

@@ -1,68 +1,203 @@
-/* .ig-hero-photo: one photo in the hero, in a rounded box with a thin cream border, tilted -2deg.
-   the InnerGames hand peeks out from behind its top left edge, in the same cream, and on load it pops up
-   and waves once: our signature, the same move as the hand on the cards.
-   reduced motion: the hand is simply there.
+/* the homepage hero: orange, with yellow waves on the right that breathe slowly (hero.js), and on the right
+   half a table with real session photos and our games. drag them around; three curly arrows point to
+   where you can go from there. on a phone the objects are a still pile and the labels are buttons.
+   reduced motion: the waves stand still, no draw-in, no tilting while dragging.
 
    markup:
-   <figure class="ig-hero-photo"><span class="ig-hero-photo__hand"></span><img></figure> */
+   <section class="ig-hero ig-section--rounded">
+     <svg class="ig-hero__waves" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice"></svg>
+     ...text...
+     <div class="ig-table">
+       <figure class="ig-table__item ig-table__print" data-key="photo" data-at="x,y,deg" data-pile="x,y,deg" style="--w: 250">
+         <img><figcaption>energiek team!</figcaption></figure>
+       <img class="ig-table__item ig-table__cutout" data-key="box" ...>
+       <div class="ig-table__labels"><a class="ig-table__label" data-for="photo" data-at="x,y">bekijk de workshops →</a>...</div>
+       <button class="ig-table__tidy" hidden>opruimen</button>
+     </div>
+   </section>
+   in Enfold: a colour section with this as a Code Block, hero.js enqueued with the other motion files. */
 
-.ig-hero-photo {
-  position: relative;
-  isolation: isolate;
-  margin: 0;
-  rotate: -2deg;
+.ig-hero {
+  overflow: clip;
+  /* the menu floats on the orange: the hero slides up under it (header.css, .ig-nav--on-orange) */
+  margin-top: calc(var(--nav-h, 88px) * -1);
+  padding-top: calc(var(--nav-h, 88px) + 32px) !important;
 }
-.ig-hero-photo img {
+.ig-hero__waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.ig-hero__body {
+  position: relative; /* the text and the table above the waves */
+}
+
+/* ---------- the table ---------- */
+.ig-table {
+  --s: 1; /* design px -> real px, set by hero.js */
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  aspect-ratio: 640 / 470; /* the pile */
+  touch-action: pan-y;
+  user-select: none;
+}
+.ig-table.is-live {
+  aspect-ratio: 640 / 620;
+  touch-action: none;
+}
+.ig-table__item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--w) * var(--s) * 1px);
+  margin: 0;
+  transform-origin: 50% 50%;
+}
+.ig-table.is-live .ig-table__item {
+  cursor: grab;
+}
+.ig-table__item.is-dragging {
+  cursor: grabbing;
+  scale: 1.04;
+}
+/* after a drop (or "opruimen") it settles with a small bounce */
+.ig-table__item.is-settling {
+  transition:
+    rotate 500ms var(--ease-spring),
+    scale 300ms var(--ease-out),
+    left 500ms var(--ease-out),
+    top 500ms var(--ease-out);
+}
+.ig-table__item.is-dragging,
+.ig-table__item.is-dragging.is-settling {
+  transition: scale 150ms var(--ease-out);
+}
+
+/* a session photo as a print: cream border, wider at the bottom for the caption */
+.ig-table__print {
+  padding: calc(10px * var(--s)) calc(10px * var(--s)) calc(36px * var(--s));
+  border-radius: 6px;
+  background: var(--ig-cream);
+  box-shadow: 0 12px 28px rgb(42 24 16 / 0.25);
+  transition: box-shadow var(--dur-ui) var(--ease-soft);
+}
+.ig-table__print.is-dragging {
+  box-shadow: 0 26px 44px rgb(42 24 16 / 0.3);
+}
+.ig-table__print img {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  border: 4px solid var(--ig-cream);
-  border-radius: var(--r-box);
-  background: var(--ig-cream);
-  box-shadow: 0 18px 40px rgb(42 24 16 / 0.22);
+  border-radius: 3px;
+  pointer-events: none;
+}
+.ig-table__print figcaption {
+  position: absolute;
+  left: calc(14px * var(--s));
+  bottom: calc(9px * var(--s));
+  color: var(--ig-ink);
+  font: italic 500 calc(17px * var(--s)) / 1 var(--ig-font);
+}
+/* a cut-out product: no frame, only a soft shadow under its own shape */
+.ig-table__cutout {
+  display: block;
+  height: auto;
+  filter: drop-shadow(0 14px 18px rgb(42 24 16 / 0.3));
+  -webkit-user-drag: none;
+}
+.ig-table__cutout.is-dragging {
+  filter: drop-shadow(0 26px 30px rgb(42 24 16 / 0.32));
 }
 
-/* the hand: about 90px tall, behind the photo, fingers above the top edge */
-.ig-hero-photo__hand {
+/* the arrows: cream, 3px, round, drawn on top of everything */
+.ig-table__arrows {
   position: absolute;
-  z-index: -1;
-  top: 0;
-  left: 28px;
-  width: 100px; /* the drawing is about 90px tall at this width */
-  aspect-ratio: 140 / 126;
+  inset: 0;
+  z-index: 90;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--ig-cream);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ig-table:not(.is-live) .ig-table__arrows {
+  display: none;
+}
+
+/* the labels: cream buttons, no pill, ink text */
+.ig-table__label {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--r-box);
   background: var(--ig-cream);
-  -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
-  mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
-  transform-origin: 78% 92%; /* the wrist */
-  rotate: 30deg; /* upright: a raised hand */
-  translate: 0 -78%;
-  animation:
-    ig-hero-hand-pop 520ms var(--ease-spring) 350ms both,
-    ig-hero-hand-wave 600ms var(--ease-soft) 900ms;
+  color: var(--ig-ink);
+  font: 600 18px/1 var(--ig-font);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgb(42 24 16 / 0.18);
+  transition: background-color var(--dur-ui) var(--ease-soft);
 }
-@keyframes ig-hero-hand-pop {
-  from {
-    translate: 0 0;
-    scale: 0.85;
-  }
-  to {
-    translate: 0 -78%;
-    scale: 1;
-  }
+.ig-table__label:hover {
+  background: #fde7b0;
 }
-/* one small wave: -8deg, +5deg, back */
-@keyframes ig-hero-hand-wave {
-  0%,
-  100% {
-    rotate: 30deg;
-  }
-  35% {
-    rotate: 22deg;
-  }
-  70% {
-    rotate: 35deg;
-  }
+.ig-table.is-live .ig-table__labels {
+  position: absolute;
+  inset: 0;
+  z-index: 91;
+  pointer-events: none;
+}
+.ig-table.is-live .ig-table__label {
+  position: absolute;
+  pointer-events: auto;
+}
+/* the pile (phone): the labels are normal buttons under the objects */
+.ig-table:not(.is-live) .ig-table__labels {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding-top: 20px;
+}
+.ig-table:not(.is-live) {
+  margin-bottom: calc(3 * 44px + 2 * 10px + 20px);
+}
+.ig-table:not(.is-live) .ig-table__label {
+  justify-content: space-between;
+}
+
+.ig-table__tidy {
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  z-index: 92;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--ig-cream);
+  font: 500 15px/1 var(--ig-font);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.ig-table:not(.is-live) .ig-table__tidy {
+  display: none;
 }
 
 /* the client logos in the calm strip under the hero: one ink tone, a little transparent */
@@ -74,8 +209,8 @@
 }
 
 @container (max-width: 767px) {
-  .ig-hero-photo__hand {
-    left: 18px;
-    width: 72px;
+  .ig-hero {
+    margin-top: -72px;
+    padding-top: calc(72px + 24px) !important;
   }
 }

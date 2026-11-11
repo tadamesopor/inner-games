@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { initBoxscene, initSpeelpad } from './motion'
+import { initBoxscene, initHeroTable, initHeroWaves, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { AudIcon, LEGAL, Todo, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
@@ -56,9 +56,9 @@ function Speelpad({ children }: { children: ReactNode }) {
   )
 }
 
-// the homepage hero: orange with the big rounded bottom, and only what's needed. a title that says what
-// InnerGames does, one sentence, one button and a text link. on the right one bright photo, with the hand
-// peeking out from behind it (src/motion/hero.css). the routes are in "waar kom jij voor?" right below
+// the homepage hero: orange with yellow waves (src/motion/hero.js). left the title, one sentence and one
+// button. right a table with two session photos and two of our games: drag them around, and three curly
+// arrows show where you can go from there. on a phone it's a still pile with the three labels as buttons.
 // TODO Ariën: check the three steps
 const HOW: [string, string][] = [
   ['vertel ons over je groep', 'Wie zijn jullie, hoe groot is de groep en wat wil je bereiken? Via het formulier, WhatsApp of de telefoon.'],
@@ -66,30 +66,52 @@ const HOW: [string, string][] = [
   ['we komen spelen', 'Op jullie locatie of bij ons in Eindhoven. Daarna kijken we samen terug.'],
 ]
 
+// what lies on the table. at = place on desktop, pile = place on a phone, both in the 640px design frame
+// (x, y, tilt). w = width in design px. no object covers more than about 20% of another
+const TABLE = {
+  ws: { at: '20,40,-6', pile: '10,20,-6', w: 250 },
+  box: { at: '430,20,7', pile: '470,0,7', w: 150 },
+  tafel: { at: '380,360,5', pile: '360,190,4', w: 220 },
+  e5: { at: '10,368,-3', pile: '120,236,-3', w: 200 },
+}
+
 function HeroNew() {
   const { go } = useContext(Ctx)
-  // TODO Ariën: a better photo of people playing a game together. now the brightest session photo we have
-  const photo = WORKSHOPS[0].photo
+  const waves = useMotion<SVGSVGElement>(initHeroWaves)
+  const table = useMotion<HTMLDivElement>(initHeroTable)
+  const e5 = GAMES[0]
+  const print = (key: 'ws' | 'tafel', src: string, caption: string) => (
+    <figure className="ig-table__item ig-table__print" data-key={key} data-at={TABLE[key].at} data-pile={TABLE[key].pile} style={{ '--w': TABLE[key].w } as CSSProperties}>
+      <img src={`${src}-800.webp`} alt={ALT[src]} width={800} height={600} draggable={false} />
+      <figcaption>{caption}</figcaption>
+    </figure>
+  )
   return (
-    <Section id="A" label="hero" className="ig-section--rounded bg-ig-orange pb-16! pt-12! text-white @3xl:pb-24! @3xl:pt-16!" note="oranje · titel, zin, één knop · één foto met de hand">
-      <div className="grid items-center gap-12 @4xl:grid-cols-[minmax(0,640px)_1fr] @4xl:gap-16">
+    <Section id="A" label="hero" className="ig-hero ig-section--rounded bg-ig-orange pb-16! text-white @3xl:pb-24!" note="oranje + gele golven · foto's en spellen op tafel">
+      <svg ref={waves} className="ig-hero__waves" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" aria-hidden />
+      <div className="ig-hero__body grid items-center gap-12 @6xl:grid-cols-[minmax(0,520px)_1fr] @6xl:gap-12">
         <div className="max-w-[640px]">
           {/* TODO Ariën: check this title. white on orange only passes as large text, so everything here is big */}
           <h1 className="text-[2.5rem] font-bold leading-[1.02] tracking-tight @3xl:text-[3.4rem]">
             spellen en workshops voor teams, klassen en zorg
           </h1>
           <p className="mt-8 text-2xl leading-snug">Spelen om te leren, spelen om te groeien. Vanuit Eindhoven.</p>
-          <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-5">
+          <div className="mt-10">
             <Btn split variant="light" onClick={() => go('workshops')}>boek een workshop</Btn>
-            <button type="button" onClick={() => go('preview', 'elemental-five-compleet')} className="text-xl font-semibold underline decoration-2 underline-offset-[6px] hover:decoration-ig-cream/60">
-              of speel the elemental five →
-            </button>
           </div>
         </div>
-        <figure className="ig-hero-photo mx-auto w-full max-w-[560px]">
-          <span className="ig-hero-photo__hand" aria-hidden />
-          <img src={`${photo}-1600.webp`} srcSet={`${photo}-800.webp 800w, ${photo}-1600.webp 1600w`} sizes="(min-width: 1024px) 560px, 100vw" alt={ALT[photo]} width={1600} height={1200} />
-        </figure>
+        <div ref={table} className="ig-table">
+          {print('ws', WORKSHOPS[0].photo, 'energiek team!')}
+          <img className="ig-table__item ig-table__cutout" data-key="box" data-at={TABLE.box.at} data-pile={TABLE.box.pile} style={{ '--w': TABLE.box.w } as CSSProperties} src="/assets/img/games/sociality-box.png" alt="De doos van het spel Sociality" width={398} height={459} draggable={false} />
+          {print('tafel', PHOTOS.tafel, 'samen aan tafel')}
+          <img className="ig-table__item ig-table__cutout" data-key="e5" data-at={TABLE.e5.at} data-pile={TABLE.e5.pile} style={{ '--w': TABLE.e5.w } as CSSProperties} src={`${e5.photo}-800.webp`} alt={ALT[e5.photo]} width={800} height={800} draggable={false} />
+          <div className="ig-table__labels">
+            <button type="button" className="ig-table__label" data-for="ws" data-at="190,326" onClick={() => go('workshops')}>bekijk de workshops →</button>
+            <button type="button" className="ig-table__label" data-for="box" data-at="396,284" onClick={() => go('games')}>bekijk de spellen →</button>
+            <button type="button" className="ig-table__label" data-for="e5" data-at="300,572" onClick={() => go('preview', e5.slug)}>speel het spel →</button>
+          </div>
+          <button type="button" className="ig-table__tidy" hidden>opruimen</button>
+        </div>
       </div>
     </Section>
   )

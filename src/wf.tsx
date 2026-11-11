@@ -111,7 +111,7 @@ export const LEGAL: Record<string, string> = {
 }
 
 /** starts a plain js effect from src/motion/ on an element, and stops it when the page goes */
-export function useMotion<T extends HTMLElement>(init: (el: T) => () => void) {
+export function useMotion<T extends Element>(init: (el: T) => () => void) {
   const ref = useRef<T>(null)
   useEffect(() => (ref.current ? init(ref.current) : undefined), [init])
   return ref
