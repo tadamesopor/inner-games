@@ -1,11 +1,24 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
 import { Btn, card, cardStatic, ContactCta, Ctx, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
+/** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
+export function priceOf(g: G): number | null {
+  const m = g.price.match(/€\s*([\d.]+(?:,\d+)?)/)
+  return m ? parseFloat(m[1].replace(/\./g, '').replace(',', '.')) : null
+}
+const euro = (n: number) => '€ ' + n.toLocaleString('nl-NL', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })
+
 function GameCard({ g }: { g: G }) {
-  const { go, cart, toggleCart } = useContext(Ctx)
-  const inCart = cart.includes(g.slug)
+  const { go, addToCart } = useContext(Ctx)
+  // a short "toegevoegd" on the button; you can always add another one
+  const [added, setAdded] = useState(false)
+  useEffect(() => {
+    if (!added) return
+    const t = setTimeout(() => setAdded(false), 1600)
+    return () => clearTimeout(t)
+  }, [added])
   return (
     <article className="ig-card ig-card--white ig-card--outline cursor-pointer" onClick={() => go('game', g.slug)}>
       <div className="ig-card__body flex flex-col">
@@ -23,13 +36,18 @@ function GameCard({ g }: { g: G }) {
         <div className="mt-auto flex items-center justify-between gap-3 pt-3">
           <span className="text-lg font-semibold">{g.price}</span>
           {g.previewKey ? (
-            <Btn
-              variant={inCart ? 'light' : 'dark'}
-              className={`w-auto! py-2! ${inCart ? 'bg-ig-cream!' : ''}`}
-              onClick={() => { toggleCart(g.slug) }}
-            >
-              {inCart ? 'in mand ✓' : 'in mand'}
-            </Btn>
+            <span onClick={(e) => e.stopPropagation()}>
+              <Btn
+                variant="dark"
+                className="w-auto! py-2!"
+                onClick={() => {
+                  addToCart(g.slug, 1)
+                  setAdded(true)
+                }}
+              >
+                {added ? 'toegevoegd ✓' : 'in mand'}
+              </Btn>
+            </span>
           ) : (
             <Btn variant="dark" className="w-auto! py-2!" disabled>preview volgt</Btn>
           )}
@@ -90,7 +108,7 @@ function Teaser({ game }: { game: G }) {
   const i = answers.length
   const done = i >= steps.length
   const s = steps.length ? steps[Math.min(i, steps.length - 1)](answers) : null
-  const { go, toggleCart, cart } = useContext(Ctx)
+  const { go, addToCart, cart } = useContext(Ctx)
   const matching = WORKSHOPS.filter((w) => w.gameSlug === game.slug)
 
   const next = (o: string) => {
@@ -153,7 +171,7 @@ function Teaser({ game }: { game: G }) {
           <p className="mt-3 text-2xl font-semibold lowercase @3xl:text-4xl">dat was een voorproefje.</p>
           <p className="mx-auto mt-3 max-w-md text-lg">Wil je het hele spel met je team of klas spelen?</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Btn variant="dark" onClick={() => { if (!cart.includes(game.slug)) toggleCart(game.slug); go('game', game.slug) }}>koop het spel · {game.price}</Btn>
+            <Btn variant="dark" onClick={() => { if (!cart[game.slug]) addToCart(game.slug, 1); go('game', game.slug) }}>koop het spel · {game.price}</Btn>
             <Btn split variant="primary" onClick={() => (matching.length === 1 ? go('workshop', matching[0].slug) : go('contact'))}>boek een workshop</Btn>
             <Btn variant="ghost" onClick={() => setAnswers([])}>opnieuw</Btn>
           </div>
@@ -164,10 +182,11 @@ function Teaser({ game }: { game: G }) {
 }
 
 export function Game() {
-  const { sel, go, cart, toggleCart } = useContext(Ctx)
+  const { sel, go, addToCart, openCart } = useContext(Ctx)
   const g = GAMES.find((x) => x.slug === sel) ?? GAMES[0]
   const [img, setImg] = useState(0)
-  const inCart = cart.includes(g.slug)
+  const [qty, setQty] = useState(1)
+  const [added, setAdded] = useState<number | null>(null)
   const more = GAMES.filter((x) => x.slug !== g.slug).slice(0, 3)
   const matching = WORKSHOPS.filter((w) => w.gameSlug === g.slug)
   const box = useMotion<HTMLDivElement>(initBoxscene)
@@ -208,14 +227,35 @@ export function Game() {
               ))}
             </dl>
             <p className="mt-8 text-3xl font-semibold">{g.price}</p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Btn split variant="dark" disabled={!!g.status} onClick={() => toggleCart(g.slug)}>{inCart ? 'in je mand ✓' : 'in winkelmand'}</Btn>
+            <p className="text-sm text-neutral-600">incl. btw</p>
+            {/* TODO Ariën: the delivery text under the button (for example "verzonden binnen 2 werkdagen") */}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Qty value={qty} onChange={setQty} label={g.title} disabled={!!g.status} />
+              <Btn
+                split
+                variant="dark"
+                disabled={!!g.status}
+                onClick={() => {
+                  addToCart(g.slug, qty)
+                  setAdded(qty)
+                }}
+              >
+                in winkelmand
+              </Btn>
               {matching.length === 1 && <Btn variant="primary" onClick={() => go('workshop', matching[0].slug)}>bekijk de workshop</Btn>}
               {matching.length > 1 && (
                 <Btn variant="primary" onClick={() => document.getElementById('workshops-bij-spel')?.scrollIntoView({ behavior: 'smooth' })}>bekijk de workshops</Btn>
               )}
               {matching.length === 0 && <Btn variant="primary" onClick={() => go('contact')}>vraag een sessie aan</Btn>}
             </div>
+            {added !== null && (
+              <p role="status" className="mt-4 rounded-[var(--r-box)] bg-white px-4 py-3 text-base">
+                <span className="font-semibold">{added}× {g.title} toegevoegd.</span>{' '}
+                <button type="button" onClick={openCart} className="underline underline-offset-2">bekijk winkelmand</button>
+                {' · '}
+                <button type="button" onClick={() => go('games')} className="underline underline-offset-2">verder winkelen</button>
+              </p>
+            )}
           </div>
         </div>
       </Section>
@@ -308,5 +348,117 @@ export function Preview() {
         <div className="mx-auto max-w-3xl"><Teaser game={g} /></div>
       </Section>
     </>
+  )
+}
+
+/** quantity field like WooCommerce: − 1 +, between 1 and 99, also typeable */
+export function Qty({ value, onChange, label, disabled }: { value: number; onChange: (n: number) => void; label: string; disabled?: boolean }) {
+  const [text, setText] = useState(String(value))
+  useEffect(() => setText(String(value)), [value])
+  const clamp = (n: number) => Math.max(1, Math.min(99, Math.round(n) || 1))
+  const step = 'flex h-11 w-10 items-center justify-center text-lg font-semibold disabled:opacity-40'
+  return (
+    <div className={`inline-flex h-11 items-center rounded-[var(--r-box)] bg-white ring-1 ring-ig-ink/20 ${disabled ? 'opacity-50' : ''}`}>
+      <button type="button" className={step} onClick={() => onChange(clamp(value - 1))} disabled={disabled || value <= 1} aria-label={`${label}: één minder`}>
+        −
+      </button>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={99}
+        value={text}
+        disabled={disabled}
+        aria-label={`${label}: aantal`}
+        onChange={(e) => {
+          setText(e.target.value)
+          const n = parseInt(e.target.value, 10)
+          if (!Number.isNaN(n)) onChange(clamp(n))
+        }}
+        onBlur={() => setText(String(value))}
+        className="h-11 w-10 bg-transparent text-center text-base font-semibold outline-none [appearance:textfield] focus-visible:ring-2 focus-visible:ring-ig-orange [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <button type="button" className={step} onClick={() => onChange(clamp(value + 1))} disabled={disabled || value >= 99} aria-label={`${label}: één meer`}>
+        +
+      </button>
+    </div>
+  )
+}
+
+/** the cart as a drawer on the right: a row per product, the subtotal, and the (dummy) checkout */
+export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { cart, setQty, go } = useContext(Ctx)
+  const [stop, setStop] = useState(false)
+  const close = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!open) return
+    setStop(false)
+    close.current?.focus()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+  if (!open) return null
+  const rows = Object.entries(cart)
+    .map(([slug, n]) => ({ g: GAMES.find((x) => x.slug === slug), n }))
+    .filter((r): r is { g: G; n: number } => !!r.g)
+  const sub = rows.reduce((t, r) => t + (priceOf(r.g) ?? 0) * r.n, 0)
+  return (
+    <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-label="Winkelmand">
+      <button type="button" className="absolute inset-0 bg-ig-ink/30" onClick={onClose} aria-label="Sluit de winkelmand" tabIndex={-1} />
+      <div className="absolute inset-y-0 right-0 flex w-[min(440px,100%)] flex-col bg-white shadow-[0_0_40px_rgb(42_24_16/0.2)]">
+        <div className="flex items-center justify-between border-b border-ig-ink/10 px-5 py-4">
+          <h2 className="text-2xl font-semibold">winkelmand</h2>
+          <button ref={close} type="button" onClick={onClose} className="h-11 rounded-[var(--r-box)] bg-ig-cream px-4 text-sm font-semibold hover:bg-[#fde7b0]">
+            sluit
+          </button>
+        </div>
+        {rows.length === 0 ? (
+          <div className="flex-1 px-5 py-6">
+            <p className="text-base">Je winkelmand is nog leeg.</p>
+            <Btn variant="ghost" className="mt-4" onClick={() => { onClose(); go('games') }}>bekijk de spellen</Btn>
+          </div>
+        ) : (
+          <ul className="flex-1 divide-y divide-ig-ink/10 overflow-y-auto px-5">
+            {rows.map(({ g, n }) => {
+              const each = priceOf(g)
+              return (
+                <li key={g.slug} className="grid grid-cols-[64px_1fr] gap-4 py-4">
+                  <Photo src={g.photo} alt="" sizes="64px" contain className="aspect-square w-16 rounded-[8px]" />
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-semibold leading-snug">{g.title}</p>
+                      <p className="shrink-0 font-semibold">{each === null ? '' : euro(each * n)}</p>
+                    </div>
+                    <p className="text-sm text-neutral-600">{g.price} per stuk</p>
+                    <div className="mt-2 flex items-center gap-3">
+                      <Qty value={n} onChange={(x) => setQty(g.slug, x)} label={g.title} />
+                      <button type="button" onClick={() => setQty(g.slug, 0)} className="text-sm underline underline-offset-2">
+                        verwijder
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {rows.length > 0 && (
+          <div className="border-t border-ig-ink/10 px-5 py-5">
+            <div className="flex justify-between text-lg font-semibold">
+              <span>subtotaal</span>
+              <span>{euro(sub)}</span>
+            </div>
+            <p className="text-sm text-neutral-600">incl. btw · verzendkosten: berekend bij afrekenen</p>
+            <Btn split variant="dark" className="mt-4" onClick={() => setStop(true)}>naar afrekenen</Btn>
+            {stop ? (
+              <p role="status" className="mt-3 rounded-[8px] bg-ig-yellow px-3 py-2 text-sm font-semibold">hier stopt de test</p>
+            ) : (
+              <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

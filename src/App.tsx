@@ -1,15 +1,16 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { Ctx, Footer, type PageId } from './wf'
+import { Ctx, Footer, logEvent, type Cart, type PageId } from './wf'
 import TestMode from './test'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
 import { igNavigate, initCards } from './motion'
 import { Contact, Home, Projects, Trainer, Workshop, Workshops } from './pages'
-import { Game, Games, Preview } from './shop'
+import { CartDrawer, Game, Games, Preview } from './shop'
 import { Team } from './team'
 
 // the motion lab only loads when you open it, so the prototype itself stays exactly as it was
 const MotionLab = lazy(() => import('./motionlab'))
+const CART_KEY = 'ig-cart'
 const isLab = () => location.pathname === '/motion-lab' || location.hash === '#motion-lab'
 
 const PAGES: Record<PageId, () => React.ReactNode> = {
@@ -28,7 +29,28 @@ const PAGES: Record<PageId, () => React.ReactNode> = {
 export default function App() {
   const [page, setPage] = useState<PageId>('home')
   const [sel, setSel] = useState('')
-  const [cart, setCart] = useState<string[]>([])
+  // the cart survives page changes and a reload (localStorage). a new test session empties it
+  const [cart, setCart] = useState<Cart>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY) || '{}')
+    } catch {
+      return {}
+    }
+  })
+  const [cartOpen, setCartOpen] = useState(false)
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_KEY, JSON.stringify(cart))
+    } catch {
+      /* private window: the cart only lives in memory */
+    }
+  }, [cart])
+  useEffect(() => {
+    const reset = () => setCart({})
+    window.addEventListener('ig:cart-reset', reset)
+    return () => window.removeEventListener('ig:cart-reset', reset)
+  }, [])
+  const closeCart = useCallback(() => setCartOpen(false), [])
   const [mobile, setMobile] = useState(false)
   const [ann, setAnn] = useState(false)
   const [tasks, setTasks] = useState(false)
@@ -60,6 +82,7 @@ export default function App() {
   // changes while the screen is orange. in test mode the short version (460ms, no wave), so it doesn't
   // slow the tasks down. reduced motion: a short fade. the first page load has no transition
   const go = (p: PageId, id = '') => {
+    setCartOpen(false)
     const update = () =>
       flushSync(() => {
         setPage(p)
@@ -67,13 +90,27 @@ export default function App() {
       })
     igNavigate(update, { mode: tasks ? 'short' : 'full', fadeTarget: view.current ?? undefined })
   }
-  const toggleCart = (id: string) => setCart((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]))
+  const addToCart = (slug: string, n: number) => {
+    setCart((c) => ({ ...c, [slug]: Math.min(99, (c[slug] ?? 0) + n) }))
+    logEvent('cart:add', `${n}× ${slug}`)
+  }
+  const setQty = (slug: string, n: number) => {
+    const was = cart[slug] ?? 0
+    if (n > was) logEvent('cart:add', `${n - was}× ${slug}`)
+    if (n < was) logEvent('cart:remove', `${was - n}× ${slug}`)
+    setCart((c) => {
+      const next = { ...c }
+      if (n <= 0) delete next[slug]
+      else next[slug] = Math.min(99, n)
+      return next
+    })
+  }
   const Page = PAGES[page]
   const pill = (on: boolean) =>
     `rounded-full px-3 py-1.5 text-[13px] ${on ? 'bg-ig-yellow text-ig-ink' : 'text-white hover:bg-white/15'}`
 
   return (
-    <Ctx.Provider value={{ ann, footer, sel, cart, go, toggleCart }}>
+    <Ctx.Provider value={{ ann, footer, sel, cart, go, addToCart, setQty, openCart: () => setCartOpen(true) }}>
       <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
         <div ref={view} className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
           {/* the page lies on top of the footer: when you reach the end, it slides up with a rounded
@@ -84,6 +121,7 @@ export default function App() {
           <Footer />
         </div>
       </div>
+      <CartDrawer open={cartOpen} onClose={closeCart} />
       {tasks && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
       <div className="fixed bottom-4 left-1/2 z-[70] max-w-[calc(100vw-1rem)] flex-wrap justify-center flex -translate-x-1/2 items-center gap-1 rounded-full bg-ig-ink p-1 shadow-xl" role="group" aria-label="Prototype-opties">
         <button className={pill(!mobile)} onClick={() => setMobile(false)}>desktop</button>

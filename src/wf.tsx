@@ -20,12 +20,24 @@ type CtxT = {
   /** footer option A (the hand, on ink) or B (the team photo, on orange), switchable in the prototype bar */
   footer: 'hand' | 'foto'
   sel: string
-  cart: string[]
+  /** the cart like WooCommerce: product slug -> quantity */
+  cart: Cart
   go: (p: PageId, id?: string) => void
-  toggleCart: (id: string) => void
+  addToCart: (slug: string, n: number) => void
+  /** set the quantity; 0 removes the product */
+  setQty: (slug: string, n: number) => void
+  openCart: () => void
 }
 
-export const Ctx = createContext<CtxT>({ ann: false, footer: 'hand', sel: '', cart: [], go: () => {}, toggleCart: () => {} })
+export type Cart = Record<string, number>
+export const cartCount = (c: Cart) => Object.values(c).reduce((t, n) => t + n, 0)
+
+/** an event for the test tool (cart:add, cart:remove ...), logged with a timestamp during a task */
+export function logEvent(type: string, detail = '') {
+  window.dispatchEvent(new CustomEvent('ig:event', { detail: { type, detail } }))
+}
+
+export const Ctx = createContext<CtxT>({ ann: false, footer: 'hand', sel: '', cart: {}, go: () => {}, addToCart: () => {}, setQty: () => {}, openCart: () => {} })
 
 // calm cards: white, a thin soft line, no black border or offset shadow (brand rule).
 // the workshop and game cards are .ig-card (the hand pops up on hover), see src/motion/cards.css
@@ -405,13 +417,17 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
 // items in the middle, search, cart and the one orange button on the right. after 200px it becomes a
 // compact floating bar; narrower than 1180px the items move into a full screen menu (src/motion/menu.js)
 export function Header({ active }: { active: PageId }) {
-  const { go, cart, toggleCart, ann } = useContext(Ctx)
+  const { go, cart, ann, openCart } = useContext(Ctx)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [cartOpen, setCartOpen] = useState(false)
-  const [stop, setStop] = useState(false)
   const nav = useMotion<HTMLElement>(initNav)
-  const count = cart.length
-  const items = cart.map((s) => GAMES.find((g) => g.slug === s)!).filter(Boolean)
+  const count = cartCount(cart)
+  // the count only bumps when something is added, not when a new page mounts the header
+  const prev = useRef(count)
+  const [bump, setBump] = useState(0)
+  useEffect(() => {
+    if (count > prev.current) setBump((b) => b + 1)
+    prev.current = count
+  }, [count])
   const current = (to: PageId) => (GROUP[active] === to ? ('page' as const) : undefined)
   const caret = (
     <svg className="ig-nav__caret" viewBox="0 0 10 10" aria-hidden>
@@ -450,19 +466,19 @@ export function Header({ active }: { active: PageId }) {
             )}
           </nav>
           <div className="ig-nav__tools">
-            <button type="button" onClick={() => { setSearchOpen(!searchOpen); setCartOpen(false) }} aria-expanded={searchOpen} aria-label="Zoeken" className="ig-nav__icon ig-nav__search">
+            <button type="button" onClick={() => setSearchOpen(!searchOpen)} aria-expanded={searchOpen} aria-label="Zoeken" className="ig-nav__icon ig-nav__search">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
                 <circle cx="11" cy="11" r="6.5" />
                 <path d="M16 16l4.5 4.5" />
               </svg>
             </button>
-            <button type="button" onClick={() => { setCartOpen(!cartOpen); setSearchOpen(false) }} aria-expanded={cartOpen} aria-label={`Winkelmand, ${count} product${count === 1 ? '' : 'en'}`} className="ig-nav__icon">
+            <button type="button" onClick={() => { openCart(); setSearchOpen(false) }} aria-label={`Winkelmand, ${count} product${count === 1 ? '' : 'en'}`} className="ig-nav__icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
                 <path d="M3 4h3l2.5 11h10L21 7H7" />
                 <circle cx="10" cy="20" r="1.5" />
                 <circle cx="18" cy="20" r="1.5" />
               </svg>
-              <span key={count} className={`ig-nav__count ${count ? 'is-full is-bumping' : ''}`}>{count}</span>
+              <span key={bump} className={`ig-nav__count ${count ? 'is-full' : ''} ${bump ? 'is-bumping' : ''}`}>{count}</span>
             </button>
             <SplitBtn onClick={() => go('workshops')}>boek een workshop</SplitBtn>
             <button type="button" className="ig-nav__icon ig-nav__toggle" data-nav-open aria-expanded="false" aria-controls="ig-nav-sheet">
@@ -473,34 +489,6 @@ export function Header({ active }: { active: PageId }) {
         {searchOpen && (
           <div className="pointer-events-auto mt-2 rounded-[var(--r-box)] bg-ig-cream p-3 shadow-[0_14px_34px_rgb(42_24_16/0.12)]">
             <Search autoFocus placeholder="zoek in spellen en workshops" />
-          </div>
-        )}
-        {cartOpen && (
-          <div className="pointer-events-auto relative">
-            <div className="absolute right-0 top-2 z-50 w-[min(20rem,100%)] rounded-[var(--r-box)] bg-white p-4 shadow-[0_14px_36px_rgb(42_24_16/0.18)]">
-              <p className="text-sm font-medium text-neutral-600">winkelmand</p>
-              {items.length === 0 ? (
-                <p className="mt-3 text-sm">Je mand is nog leeg. Speel eerst een preview!</p>
-              ) : (
-                <ul className="mt-3 divide-y divide-ig-ink/10">
-                  {items.map((g) => (
-                    <li key={g.slug} className="flex items-center justify-between gap-3 py-2 text-sm">
-                      <span className="font-medium">{g.title}</span>
-                      <button onClick={() => toggleCart(g.slug)} className="shrink-0 text-xs underline">verwijder</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="mt-4 flex gap-2">
-                <Btn className="w-auto! flex-1 py-2!" variant="dark" disabled={items.length === 0} onClick={() => setStop(true)}>afrekenen</Btn>
-                <Btn className="w-auto! py-2!" variant="ghost" onClick={() => { setCartOpen(false); go('games') }}>verder kijken</Btn>
-              </div>
-              {stop ? (
-                <p role="status" className="mt-3 bg-ig-yellow px-3 py-2 text-sm font-bold">hier stopt de test</p>
-              ) : (
-                <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
-              )}
-            </div>
           </div>
         )}
       </div>

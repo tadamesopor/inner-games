@@ -210,7 +210,8 @@ const LEADER_ANSWER = 'Antwoord van de deelnemer (jij vult in)'
 const LEADER = ['zelf gelukt', 'met hulp', 'niet gelukt'] as const
 const VERDICT = ['klopt', 'deels', 'klopt niet'] as const
 
-type TaskRes = { start?: number; end?: number; pages: string[]; clicks: number; ease?: number; ans?: Record<string, Answer>; stuck?: boolean; leader?: string; verdict?: string; notes: string }
+type Ev = { s: number; type: string; detail: string }
+type TaskRes = { start?: number; end?: number; pages: string[]; clicks: number; events?: Ev[]; ease?: number; ans?: Record<string, Answer>; stuck?: boolean; leader?: string; verdict?: string; notes: string }
 /** n = schaal, t = open tekst, w = woorden, c = keuze, f = vervolgtekst bij een keuze */
 type Answer = { n?: number; t?: string; w?: string[]; c?: string; f?: string }
 type Session = {
@@ -304,6 +305,7 @@ function report(nr: string, sessions: Session[]) {
         `  tijd: ${secs(x) ?? '-'} s${x?.stuck ? ' (ik kom er niet uit)' : ''}`,
         `  pagina's: ${x?.pages.join(' > ') || '-'}`,
         `  klikken: ${x?.clicks ?? 0}`,
+        `  gebeurtenissen: ${fmtEv(x?.events)}`,
         ...(t.ask ?? []).map((q) => `  ${q.q} ${fmtA(q, x?.ans?.[q.id])}`),
         ...(r.ease ? [`  score (${EASE_Q}): ${x?.ease ?? '-'}/7`] : []),
         `  testleider: ${x?.leader ?? '-'}`,
@@ -319,7 +321,9 @@ function report(nr: string, sessions: Session[]) {
   return L.join('\n')
 }
 
-const COLS = ['deelnemer', 'kent_innergames', 'opname', 'citaat', 'toestemming', 'ronde', 'profiel', 'onderdeel', 'nr', 'code', 'vraag', 'verwacht', 'tijd_s', 'klikken', 'paginas', 'score', 'vastgelopen', 'testleider', 'antwoord_klopt', 'keuze', 'antwoord', 'notities'] as const
+const fmtEv = (ev?: Ev[]) => (ev?.length ? ev.map((e) => `${e.s}s ${e.type} ${e.detail}`).join(' | ') : '-')
+
+const COLS = ['deelnemer', 'kent_innergames', 'opname', 'citaat', 'toestemming', 'ronde', 'profiel', 'onderdeel', 'nr', 'code', 'vraag', 'verwacht', 'tijd_s', 'klikken', 'paginas', 'gebeurtenissen', 'score', 'vastgelopen', 'testleider', 'antwoord_klopt', 'keuze', 'antwoord', 'notities'] as const
 type Row = Partial<Record<(typeof COLS)[number], string | number>>
 
 // keuze en vervolgtekst in aparte kolommen, zodat keuzes te tellen zijn
@@ -343,7 +347,7 @@ function csv(sessions: Session[]) {
     ;(r.tasks[s.profile] ?? []).forEach((t, i) => {
       const x = s.tasks[i]
       rows.push({
-        ...base, onderdeel: 'taak', nr: i + 1, code: t.code, vraag: t.t, verwacht: t.expect, tijd_s: secs(x), klikken: x?.clicks ?? 0, paginas: x?.pages.join(' > '),
+        ...base, onderdeel: 'taak', nr: i + 1, code: t.code, vraag: t.t, verwacht: t.expect, tijd_s: secs(x), klikken: x?.clicks ?? 0, paginas: x?.pages.join(' > '), gebeurtenissen: x?.events?.length ? fmtEv(x.events) : '',
         score: x?.ease, vastgelopen: x?.stuck ? 'ja' : 'nee', testleider: x?.leader, antwoord_klopt: x?.verdict, notities: x?.notes,
       })
       ;(t.ask ?? []).forEach((q) => rows.push({ ...base, onderdeel: 'taak antwoord', nr: i + 1, code: t.code, vraag: q.q, ...cells(q, x?.ans?.[q.id]) }))
@@ -583,6 +587,17 @@ export default function TestMode({ pageKey, go, bus}: { pageKey: string; go: (p:
     if (running) updTask((t) => (t.pages.at(-1) === pageKey ? t : { ...t, pages: [...t.pages, pageKey] }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageKey, running])
+  // gebeurtenissen van de site (cart:add, cart:remove), met de seconden sinds de start van de taak
+  useEffect(() => {
+    if (!running) return
+    const onEv = (e: Event) => {
+      const d = (e as CustomEvent<{ type: string; detail: string }>).detail
+      updTask((t) => ({ ...t, events: [...(t.events ?? []), { s: t.start ? Math.round((Date.now() - t.start) / 1000) : 0, type: d.type, detail: d.detail }] }))
+    }
+    window.addEventListener('ig:event', onEv)
+    return () => window.removeEventListener('ig:event', onEv)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running])
   useEffect(() => {
     bus.current = running ? () => updTask((t) => ({ ...t, clicks: t.clicks + 1 })) : undefined
     return () => {
@@ -601,6 +616,7 @@ export default function TestMode({ pageKey, go, bus}: { pageKey: string; go: (p:
   const afterWarmup = (ro: Round): Session['phase'] => (ro.five.length ? 'impression' : 'tasks')
   const begin = (base: Session) => {
     const ro = ROUNDS[base.round]
+    window.dispatchEvent(new Event('ig:cart-reset')) // elke deelnemer begint met een lege winkelmand
     go('home')
     setS({
       ...fresh({ nr: base.nr.trim(), round: base.round, profile: base.profile, known: base.known, rec: base.rec, quote: base.quote, consent: base.consent, consentAt: base.consentAt ?? Date.now() }),
