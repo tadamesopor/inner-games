@@ -55,6 +55,7 @@ export default function App() {
   const [ann, setAnn] = useState(false)
   const [tasks, setTasks] = useState(false)
   const [footer, setFooter] = useState<'hand' | 'foto'>('hand')
+  const [hero, setHero] = useState<'nieuw' | 'oud'>('nieuw')
   const [toolsOpen, setToolsOpen] = useState(false)
   // in test mode the ⚙ is gone; G three times shows it again (like T three times for the test leader)
   const [tools, setTools] = useState(false)
@@ -128,7 +129,7 @@ export default function App() {
     `rounded-full px-3 py-1.5 text-[13px] ${on ? 'bg-ig-yellow text-ig-ink' : 'text-white hover:bg-white/15'}`
 
   return (
-    <Ctx.Provider value={{ ann, footer, sel, cart, go, addToCart, setQty, openCart: () => setCartOpen(true) }}>
+    <Ctx.Provider value={{ ann, footer, hero, sel, cart, go, addToCart, setQty, openCart: () => setCartOpen(true) }}>
       <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
         <div ref={view} className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
           {/* the page lies on top of the footer: when you reach the end, it slides up with a rounded
@@ -162,6 +163,8 @@ export default function App() {
               <button className={pill(tasks)} onClick={() => { setTasks(!tasks); setTools(false); setToolsOpen(false) }} aria-pressed={tasks}>taken</button>
               {/* footer option A or B, so Ariën can choose on the real pages */}
               <button className={pill(false)} onClick={() => setFooter(footer === 'hand' ? 'foto' : 'hand')}>footer: {footer}</button>
+              {/* homepage hero A (new, orange) or B (round 3), to show Ariën both */}
+              <button className={pill(false)} onClick={() => setHero(hero === 'nieuw' ? 'oud' : 'nieuw')}>hero: {hero}</button>
             </div>
           )}
         </div>

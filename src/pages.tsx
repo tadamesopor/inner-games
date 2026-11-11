@@ -1,6 +1,6 @@
-import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { initBoxscene, initSpeelpad } from './motion'
-import { ALT, AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
+import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { initBoxscene, initPile, initSpeelpad } from './motion'
+import { ALT, AUD_LABEL, AUDS, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
@@ -56,8 +56,84 @@ function Speelpad({ children }: { children: ReactNode }) {
   )
 }
 
-export function Home() {
+// the homepage hero: orange with the big rounded bottom, what InnerGames does in plain Dutch, the routes
+// straight in the hero, and a pile of real InnerGames things on the right (src/motion/pile.css)
+const ROUTES: [string, Aud][] = [
+  ['mijn team', 'organisaties'],
+  ['mijn klas', 'onderwijs'],
+  ['zorg', 'zorg'],
+  ['ik ben trainer', 'trainers'],
+]
+// file -> width / height of the cut-out logo, so each keeps its own shape
+const PROOF: Record<string, number> = { asml: 108 / 52, fontys: 122 / 77, han: 90 / 77, summa: 155 / 76 }
+
+function HeroNew() {
   const { go } = useContext(Ctx)
+  const pile = useMotion<HTMLDivElement>(initPile)
+  const e5 = GAMES[0]
+  const proof = CLIENTS.filter((c) => c.file in PROOF)
+  return (
+    <Section id="A" label="hero" className="ig-section--rounded bg-ig-orange pb-14! pt-10! text-ig-cream @3xl:pb-20! @3xl:pt-14!" note="oranje · wat we doen · routes · stapel echte spullen">
+      <div className="grid items-center gap-10 @4xl:grid-cols-[1.1fr_1fr] @4xl:gap-14">
+        <div>
+          {/* small labels in ink: cream on orange is only readable when the text is big */}
+          <p className="mb-4 text-base font-semibold text-ig-ink">inner growth for outer change</p>
+          {/* TODO Ariën: check this title */}
+          <h1 className="text-[2.3rem] font-bold leading-[1.02] tracking-tight @3xl:text-[2.8rem] @6xl:text-[3.3rem]">
+            spellen en workshops die teams, klassen en zorg in beweging brengen
+          </h1>
+          <p className="mt-5 max-w-xl text-xl font-semibold leading-snug @3xl:text-2xl @3xl:font-medium">
+            Van een workshop voor je team tot een spel voor in de klas. Gemaakt en begeleid vanuit Eindhoven.
+          </p>
+          <div className="mt-7">
+            <p className="text-base font-semibold text-ig-ink">ik zoek iets voor:</p>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {ROUTES.map(([label, aud]) => (
+                <li key={aud}>
+                  <button type="button" onClick={() => go('workshops', aud)} className="h-11 rounded-[var(--r-tag)] bg-ig-cream px-4 text-base font-semibold text-ig-ink transition-colors hover:bg-[#fde7b0]">
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Btn split variant="light" onClick={() => go('workshops')}>boek een workshop</Btn>
+            <Btn variant="ghostLight" onClick={() => go('preview', 'elemental-five-compleet')}>speel het spel</Btn>
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <p className="text-sm font-semibold text-ig-ink">o.a. gespeeld met</p>
+            {proof.map((c) => (
+              <span
+                key={c.file}
+                role="img"
+                aria-label={c.name}
+                className="ig-proof-logo"
+                style={{ '--src': `url(/assets/img/clients/${c.file}.png)`, '--h': c.h, aspectRatio: PROOF[c.file] } as CSSProperties}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div ref={pile} className="ig-pile mx-auto max-w-[560px]">
+          <span className="ig-pile__hand" aria-hidden />
+          <figure className="ig-pile__item ig-pile__item--photo" style={{ '--i': 0, '--x': '0%', '--y': '6%', '--w': '64%', '--tilt': '-6deg', '--depth': 0.5 } as CSSProperties}>
+            <img src={`${PHOTOS.tafel}-800.webp`} alt={ALT[PHOTOS.tafel]} width={800} height={600} />
+          </figure>
+          <figure className="ig-pile__item ig-pile__item--cutout" style={{ '--i': 1, '--x': '50%', '--y': '0%', '--w': '46%', '--tilt': '4deg', '--depth': 0.8 } as CSSProperties}>
+            <img src={`${e5.photo}-800.webp`} alt={ALT[e5.photo]} width={800} height={800} />
+          </figure>
+          <figure className="ig-pile__item ig-pile__item--cutout" style={{ '--i': 2, '--x': '28%', '--y': '46%', '--w': '40%', '--tilt': '-2deg', '--depth': 1 } as CSSProperties}>
+            <img src="/assets/img/games/sociality-box.png" alt="Speldoos van Sociality" width={398} height={459} />
+          </figure>
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+export function Home() {
+  const { go, hero } = useContext(Ctx)
   const box = useMotion<HTMLDivElement>(initBoxscene)
   const e5 = GAMES[0]
   // photo: a real InnerGames photo from a workshop for that group. texts short, so the cards stay even
@@ -70,7 +146,9 @@ export function Home() {
   return (
     <>
       <Header active="home" />
-      {/* hero: text on cream, the photo in its own box so the people stay visible (no orange layer over them) */}
+      {hero === 'nieuw' && <HeroNew />}
+      {/* option B (round 3): text on cream, the photo in its own box */}
+      {hero === 'oud' && (
       <Section id="A" label="hero" className="bg-ig-cream pb-6! pt-8! @3xl:pb-10! @3xl:pt-12!" note="tekst op crème · foto in een eigen kader rechts">
         <div className="grid items-center gap-8 @3xl:grid-cols-[1.05fr_1fr] @3xl:gap-14">
           <div>
@@ -87,8 +165,10 @@ export function Home() {
           <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="(min-width: 1024px) 50vw, 100vw" eager className="aspect-[4/3] w-full rounded-[var(--r-box)] @3xl:aspect-[5/4]" />
         </div>
       </Section>
+      )}
 
       <Speelpad>
+      {hero === 'oud' && (
       <Section id="B" label="vier doelgroepen" stop note="onderwijs · organisaties · zorg · trainers">
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
         <div className="mt-10 grid gap-x-6 gap-y-20 pt-12 @xl:grid-cols-2 @5xl:grid-cols-4">
@@ -111,6 +191,7 @@ export function Home() {
           ))}
         </div>
       </Section>
+      )}
 
       <Section id="C" label="uitgelichte workshops" stop note="3 van 9 · link naar overzicht">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

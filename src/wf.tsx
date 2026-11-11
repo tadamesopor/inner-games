@@ -19,6 +19,8 @@ type CtxT = {
   ann: boolean
   /** footer option A (the hand, on ink) or B (the team photo, on orange), switchable in the prototype bar */
   footer: 'hand' | 'foto'
+  /** homepage hero: the new orange one, or the round 3 one (text left, photo right), switchable in the ⚙ bar */
+  hero: 'nieuw' | 'oud'
   sel: string
   /** the cart like WooCommerce: product slug -> quantity */
   cart: Cart
@@ -37,7 +39,7 @@ export function logEvent(type: string, detail = '') {
   window.dispatchEvent(new CustomEvent('ig:event', { detail: { type, detail } }))
 }
 
-export const Ctx = createContext<CtxT>({ ann: false, footer: 'hand', sel: '', cart: {}, go: () => {}, addToCart: () => {}, setQty: () => {}, openCart: () => {} })
+export const Ctx = createContext<CtxT>({ ann: false, footer: 'hand', hero: 'nieuw', sel: '', cart: {}, go: () => {}, addToCart: () => {}, setQty: () => {}, openCart: () => {} })
 
 // calm cards: white, a thin soft line, no black border or offset shadow (brand rule).
 // the workshop and game cards are .ig-card (the hand pops up on hover), see src/motion/cards.css

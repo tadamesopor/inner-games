@@ -1,0 +1,110 @@
+/* .ig-pile: a small "table" of real InnerGames things, like cards thrown on a table: a session photo,
+   the Elemental Five, the Sociality box. each one on a cream card with a thick border (a printed photo),
+   tilted, overlapping a little. they land one by one on load (80ms apart) and move a few pixels with the
+   mouse (pile.js sets --mx and --my, -1 to 1). the InnerGames hand peeks out from behind the pile.
+   reduced motion: no landing, no parallax, the cards just lie there.
+
+   markup:
+   <div class="ig-pile">
+     <span class="ig-pile__hand"></span>
+     <figure class="ig-pile__item ig-pile__item--photo" style="--i:0"><img></figure>
+     <figure class="ig-pile__item ig-pile__item--cutout" style="--i:1"><img></figure> ...
+   </div>
+   the positions are per item (--x, --y as % of the pile, --w width, --tilt, --depth for the parallax). */
+
+.ig-pile {
+  --mx: 0;
+  --my: 0;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 1 / 0.86;
+}
+
+.ig-pile__item {
+  --tilt: 0deg;
+  --depth: 1;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  margin: 0;
+  padding: 10px;
+  border-radius: var(--r-box);
+  background: var(--ig-cream);
+  box-shadow: 0 14px 30px rgb(42 24 16 / 0.22);
+  rotate: var(--tilt);
+  /* the parallax: at most 6px, the front card moves the most */
+  translate: calc(var(--mx) * var(--depth) * 6px) calc(var(--my) * var(--depth) * 6px);
+  transition: translate 400ms var(--ease-out);
+  animation: ig-pile-land 520ms var(--ease-out) both;
+  animation-delay: calc(150ms + var(--i) * 80ms);
+}
+.ig-pile__item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+/* a cut-out (the game box) sits on the cream card without its own frame */
+.ig-pile__item--cutout img {
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+.ig-pile__item--photo img {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+/* the cards come down onto the table: from a bit higher, more tilted and invisible */
+@keyframes ig-pile-land {
+  from {
+    opacity: 0;
+    transform: translateY(-36px) rotate(7deg) scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* the hand, cream, peeking from behind the pile */
+.ig-pile__hand {
+  position: absolute;
+  z-index: -1;
+  right: 4%;
+  top: -12%;
+  width: 34%;
+  aspect-ratio: 140 / 126;
+  background: var(--ig-cream);
+  -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
+  transform-origin: 78% 92%;
+  rotate: 18deg;
+  animation: ig-pile-hand 600ms var(--ease-spring) both;
+  animation-delay: 520ms;
+}
+@keyframes ig-pile-hand {
+  from {
+    translate: 0 40%;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+/* the client logos under the hero buttons, in cream (the png is used as a mask) */
+.ig-proof-logo {
+  display: inline-block;
+  height: calc(var(--h) * 0.5px);
+  background: var(--ig-cream);
+  -webkit-mask: var(--src) left center / contain no-repeat;
+  mask: var(--src) left center / contain no-repeat;
+}
+
+@container (max-width: 767px) {
+  .ig-pile__item {
+    padding: 6px;
+  }
+}
