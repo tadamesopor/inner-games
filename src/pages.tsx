@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type React
 import { initBoxscene, initPile, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
+import { AudIcon, LEGAL, Todo, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -592,6 +592,24 @@ export function Trainer() {
         </div>
       </Section>
       <ContactCta />
+    </>
+  )
+}
+
+// the legal pages a Dutch webshop needs. the texts themselves come from Ariën (or a lawyer)
+export function Legal() {
+  const { sel } = useContext(Ctx)
+  const title = LEGAL[sel] ?? LEGAL.voorwaarden
+  return (
+    <>
+      <Header active="legal" />
+      <Section id="A" label="juridische pagina" className="bg-white" note="dummy · tekst volgt">
+        <H1 className="text-[2.5rem]! @3xl:text-[4rem]!">{title}</H1>
+        <Todo className="mt-8 max-w-2xl">
+          De tekst van het {title} komt hier. In WordPress maak je deze pagina met een sjabloon (bijvoorbeeld van de branchevereniging of een jurist) en
+          vul je de gegevens van InnerGames in: KvK-nummer, btw-nummer, adres en contact.
+        </Todo>
+      </Section>
     </>
   )
 }

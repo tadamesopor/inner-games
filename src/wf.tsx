@@ -14,6 +14,7 @@ export type PageId =
   | 'trainer'
   | 'team'
   | 'contact'
+  | 'legal'
 
 type CtxT = {
   ann: boolean
@@ -88,6 +89,24 @@ export function Section({
       </div>
     </section>
   )
+}
+
+/** something we don't have yet. visibly temporary (dashed frame and a label), so nobody in a test reads it
+    as real. the text says what goes here; the real content comes from Ariën (see docs/OPEN_QUESTIONS.md) */
+export function Todo({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-[var(--r-box)] border-[1.5px] border-dashed border-current/35 p-5 ${className}`}>
+      <p className="mb-2 inline-block rounded-[var(--r-tag)] bg-ig-yellow px-2.5 py-1 text-[12px] font-semibold leading-none text-ig-ink">nog aan te leveren</p>
+      <div className="text-[15px] leading-relaxed opacity-80">{children}</div>
+    </div>
+  )
+}
+
+export const LEGAL: Record<string, string> = {
+  voorwaarden: 'algemene voorwaarden',
+  privacy: 'privacybeleid',
+  cookies: 'cookiebeleid',
+  verzending: 'verzending en retour',
 }
 
 /** starts a plain js effect from src/motion/ on an element, and stops it when the page goes */
@@ -377,6 +396,7 @@ const GROUP: Record<PageId, PageId> = {
   trainer: 'trainer',
   team: 'team',
   contact: 'contact',
+  legal: 'legal',
 }
 
 const iconBtn = 'flex h-11 items-center justify-center gap-2 rounded-[var(--r-box)] bg-ig-cream px-3 text-sm font-semibold transition-colors hover:bg-ig-yellow'
@@ -537,9 +557,6 @@ export function Footer() {
                 <PencilMark name="underline" className="ig-draw ig-footer__mark" />
               </a>
             </p>
-            <p>
-              <a className="underline" href="https://www.linkedin.com/company/innergames" target="_blank" rel="noreferrer">LinkedIn</a>
-            </p>
           </div>
           <div className="text-[15px]">
             <p className="font-semibold">navigatie</p>
@@ -550,8 +567,23 @@ export function Footer() {
             <Link to="team" className={link}>ons team</Link>
             <Link to="contact" className={link}>contact</Link>
           </div>
-          <div className="self-start text-ig-ink">
-            <Search placeholder="zoek" onDark={!foto} />
+          <div className="space-y-5 text-[15px]">
+            <div>
+              {/* TODO Ariën: which other channels (Instagram, YouTube ...)? only LinkedIn is known */}
+              <p className="font-semibold">volg ons</p>
+              <a className="mt-1 inline-flex items-center gap-2 py-0.5 hover:underline" href="https://www.linkedin.com/company/innergames" target="_blank" rel="noreferrer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3zM9.5 9.5h3.8v1.6h.06c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.77 2.65 4.77 6.1V21h-4v-5.1c0-1.22-.02-2.78-1.7-2.78-1.7 0-1.96 1.33-1.96 2.7V21h-4z" />
+                </svg>
+                LinkedIn
+              </a>
+            </div>
+            <div>
+              <p className="font-semibold">goed om te weten</p>
+              {Object.entries(LEGAL).map(([slug, label]) => (
+                <Link key={slug} to="legal" id={slug} className={link}>{label}</Link>
+              ))}
+            </div>
           </div>
         </div>
         {foto ? (
@@ -563,7 +595,11 @@ export function Footer() {
         )}
       </div>
       <div className={`relative border-t px-5 py-3 text-xs @3xl:px-16 ${foto ? 'border-ig-ink/15' : 'border-ig-cream/15 text-ig-cream/70'}`}>
-        <div className="mx-auto max-w-[1280px]">© Copyright – InnerGames{ann ? ' · Enfold WordPress Theme' : ''}</div>
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-2">
+          <span>© 2026 InnerGames{ann ? ' · Enfold WordPress Theme' : ''}</span>
+          {/* TODO Ariën: KvK-nummer and btw-nummer */}
+          <span className="rounded-[var(--r-tag)] border border-dashed border-current/40 px-2.5 py-1">KvK-nummer en btw-nummer: nog aan te leveren</span>
+        </div>
       </div>
     </footer>
   )
