@@ -168,15 +168,18 @@ export function Link({
 }
 
 type Variant = 'primary' | 'dark' | 'light' | 'ghost' | 'ghostLight'
-// calm buttons: flat colour, no black offset shadow, no thick border (brand rule).
-// the main actions use the split button instead (Btn split)
+// two kinds of buttons only. main actions: the split button (Btn split, the variant picks its colour).
+// everything else: one secondary style, an outline with ink text (cream on dark backgrounds)
+export const OUTLINE = 'border-ig-ink/40 bg-transparent text-ig-ink hover:border-ig-ink hover:bg-ig-ink hover:text-white'
 const VARIANT: Record<Variant, string> = {
-  primary: 'border-transparent bg-ig-orange text-ig-ink hover:bg-[#d84f1c]',
-  dark: 'border-transparent bg-ig-ink text-white hover:bg-ig-ink/88',
-  light: 'border-transparent bg-white text-ig-ink hover:bg-ig-cream',
-  ghost: 'border-ig-ink/35 bg-transparent text-ig-ink hover:border-ig-ink hover:bg-ig-ink hover:text-white',
-  ghostLight: 'border-white/60 bg-transparent text-white hover:bg-white hover:text-ig-ink',
+  primary: OUTLINE,
+  dark: OUTLINE,
+  light: OUTLINE,
+  ghost: OUTLINE,
+  ghostLight: 'border-ig-cream/60 bg-transparent text-ig-cream hover:bg-ig-cream hover:text-ig-ink',
 }
+/** the secondary button look, for links (like the WhatsApp link) */
+export const btnLink = `inline-flex items-center justify-center gap-2 rounded-[var(--r-box)] border-[1.5px] px-5 py-3 text-[15px] font-semibold lowercase transition-colors duration-150 ${OUTLINE}`
 
 export function Btn({
   children,
@@ -215,11 +218,11 @@ export function Btn({
 }
 
 export function H1({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <h1 className={`text-[2.8rem] font-extrabold lowercase leading-[0.92] tracking-tight @3xl:text-[6.5rem] ${className}`}>{children}</h1>
+  return <h1 className={`text-[2.8rem] font-bold lowercase leading-[0.95] tracking-tight @3xl:text-[6.5rem] ${className}`}>{children}</h1>
 }
 
 export function H2({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <h2 className={`text-[2rem] font-extrabold lowercase leading-[0.98] tracking-tight @3xl:text-6xl ${className}`}>{children}</h2>
+  return <h2 className={`text-[2rem] font-bold lowercase leading-[1] tracking-tight @3xl:text-6xl ${className}`}>{children}</h2>
 }
 
 export function Tag({ children, tone = 'yellow' }: { children: ReactNode; tone?: 'yellow' | 'white' | 'orange' | 'cream' }) {
@@ -229,7 +232,7 @@ export function Tag({ children, tone = 'yellow' }: { children: ReactNode; tone?:
     orange: 'bg-ig-orange',
     cream: 'bg-ig-cream',
   }[tone]
-  return <span className={`inline-block rounded-full border-2 border-ig-ink px-3 py-0.5 font-mono text-[11px] uppercase tracking-wide text-ig-ink ${t}`}>{children}</span>
+  return <span className={`inline-block rounded-[var(--r-tag)] px-3 py-1 text-[13px] font-medium lowercase leading-none text-ig-ink ${t}`}>{children}</span>
 }
 
 export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string }) {
@@ -246,7 +249,7 @@ export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string 
     trainers: 'bg-ig-ink text-ig-yellow',
   }
   return (
-    <span className={`flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-ig-ink ${bg[aud]} ${className}`}>
+    <span className={`flex h-14 w-14 items-center justify-center rounded-[var(--r-box)] ${bg[aud]} ${className}`}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d={paths[aud]} />
       </svg>
@@ -288,7 +291,7 @@ export function PageHero({
           <H1>{title}</H1>
           <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">{sub}</p>
         </div>
-        <Photo src={photo} alt={alt} className="h-60 w-full rounded-2xl border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:h-[400px]" />
+        <Photo src={photo} alt={alt} className="h-60 w-full rounded-[var(--r-box)] @3xl:h-[400px]" />
       </div>
     </Section>
   )
@@ -322,7 +325,7 @@ export function PartnerStrip() {
       <p className="mb-6 text-center text-sm font-medium">onze partners</p>
       <ul className="mx-auto flex max-w-5xl flex-wrap justify-center gap-2.5">
         {PARTNERS.map((p) => (
-          <li key={p} className="rounded-full border-2 border-ig-ink bg-white px-4 py-2 text-[15px] font-semibold shadow-[3px_3px_0_#1f1a17]">
+          <li key={p} className="rounded-[var(--r-tag)] bg-white px-4 py-2 text-[15px] font-medium">
             {p}
           </li>
         ))}
@@ -393,17 +396,17 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
   return (
     <form onSubmit={(e) => { e.preventDefault(); hits[0]?.to() }} role="search" className="relative">
       <div className="flex gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 rounded-full border-2 border-ig-ink bg-white px-4 text-base outline-none" />
-        <Btn type="submit" variant={onDark ? 'light' : 'dark'} className="w-auto! py-2!">zoek</Btn>
+        <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 rounded-[var(--r-box)] border border-ig-ink/25 bg-white px-4 text-base outline-none focus-visible:border-ig-orange focus-visible:ring-2 focus-visible:ring-ig-orange" />
+        <Btn type="submit" variant={onDark ? 'ghostLight' : 'ghost'} className="w-auto! py-2!">zoek</Btn>
       </div>
       {term && (
-        <ul className="mt-2 overflow-hidden rounded-2xl border-2 border-ig-ink bg-white text-sm text-ig-ink" aria-label="Zoekresultaten">
+        <ul className="mt-2 overflow-hidden rounded-[var(--r-box)] bg-white text-sm text-ig-ink shadow-[0_14px_34px_rgb(42_24_16/0.14)]" aria-label="Zoekresultaten">
           {hits.length === 0 && <li className="px-4 py-3 text-neutral-600">Niets gevonden voor “{q.trim()}”.</li>}
           {hits.map((h) => (
             <li key={h.key} className="border-b border-ig-ink/10 last:border-0">
               <button type="button" onClick={h.to} className="flex w-full items-baseline justify-between gap-3 px-4 py-2.5 text-left hover:bg-ig-yellow">
                 <span className="font-semibold">{h.title}</span>
-                <span className="shrink-0 font-mono text-[11px] uppercase text-neutral-600">{h.kind}</span>
+                <span className="shrink-0 text-[13px] text-neutral-600">{h.kind}</span>
               </button>
             </li>
           ))}
@@ -596,24 +599,5 @@ export function Footer() {
         <div className="mx-auto max-w-[1280px]">© Copyright – InnerGames{ann ? ' · Enfold WordPress Theme' : ''}</div>
       </div>
     </footer>
-  )
-}
-
-export function Marquee({ text }: { text: string }) {
-  return (
-    <div className="overflow-hidden bg-ig-yellow py-3 text-ig-ink [--ig-next-pad:12px]" aria-label={text}>
-      <div className="flex w-max animate-[marquee_40s_linear_infinite] motion-reduce:animate-none">
-        {[0, 1].map((k) => (
-          <div key={k} className="flex shrink-0 items-center" aria-hidden>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <span key={i} className="flex items-center gap-6 pr-6 text-2xl font-extrabold lowercase italic @3xl:text-4xl">
-                {text}
-                <img src="/assets/meeple.png" alt="" className="h-9 w-9 object-contain mix-blend-multiply @3xl:h-12 @3xl:w-12" />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }

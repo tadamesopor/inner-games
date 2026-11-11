@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap');
+/* one family: Gill Sans (brand guide). Cabin is the web fallback for computers without Gill Sans */
+@import url('https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @theme static {
-  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, monospace;
+  --font-sans: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif;
+  --font-mono: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif; /* no monospace anywhere: tags and labels use the brand font too */
   --color-ig-orange: #ea561f;
   --color-ig-yellow: #fab512;
   --color-ig-ink: #2a1810;
@@ -20,12 +21,6 @@ body {
 ::selection {
   background: #2a1810;
   color: #fab512;
-}
-
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 :focus-visible {

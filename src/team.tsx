@@ -70,7 +70,7 @@ function MemberCard({ m }: { m: Member }) {
     <article
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]"
+      className="group flex flex-col overflow-hidden rounded-[var(--r-box)] bg-white ring-1 ring-ig-ink/12"
     >
       <div className={`relative aspect-[4/5] overflow-hidden transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
         {m.photo && (
@@ -127,7 +127,7 @@ export function Team() {
         <div className="grid items-end gap-6 pt-10 @3xl:grid-cols-[1.1fr_1fr] @3xl:gap-12">
           <div className="pb-10 @3xl:pb-24">
             <p className="mb-4 text-base font-medium">spelen om te leren · spelen om te groeien</p>
-            <h1 className="text-[3.5rem] font-normal lowercase leading-[0.95] tracking-tight @3xl:text-[7rem]">ons team</h1>
+            <h1 className="text-[3.5rem] font-bold lowercase leading-[0.95] tracking-tight @3xl:text-[7rem]">ons team</h1>
             <p className="mt-6 max-w-lg text-xl font-medium leading-snug @3xl:text-2xl">
               Ontdek de kracht van spelen, met jouw team, jouw klas, jouw cliënten. Of gewoon voor jezelf!
             </p>
@@ -154,7 +154,7 @@ export function Team() {
       <Section id="B" label="de vijf" className="bg-white" note="foto + quote-kaart behouden · filter op expertise · Carinda en Wies: foto ontbreekt">
         <div id="leden" className="scroll-mt-24">
           <div className="mb-8 mt-4 flex flex-col gap-5 @3xl:flex-row @3xl:items-end @3xl:justify-between">
-            <h2 className="max-w-xl text-4xl font-normal lowercase leading-none tracking-tight @3xl:text-5xl">vijf spelers, één idee</h2>
+            <h2 className="max-w-xl text-4xl font-bold lowercase leading-none tracking-tight @3xl:text-5xl">vijf spelers, één idee</h2>
             <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter op expertise">
               {FILTERS.map((f) => (
                 <button
@@ -183,12 +183,12 @@ export function Team() {
       <Section id="C" label="onze aanpak" className="bg-ig-cream text-ig-ink" note="serieus, speels, lichamelijk">
         <div className="mt-4 grid gap-10 @3xl:grid-cols-[1fr_2fr]">
           <div>
-            <h2 className="text-4xl font-normal lowercase leading-none tracking-tight @3xl:text-5xl">hoe we werken</h2>
+            <h2 className="text-4xl font-bold lowercase leading-none tracking-tight @3xl:text-5xl">hoe we werken</h2>
             <p className="mt-4 max-w-sm text-neutral-700">Een serieuze organisatie die speelse dingen doet: inner growth for outer change.</p>
           </div>
           <div className="grid gap-4 @3xl:grid-cols-3">
             {PILLARS.map(([t, d], i) => (
-              <div key={t} className="rounded-2xl bg-white p-5 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17]">
+              <div key={t} className="rounded-[var(--r-box)] bg-white p-5">
                 <p className="text-3xl text-ig-orange">0{i + 1}</p>
                 <h3 className="mt-3 text-2xl font-semibold lowercase">{t}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-700">{d}</p>
@@ -202,7 +202,7 @@ export function Team() {
         <div className="relative h-72 overflow-hidden @3xl:h-[520px]">
           <Photo src={PHOTOS.tafel} alt={ALT[PHOTOS.tafel]} sizes="100vw" className="absolute inset-0 h-full w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-          <p className="absolute bottom-6 left-5 max-w-xl text-3xl font-normal lowercase leading-none tracking-tight text-white @3xl:bottom-12 @3xl:left-16 @3xl:text-6xl">
+          <p className="absolute bottom-6 left-5 max-w-xl text-3xl font-bold lowercase leading-none tracking-tight text-white @3xl:bottom-12 @3xl:left-16 @3xl:text-6xl">
             samen aan tafel, vanuit eindhoven
           </p>
         </div>

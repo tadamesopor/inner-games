@@ -55,6 +55,24 @@ export default function App() {
   const [ann, setAnn] = useState(false)
   const [tasks, setTasks] = useState(false)
   const [footer, setFooter] = useState<'hand' | 'foto'>('hand')
+  const [toolsOpen, setToolsOpen] = useState(false)
+  // in test mode the ⚙ is gone; G three times shows it again (like T three times for the test leader)
+  const [tools, setTools] = useState(false)
+  const taps = useRef<number[]>([])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName
+      if (e.key.toLowerCase() !== 'g' || tag === 'INPUT' || tag === 'TEXTAREA') return
+      const now = Date.now()
+      taps.current = [...taps.current.filter((t) => now - t < 1200), now]
+      if (taps.current.length >= 3) {
+        taps.current = []
+        setTools((v) => !v)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   const bus = useRef<(() => void) | undefined>(undefined)
   const [lab, setLab] = useState(isLab)
 
@@ -123,14 +141,31 @@ export default function App() {
       </div>
       <CartDrawer open={cartOpen} onClose={closeCart} />
       {tasks && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
-      <div className="fixed bottom-4 left-1/2 z-[70] max-w-[calc(100vw-1rem)] flex-wrap justify-center flex -translate-x-1/2 items-center gap-1 rounded-full bg-ig-ink p-1 shadow-xl" role="group" aria-label="Prototype-opties">
-        <button className={pill(!mobile)} onClick={() => setMobile(false)}>desktop</button>
-        <button className={pill(mobile)} onClick={() => setMobile(true)}>mobiel 390</button>
-        <button className={pill(ann)} onClick={() => setAnn(!ann)}>labels {ann ? 'aan' : 'uit'}</button>
-        <button className={pill(tasks)} onClick={() => setTasks(!tasks)} aria-pressed={tasks}>taken</button>
-        {/* footer option A or B, so Ariën can choose on the real pages */}
-        <button className={pill(false)} onClick={() => setFooter(footer === 'hand' ? 'foto' : 'hand')}>footer: {footer}</button>
-      </div>
+      {/* the prototype options: a small ⚙ bottom left, opened on click. completely hidden in test mode,
+          so it can't cover anything; the test leader brings it back by pressing G three times */}
+      {!(tasks && !tools) && (
+        <div className="fixed bottom-4 left-4 z-[70] flex items-end gap-2">
+          <button
+            type="button"
+            onClick={() => setToolsOpen(!toolsOpen)}
+            aria-expanded={toolsOpen}
+            aria-label="Prototype-opties"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-ig-ink text-lg text-ig-cream shadow-lg"
+          >
+            ⚙
+          </button>
+          {toolsOpen && (
+            <div className="flex max-w-[calc(100vw-5rem)] flex-wrap items-center gap-1 rounded-[var(--r-box)] bg-ig-ink p-1 shadow-xl" role="group" aria-label="Prototype-opties">
+              <button className={pill(!mobile)} onClick={() => setMobile(false)}>desktop</button>
+              <button className={pill(mobile)} onClick={() => setMobile(true)}>mobiel 390</button>
+              <button className={pill(ann)} onClick={() => setAnn(!ann)}>labels {ann ? 'aan' : 'uit'}</button>
+              <button className={pill(tasks)} onClick={() => { setTasks(!tasks); setTools(false); setToolsOpen(false) }} aria-pressed={tasks}>taken</button>
+              {/* footer option A or B, so Ariën can choose on the real pages */}
+              <button className={pill(false)} onClick={() => setFooter(footer === 'hand' ? 'foto' : 'hand')}>footer: {footer}</button>
+            </div>
+          )}
+        </div>
+      )}
     </Ctx.Provider>
   )
 }

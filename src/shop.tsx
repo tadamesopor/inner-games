@@ -38,8 +38,8 @@ function GameCard({ g }: { g: G }) {
           {g.previewKey ? (
             <span onClick={(e) => e.stopPropagation()}>
               <Btn
+                split
                 variant="dark"
-                className="w-auto! py-2!"
                 onClick={() => {
                   addToCart(g.slug, 1)
                   setAdded(true)
@@ -119,7 +119,7 @@ function Teaser({ game }: { game: G }) {
   if (!s) return null
 
   return (
-    <div className="rounded-2xl bg-ig-cream p-5 text-ig-ink border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
+    <div className="rounded-[var(--r-box)] bg-ig-cream p-5 text-ig-ink @3xl:p-8">
       <div className="mb-6 flex items-center gap-1.5" aria-label={`Stap ${Math.min(i + 1, steps.length)} van ${steps.length}`}>
         {steps.map((_, k) => <span key={k} className={`h-1.5 flex-1 rounded-full ${k < i ? 'bg-ig-orange' : k === i && !done ? 'bg-ig-yellow' : 'bg-white'}`} />)}
       </div>
@@ -171,7 +171,7 @@ function Teaser({ game }: { game: G }) {
           <p className="mt-3 text-2xl font-semibold lowercase @3xl:text-4xl">dat was een voorproefje.</p>
           <p className="mx-auto mt-3 max-w-md text-lg">Wil je het hele spel met je team of klas spelen?</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Btn variant="dark" onClick={() => { if (!cart[game.slug]) addToCart(game.slug, 1); go('game', game.slug) }}>koop het spel · {game.price}</Btn>
+            <Btn split variant="dark" onClick={() => { if (!cart[game.slug]) addToCart(game.slug, 1); go('game', game.slug) }}>koop het spel · {game.price}</Btn>
             <Btn split variant="primary" onClick={() => (matching.length === 1 ? go('workshop', matching[0].slug) : go('contact'))}>boek een workshop</Btn>
             <Btn variant="ghost" onClick={() => setAnswers([])}>opnieuw</Btn>
           </div>
@@ -216,7 +216,7 @@ export function Game() {
               {g.aud.map((a) => <Tag key={a} tone="white">{AUD_LABEL[a]}</Tag>)}
               {g.status && <Tag tone="yellow">{g.status}</Tag>}
             </div>
-            <h1 className="mt-4 text-4xl font-normal leading-[1] tracking-tight @3xl:text-6xl">{g.title}</h1>
+            <h1 className="mt-4 text-4xl font-bold leading-[1] tracking-tight @3xl:text-6xl">{g.title}</h1>
             <p className="mt-5 text-xl leading-snug">{g.short}</p>
             <dl className="mt-6 grid grid-cols-1 gap-3 text-sm @3xl:grid-cols-2">
               {facts.map(([k, v]) => (
@@ -344,7 +344,7 @@ export function Preview() {
       <Section id="A" label="speelbare preview" className="min-h-[640px] bg-ig-orange text-white" note="± 30 sec · 4 à 5 stappen · eindigt in CTA">
         <button onClick={() => go('game', g.slug)} className="mb-6 text-sm underline">← terug naar {g.title}</button>
         <p className="text-base font-medium">preview · {g.previewKey}</p>
-        <h1 className="mb-8 mt-2 text-4xl font-normal leading-none tracking-tight @3xl:text-7xl">speel 30 seconden</h1>
+        <h1 className="mb-8 mt-2 text-4xl font-bold leading-none tracking-tight @3xl:text-7xl">speel 30 seconden</h1>
         <div className="mx-auto max-w-3xl"><Teaser game={g} /></div>
       </Section>
     </>

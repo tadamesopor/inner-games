@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { initBoxscene, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag, useMotion } from './wf'
+import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -86,7 +86,6 @@ export function Home() {
         </div>
       </Section>
 
-      <Marquee text="ontdek de kracht van spelen" />
       <Speelpad>
       <Section id="B" label="vier doelgroepen" stop note="onderwijs · organisaties · zorg · trainers">
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
@@ -135,7 +134,7 @@ export function Home() {
 
       <Section id="E" label="quote" className="bg-white" note={QUOTE.note}>
         <blockquote className="mx-auto max-w-3xl text-center">
-          <p className="text-3xl font-normal leading-tight tracking-tight @3xl:text-5xl">“{QUOTE.text}”</p>
+          <p className="text-3xl font-medium leading-tight tracking-tight @3xl:text-5xl">“{QUOTE.text}”</p>
           <footer className="mt-6 text-sm font-medium text-ig-orange">{QUOTE.who}</footer>
         </blockquote>
       </Section>
@@ -494,7 +493,7 @@ export function Contact() {
               href="https://wa.me/31621527855"
               target="_blank"
               rel="noreferrer"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 bg-ig-orange px-6 py-3 text-[15px] font-semibold text-ig-ink hover:brightness-95 @3xl:w-auto"
+              className={`${btnLink} mt-6 w-full @3xl:w-auto`}
             >
               app ons op whatsapp
             </a>
@@ -505,7 +504,7 @@ export function Contact() {
               <p className="mt-3 text-lg">(dit is een test, er is niets verzonden)</p>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 rounded-2xl bg-white p-6 border-2 border-ig-ink shadow-[6px_6px_0_#1f1a17] @3xl:p-8">
+            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 rounded-[var(--r-box)] bg-white p-6 ring-1 ring-ig-ink/12 @3xl:p-8">
               <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
               <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
               <label className="block text-sm font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
@@ -519,7 +518,7 @@ export function Contact() {
                 </select>
               </label>
               <label className="block text-sm font-semibold">Bericht<textarea required rows={5} className={`${input} mt-1`} /></label>
-              <Btn type="submit" variant="dark">verstuur</Btn>
+              <Btn split type="submit" variant="dark">verstuur</Btn>
             </form>
           )}
         </div>

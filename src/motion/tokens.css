@@ -9,7 +9,7 @@
   --ig-yellow: #fab512;
   --ig-ink: #2a1810;
   --ig-cream: #fff6e6;
-  --ig-font: 'Gill Sans', 'Gill Sans MT', 'Cabin', 'Segoe UI', system-ui, sans-serif;
+  --ig-font: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif;
 
   /* named easing curves, nothing else is used */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1); /* things arriving */
