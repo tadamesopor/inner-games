@@ -31,7 +31,13 @@
   z-index: 60;
   height: var(--nav-h);
   padding: 0 20px;
-  /* the empty space around the compact bar must not catch clicks */
+  background: #fff;
+  transition: background-color var(--dur-move) var(--ease-soft);
+}
+/* before 200px the bar is a white strip, so content never slides under the logo. compact, only the
+   floating bar is left: the empty space around it must not catch clicks */
+.ig-nav.is-compact {
+  background: transparent;
   pointer-events: none;
 }
 @container (min-width: 768px) {
