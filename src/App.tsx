@@ -32,6 +32,7 @@ export default function App() {
   const [mobile, setMobile] = useState(false)
   const [ann, setAnn] = useState(false)
   const [tasks, setTasks] = useState(false)
+  const [footer, setFooter] = useState<'hand' | 'foto'>('hand')
   const bus = useRef<(() => void) | undefined>(undefined)
   const [lab, setLab] = useState(isLab)
 
@@ -72,7 +73,7 @@ export default function App() {
     `rounded-full px-3 py-1.5 text-[13px] ${on ? 'bg-ig-yellow text-ig-ink' : 'text-white hover:bg-white/15'}`
 
   return (
-    <Ctx.Provider value={{ ann, sel, cart, go, toggleCart }}>
+    <Ctx.Provider value={{ ann, footer, sel, cart, go, toggleCart }}>
       <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
         <div ref={view} className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
           <Page key={page + sel} />
@@ -84,6 +85,8 @@ export default function App() {
         <button className={pill(mobile)} onClick={() => setMobile(true)}>mobiel 390</button>
         <button className={pill(ann)} onClick={() => setAnn(!ann)}>labels {ann ? 'aan' : 'uit'}</button>
         <button className={pill(tasks)} onClick={() => setTasks(!tasks)} aria-pressed={tasks}>taken</button>
+        {/* footer option A or B, so Ariën can choose on the real pages */}
+        <button className={pill(false)} onClick={() => setFooter(footer === 'hand' ? 'foto' : 'hand')}>footer: {footer}</button>
       </div>
     </Ctx.Provider>
   )

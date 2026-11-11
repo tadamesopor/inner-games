@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react'
-import { SplitBtn } from './motionui'
+import { PencilMark, SplitBtn } from './motionui'
+import { initFooterReveal } from './motion'
 import { CLIENTS, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
 export type PageId =
@@ -16,13 +17,15 @@ export type PageId =
 
 type CtxT = {
   ann: boolean
+  /** footer option A (the hand, on ink) or B (the team photo, on orange), switchable in the prototype bar */
+  footer: 'hand' | 'foto'
   sel: string
   cart: string[]
   go: (p: PageId, id?: string) => void
   toggleCart: (id: string) => void
 }
 
-export const Ctx = createContext<CtxT>({ ann: false, sel: '', cart: [], go: () => {}, toggleCart: () => {} })
+export const Ctx = createContext<CtxT>({ ann: false, footer: 'hand', sel: '', cart: [], go: () => {}, toggleCart: () => {} })
 
 // calm cards: white, a thin soft line, no black border or offset shadow (brand rule).
 // the workshop and game cards are .ig-card (the hand pops up on hover), see src/motion/cards.css
@@ -319,7 +322,7 @@ export function ContactCta({ id = 'CTA' }: { id?: string }) {
   const { go } = useContext(Ctx)
   return (
     <Section id={id} label="contact-cta" className="bg-white py-10! @3xl:py-16!" note="gewone knop, geen handjes-afbeelding">
-      <div className="flex flex-col items-start justify-between gap-8 rounded-3xl border-2 border-ig-ink bg-ig-orange p-7 text-ig-ink shadow-[8px_8px_0_#1f1a17] @3xl:flex-row @3xl:items-center @3xl:p-14">
+      <div className="flex flex-col items-start justify-between gap-8 rounded-[var(--r-box)] bg-ig-orange p-7 text-ig-ink @3xl:flex-row @3xl:items-center @3xl:p-14">
         <div>
           <H2 className="max-w-2xl">benieuwd wat spelen voor jou doet?</H2>
           <p className="mt-4 max-w-lg text-lg">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
@@ -358,7 +361,7 @@ const GROUP: Record<PageId, PageId> = {
 const iconBtn = 'flex h-10 items-center justify-center gap-2 rounded-full border-2 border-ig-ink bg-white px-3 text-sm font-semibold transition hover:bg-ig-yellow'
 
 /** Zoekt op titels van workshops en spellen. */
-export function Search({ placeholder, autoFocus }: { placeholder: string; autoFocus?: boolean }) {
+export function Search({ placeholder, autoFocus, onDark }: { placeholder: string; autoFocus?: boolean; onDark?: boolean }) {
   const { go } = useContext(Ctx)
   const [q, setQ] = useState('')
   const term = q.trim().toLowerCase()
@@ -372,7 +375,7 @@ export function Search({ placeholder, autoFocus }: { placeholder: string; autoFo
     <form onSubmit={(e) => { e.preventDefault(); hits[0]?.to() }} role="search" className="relative">
       <div className="flex gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} autoFocus={autoFocus} aria-label="Zoeken" placeholder={placeholder} className="h-11 min-w-0 flex-1 rounded-full border-2 border-ig-ink bg-white px-4 text-base outline-none" />
-        <Btn type="submit" variant="dark" className="w-auto! py-2!">zoek</Btn>
+        <Btn type="submit" variant={onDark ? 'light' : 'dark'} className="w-auto! py-2!">zoek</Btn>
       </div>
       {term && (
         <ul className="mt-2 overflow-hidden rounded-2xl border-2 border-ig-ink bg-white text-sm text-ig-ink" aria-label="Zoekresultaten">
@@ -509,13 +512,23 @@ export function Header({ active }: { active: PageId }) {
   )
 }
 
+// the footer slides out from under the last section (src/motion/footer.css). at the bottom edge
+// something of InnerGames as a company rises up: A the big hand that waves once, or B the team photo
 export function Footer() {
-  const { ann } = useContext(Ctx)
+  const { ann, footer } = useContext(Ctx)
+  const ref = useMotion<HTMLElement>(initFooterReveal)
+  const foto = footer === 'foto'
   const link = 'block py-0.5 hover:underline'
   return (
-    <>
-      <Section id="FOOT" label="footer" className="bg-ig-orange pb-12! text-ig-ink" note="zelfde op elke pagina">
-        <div className="grid grid-cols-1 gap-10 @3xl:grid-cols-4">
+    <footer ref={ref} className={`ig-footer ${foto ? 'ig-footer--orange' : 'ig-footer--ink'}`}>
+      {ann && (
+        <div className="absolute left-0 top-0 z-30 flex">
+          <span className="bg-black px-2 py-1 text-[11px] text-white">FOOT · footer</span>
+          <span className="hidden bg-yellow-200 px-2 py-1 text-[11px] text-black @3xl:block">zelfde op elke pagina · {foto ? 'optie B: teamfoto' : 'optie A: hand'}</span>
+        </div>
+      )}
+      <div className="relative mx-auto max-w-[calc(1280px+8rem)] px-5 pb-4 pt-14 @3xl:px-16 @3xl:pb-36">
+        <div className="relative z-[1] grid grid-cols-1 gap-10 @3xl:grid-cols-4">
           <div className="space-y-1 text-[15px]">
             <p className="font-semibold">bezoekadres</p>
             <p>InnerGames</p>
@@ -530,7 +543,11 @@ export function Footer() {
             <p>Telefoon: +31 (0)6 – 215 27 855</p>
             <p>WhatsApp: +31 (0)6 – 215 27 855</p>
             <p>
-              E-mail: <a className="underline" href="mailto:info@innergames.nl">info@innergames.nl</a>
+              E-mail:{' '}
+              <a className="inline-block" href="mailto:info@innergames.nl">
+                info@innergames.nl
+                <PencilMark name="underline" className="ig-draw ig-footer__mark" />
+              </a>
             </p>
             <p>
               <a className="underline" href="https://www.linkedin.com/company/innergames" target="_blank" rel="noreferrer">LinkedIn</a>
@@ -546,14 +563,21 @@ export function Footer() {
             <Link to="contact" className={link}>contact</Link>
           </div>
           <div className="self-start text-ig-ink">
-            <Search placeholder="zoek" />
+            <Search placeholder="zoek" onDark={!foto} />
           </div>
         </div>
-      </Section>
-      <div className="bg-ig-ink px-5 py-3 text-xs text-neutral-400 @3xl:px-16">
-        © Copyright – InnerGames{ann ? ' · Enfold WordPress Theme' : ''}
+        {foto ? (
+          <figure className="ig-footer-photo ig-footer-photo--right">
+            <img src="/assets/team-group.png" alt="Ariën, Sanne en Aron van InnerGames staan lachend naast elkaar" width={986} height={1479} loading="lazy" />
+          </figure>
+        ) : (
+          <span className="ig-footer-hand ig-footer-hand--right" aria-hidden />
+        )}
       </div>
-    </>
+      <div className={`relative border-t px-5 py-3 text-xs @3xl:px-16 ${foto ? 'border-ig-ink/15' : 'border-ig-cream/15 text-ig-cream/70'}`}>
+        <div className="mx-auto max-w-[1280px]">© Copyright – InnerGames{ann ? ' · Enfold WordPress Theme' : ''}</div>
+      </div>
+    </footer>
   )
 }
 

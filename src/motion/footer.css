@@ -8,9 +8,14 @@
    <footer class="ig-footer ig-footer--ink">...<span class="ig-footer-hand"></span>...</footer>
    in Enfold: the last color section gets ig-reveal-cover, the footer section ig-footer. */
 
-.ig-reveal-cover {
+/* the cover: the class, or (when the class can't be set) simply the element right before the footer */
+.ig-reveal-cover,
+:has(+ .ig-footer) {
   position: relative;
   z-index: 1;
+  border-bottom-left-radius: var(--r-section);
+  border-bottom-right-radius: var(--r-section);
+  overflow: clip;
 }
 .ig-footer {
   --p: 0;
@@ -66,6 +71,13 @@
   }
 }
 
+/* in a footer with four columns there's no empty middle: the hand stands in the last column, under the search */
+.ig-footer-hand--right {
+  left: auto;
+  right: 2%;
+  margin-left: 0;
+}
+
 /* option B: the team photo as a printed photo: boxy, thick cream border, tilted -4deg, rising */
 .ig-footer-photo {
   position: absolute;
@@ -81,6 +93,12 @@
   transform-origin: 50% 100%;
   translate: -50% calc((1 - var(--p)) * 30%);
   rotate: -4deg;
+}
+.ig-footer-photo--right {
+  left: auto;
+  right: 6%;
+  width: min(16%, 200px); /* stays under the search field in the last column */
+  translate: 0 calc((1 - var(--p)) * 30%);
 }
 .ig-footer-photo img {
   display: block;
@@ -105,11 +123,17 @@
 }
 
 @container (max-width: 767px) {
+  /* a phone: the footer can be taller than the screen, so it scrolls normally (no sticky reveal),
+     otherwise its top would stay hidden behind the cover */
+  .ig-footer {
+    position: relative;
+  }
   .ig-footer-hand,
   .ig-footer-photo {
     position: relative;
     display: block;
     left: auto;
+    right: auto;
     bottom: auto;
     margin: 32px auto -40px;
   }
