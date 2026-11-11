@@ -15,6 +15,7 @@ export type PageId =
   | 'team'
   | 'contact'
   | 'legal'
+  | 'checkout'
 
 type CtxT = {
   ann: boolean
@@ -397,6 +398,7 @@ const GROUP: Record<PageId, PageId> = {
   team: 'team',
   contact: 'contact',
   legal: 'legal',
+  checkout: 'games',
 }
 
 const iconBtn = 'flex h-11 items-center justify-center gap-2 rounded-[var(--r-box)] bg-ig-cream px-3 text-sm font-semibold transition-colors hover:bg-ig-yellow'

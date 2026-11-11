@@ -309,6 +309,8 @@ export type Game = {
   story: string[]
   contents: string[]
   status?: string
+  /** under the price; without it "incl. btw". for products where innergames.nl includes shipping in the price */
+  priceNote?: string
   // a cut-out photo of only the box (transparent png), for the box scene on the game page
   box?: { src: string; w: number; h: number }
 }
@@ -388,6 +390,7 @@ export const GAMES: Game[] = [
     short: 'Een competitief klassenspel over alledaagse producten, afval en plastic.',
     aud: ['onderwijs'],
     price: '€ 275',
+    priceNote: 'incl. btw en verzending in Nederland',
     photo: img('games/impact-imperium'),
     gallery: [img('games/impact-imperium'), img('workshops/het-impact-imperium')],
     previewKey: 'Impact Imperium',
@@ -405,7 +408,8 @@ export const GAMES: Game[] = [
     title: 'Kansen Keren',
     short: '66 levenssituaties in een niet-competitief gesprekspel.',
     aud: ['onderwijs', 'organisaties'],
-    price: '€ 16,35 incl. verzending',
+    price: '€ 16,35',
+    priceNote: 'incl. btw en verzending in Nederland',
     photo: img('games/kansen-keren'),
     gallery: [img('games/kansen-keren'), img('workshops/kansen-keren')],
     // preview staat uit tot Ariën en Carinda Jansen akkoord geven; aanzetten: previewKey: 'Kansen Keren' en status weghalen

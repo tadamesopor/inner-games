@@ -5,7 +5,7 @@ import TestMode from './test'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
 import { igNavigate, initCards } from './motion'
 import { Contact, Legal, Home, Projects, Trainer, Workshop, Workshops } from './pages'
-import { CartDrawer, Game, Games, Preview } from './shop'
+import { CartDrawer, Checkout, Game, Games, Preview } from './shop'
 import { Team } from './team'
 
 // the motion lab only loads when you open it, so the prototype itself stays exactly as it was
@@ -25,6 +25,7 @@ const PAGES: Record<PageId, () => React.ReactNode> = {
   team: Team,
   contact: Contact,
   legal: Legal,
+  checkout: Checkout,
 }
 
 export default function App() {

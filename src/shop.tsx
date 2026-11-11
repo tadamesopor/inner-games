@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, btnLink, card, cardStatic, ContactCta, Ctx, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { Btn, btnLink, card, cardStatic, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
 /** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
@@ -35,7 +35,7 @@ function GameCard({ g }: { g: G }) {
         <p className="text-[15px] text-neutral-700">{g.short}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-3">
           <span className="text-lg font-semibold">{g.price}</span>
-          {g.previewKey ? (
+          {!g.status ? (
             <span onClick={(e) => e.stopPropagation()}>
               <Btn
                 split
@@ -48,9 +48,7 @@ function GameCard({ g }: { g: G }) {
                 {added ? 'toegevoegd ✓' : 'in mand'}
               </Btn>
             </span>
-          ) : (
-            <Btn variant="dark" className="w-auto! py-2!" disabled>preview volgt</Btn>
-          )}
+          ) : null}
         </div>
       </div>
       </div>
@@ -228,7 +226,7 @@ export function Game() {
               ))}
             </dl>
             <p className="mt-8 text-3xl font-semibold">{g.price}</p>
-            <p className="text-sm text-neutral-600">incl. btw</p>
+            <p className="text-sm text-neutral-600">{g.priceNote ?? 'incl. btw'}</p>
             {/* TODO Ariën: the delivery text under the button (for example "verzonden binnen 2 werkdagen") */}
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Qty value={qty} onChange={setQty} label={g.title} disabled={!!g.status} />
@@ -395,11 +393,9 @@ export function Qty({ value, onChange, label, disabled }: { value: number; onCha
 /** the cart as a drawer on the right: a row per product, the subtotal, and the (dummy) checkout */
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { cart, setQty, go } = useContext(Ctx)
-  const [stop, setStop] = useState(false)
   const close = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     if (!open) return
-    setStop(false)
     close.current?.focus()
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -457,15 +453,96 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               <span>{euro(sub)}</span>
             </div>
             <p className="text-sm text-neutral-600">incl. btw · verzendkosten: berekend bij afrekenen</p>
-            <Btn split variant="dark" className="mt-4" onClick={() => setStop(true)}>naar afrekenen</Btn>
-            {stop ? (
-              <p role="status" className="mt-3 rounded-[8px] bg-ig-yellow px-3 py-2 text-sm font-semibold">hier stopt de test</p>
-            ) : (
-              <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
-            )}
+            <Btn
+              split
+              variant="dark"
+              className="mt-4"
+              onClick={() => {
+                onClose()
+                go('checkout')
+              }}
+            >
+              naar afrekenen
+            </Btn>
+            <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+/** a dummy checkout, like the WooCommerce one: your details and the order. placing the order is where the
+    test stops. nothing is sent */
+export function Checkout() {
+  const { cart, go } = useContext(Ctx)
+  const [stop, setStop] = useState(false)
+  const rows = Object.entries(cart)
+    .map(([slug, n]) => ({ g: GAMES.find((x) => x.slug === slug), n }))
+    .filter((r): r is { g: G; n: number } => !!r.g)
+  const sub = rows.reduce((t, r) => t + (priceOf(r.g) ?? 0) * r.n, 0)
+  const input = 'mt-1 w-full rounded-[var(--r-box)] bg-ig-cream px-4 py-2.5 text-base focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
+  return (
+    <>
+      <Header active="checkout" />
+      <Section id="A" label="afrekenen" className="bg-white" note="dummy · WooCommerce afrekenen">
+        <button onClick={() => go('games')} className="mb-6 text-sm underline">← verder winkelen</button>
+        <H1 className="text-[2.5rem]! @3xl:text-[4rem]!">afrekenen</H1>
+        {rows.length === 0 ? (
+          <p className="mt-6 text-lg">Je winkelmand is leeg.</p>
+        ) : (
+          <div className="mt-10 grid gap-10 @4xl:grid-cols-[1.2fr_1fr]">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                setStop(true)
+              }}
+              className="space-y-4"
+            >
+              <h2 className="text-2xl font-bold">je gegevens</h2>
+              <div className="grid gap-4 @xl:grid-cols-2">
+                <label className="block text-sm font-semibold">Naam<input className={input} autoComplete="name" /></label>
+                <label className="block text-sm font-semibold">E-mail<input type="email" className={input} autoComplete="email" /></label>
+              </div>
+              <label className="block text-sm font-semibold">Adres<input className={input} autoComplete="street-address" /></label>
+              <div className="grid gap-4 @xl:grid-cols-[1fr_2fr]">
+                <label className="block text-sm font-semibold">Postcode<input className={input} autoComplete="postal-code" /></label>
+                <label className="block text-sm font-semibold">Plaats<input className={input} autoComplete="address-level2" /></label>
+              </div>
+              <Btn split type="submit" variant="dark">bestelling plaatsen</Btn>
+              {stop ? (
+                <p role="status" className="rounded-[8px] bg-ig-yellow px-3 py-2 text-sm font-semibold">hier stopt de test</p>
+              ) : (
+                <p className="text-xs text-neutral-500">prototype · er wordt niets besteld of betaald</p>
+              )}
+            </form>
+            <aside className="self-start rounded-[var(--r-box)] bg-ig-cream p-6">
+              <h2 className="text-2xl font-bold">je bestelling</h2>
+              <ul className="mt-4 divide-y divide-ig-ink/10">
+                {rows.map(({ g, n }) => {
+                  const each = priceOf(g)
+                  return (
+                    <li key={g.slug} className="flex items-center gap-4 py-3">
+                      <Photo src={g.photo} alt="" sizes="56px" className="aspect-square w-14 shrink-0 rounded-[8px] bg-white!" />
+                      <span className="flex-1 font-semibold leading-snug">
+                        {n}× {g.title}
+                      </span>
+                      <span className="font-semibold">{each === null ? '' : euro(each * n)}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div className="mt-4 flex justify-between border-t border-ig-ink/15 pt-4 text-lg font-bold">
+                <span>subtotaal</span>
+                <span>{euro(sub)}</span>
+              </div>
+              <p className="text-sm text-neutral-600">incl. btw</p>
+              {/* TODO Ariën: shipping costs */}
+              <p className="mt-3 inline-block rounded-[var(--r-tag)] border border-dashed border-ig-ink/40 px-2.5 py-1 text-sm">verzendkosten: nog aan te leveren</p>
+            </aside>
+          </div>
+        )}
+      </Section>
+    </>
   )
 }
