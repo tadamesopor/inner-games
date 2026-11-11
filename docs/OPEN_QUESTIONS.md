@@ -39,3 +39,25 @@
   whether people miss the cart while scrolling.
 - **Transition length.** Outside test mode the transition is the full 920 ms version (with the wave), longer than the
   500 ms from the first brief. In test mode it's the short 460 ms version.
+
+## Fixes round 3: TODOs for Ariën
+
+- **Prices and units.** Every price should show its unit. Known from innergames.nl: Energiek team!, Ontdek jouw
+  drijfveren and Hoofd en lichaam are per group (12 people), so the site says "per groep"; train-de-trainer is per person.
+  Not clear, so still without a unit: De Klimaat Collage (€ 1.800), Hoezo Raar?! (€ 350), Positive Masculinity (€ 350),
+  Het Impact Imperium (€ 423,50) and MemoryStory (€ 423,50). Per group, per session or per person?
+- **Delivery text.** What goes under the "in winkelmand" button (for example "verzonden binnen 2 werkdagen")?
+  Nothing is shown until we know. Sociality's own text says 2 to 3 working days in the Netherlands.
+- **Shipping costs.** The cart says "verzendkosten: berekend bij afrekenen". What are they?
+- **Response time contact form.** The thank-you message says "We reageren binnen 2 werkdagen." Is that right?
+- **Team intro.** "Vijf mensen die spellen ontwikkelen, workshops geven en trainers opleiden, vanuit Eindhoven."
+  Is that how you want to describe the team?
+- **Project cases.** Sociality (with the HAN) is now the main case, written only from the text on innergames.nl.
+  For each project: the client, the question, what you made, and one result or quote (with permission).
+  Which ones may we show, and who were the clients of MemoryStory app, Ready to Board and Wisselwerk?
+- **Photos.** A photo of a train-de-trainer day (the page now uses a photo from Hoofd en lichaam), and photos of
+  Carinda and Wies.
+- **Short card texts.** The "waar kom jij voor?" texts were shortened so the cards stay even (for example
+  "Spellen en lessen voor in de klas."). Check if they still say what you mean.
+- **Menu.** "home" is gone (the logo is home), and "ons team" and "projecten" are under "over ons". Watch in the
+  user test whether people still find the team (task D2).
