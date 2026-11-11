@@ -4,7 +4,9 @@
    shrink to 94% (menu.js adds .is-stuck).
    hover: the tile gets one step darker, lifts 2px, and a mini InnerGames hand pops up behind it in the
    tile's own colour (like the cards, small, no wave). the current page is filled orange and keeps its hand.
-   below 1100px wide the tiles fold into a "menu" tile that opens the list (menu.js).
+   below 1200px wide the tiles fold into a "menu" tile that opens the list (menu.js).
+   .ig-menu--many: a full site menu (7 items + the button) doesn't fit next to the logo, so the tiles get
+   their own row under the bar; folded, the "menu" tile goes back up next to the logo.
 
    markup:
    <div class="ig-menubar"><a class="ig-menubar__logo">...</a><a class="ig-menubar__phone">...</a></div>
@@ -139,6 +141,9 @@
 .ig-menu__toggle {
   display: none;
 }
+.ig-menu--many {
+  margin: 0 auto 12px;
+}
 
 /* floating over the page: a soft shadow under each tile, so the group reads as its own layer */
 .ig-menu.is-stuck .ig-menu__item::after,
@@ -159,15 +164,26 @@
   height: 20px;
 }
 
+/* the folded tile lines up with the bar's side padding */
+@container (min-width: 768px) {
+  .ig-menu--many {
+    --menu-edge: 64px;
+  }
+}
+
 /* narrow: the tiles fold into one "menu" tile on the right, which opens the list */
 @container (max-width: 1239px) {
   .ig-menubar__phone {
     display: none;
   }
 }
-@container (max-width: 1099px) {
+@container (max-width: 1199px) {
   .ig-menu {
-    margin: calc((80px + var(--item-h)) / -2) 24px 0 auto;
+    margin: calc((80px + var(--item-h)) / -2) var(--menu-edge, 24px) 0 auto;
+  }
+  /* the search and cart buttons make room for the folded "menu" tile */
+  .ig-menubar__tools {
+    margin-right: 96px;
   }
   .ig-menu.is-stuck {
     scale: 1;
