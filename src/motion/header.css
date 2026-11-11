@@ -1,114 +1,127 @@
-/* .ig-menu: separate menu tiles in the centre, close together in a row, like Aardvark's: big enough,
-   bold, clearly coloured. the logo (left) and phone number (right) are in .ig-menubar and scroll away;
-   only the tiles stay at the top (sticky, 12px). floating over content they get a soft shadow and
-   shrink to 94% (menu.js adds .is-stuck).
-   hover: the tile gets one step darker, lifts 2px, and a mini InnerGames hand pops up behind it in the
-   tile's own colour (like the cards, small, no wave). the current page is filled orange and keeps its hand.
-   below 1200px wide the tiles fold into a "menu" tile that opens the list (menu.js).
-   .ig-menu--many: a full site menu (7 items + the button) doesn't fit next to the logo, so the tiles get
-   their own row under the bar; folded, the "menu" tile goes back up next to the logo.
+/* .ig-nav: one bar on the content grid. left the logo (= home), in the middle the menu items, right search,
+   cart and the "boek een workshop" split button. everything on one 44px line.
+   the items are quiet: ink text, no box. hover: a light yellow box comes behind the item and a mini
+   InnerGames hand pops up. the current page keeps the box and the hand. only the button is solid orange.
+   after 200px of scrolling the whole bar becomes a compact floating bar with its own cream background
+   (menu.js adds .is-compact), so it never sits loose on top of photos.
+   narrower than 1180px: logo, cart and a "menu" button; the menu opens full screen (.is-open).
 
    markup:
-   <div class="ig-menubar"><a class="ig-menubar__logo">...</a><a class="ig-menubar__phone">...</a></div>
-   <nav class="ig-menu">
-     <button class="ig-menu__toggle ig-menu__item" aria-expanded="false">menu</button>
-     <div class="ig-menu__list">
-       <a class="ig-menu__item" aria-current="page">spellen</a> ...
-       <span class="ig-menu__cta"><a class="ig-btn-split">...</a></span>
-     </div>
-   </nav>
-   in Enfold: the nav must be a direct child of the long page wrapper, otherwise sticky stops early. */
+   <header class="ig-nav">
+     <div class="ig-nav__inner"><div class="ig-nav__bar">
+       <a class="ig-nav__logo" aria-label="InnerGames home"><img></a>
+       <nav class="ig-nav__menu">
+         <a class="ig-nav__item" aria-current="page">workshops</a> ...
+         <div class="ig-nav__drop"><button class="ig-nav__item" aria-expanded="false">over ons</button>
+           <div class="ig-nav__sub"><a class="ig-nav__subitem">ons team</a>...</div></div>
+       </nav>
+       <div class="ig-nav__tools">search, cart, <a class="ig-btn-split">...</a>
+         <button class="ig-nav__toggle" data-nav-open>menu</button></div>
+     </div></div>
+     <div class="ig-nav__sheet">...the full screen menu, with a [data-nav-close] button...</div>
+   </header>
+   in Enfold: replaces the normal header, as a Code Block at the top of the page wrapper. */
 
-.ig-menubar {
-  --menu-row: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--menu-row);
-  padding: 0 24px;
-}
-.ig-menubar__logo img {
-  display: block;
-  height: 48px;
-  width: auto;
-}
-.ig-menubar__phone {
-  color: var(--ig-ink);
-  font: 500 15px/1 var(--ig-font);
-  text-decoration: none;
-}
-
-.ig-menu {
+.ig-nav {
+  --nav-h: 88px;
   --item-h: 44px;
+  --item-hover: #fde7b0; /* light yellow */
   position: sticky;
-  top: 12px;
+  top: 0;
   z-index: 60;
-  width: fit-content;
-  /* sits in the same row as the logo at the top of the page */
-  margin: calc((80px + var(--item-h)) / -2) auto 0;
-  transform-origin: 50% 0;
-  transition: scale var(--dur-move) var(--ease-out);
+  height: var(--nav-h);
+  padding: 0 20px;
+  /* the empty space around the compact bar must not catch clicks */
+  pointer-events: none;
 }
-.ig-menu__list {
-  display: flex;
+@container (min-width: 768px) {
+  .ig-nav {
+    padding: 0 64px;
+  }
+}
+.ig-nav__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.ig-nav__bar {
+  pointer-events: auto;
+  display: grid;
+  /* logo and tools take what they need, the menu sits centred in the space between */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
+  height: var(--nav-h);
+  margin: 0;
+  padding: 0;
+  border-radius: var(--r-box);
+  transition:
+    height var(--dur-move) var(--ease-out),
+    margin var(--dur-move) var(--ease-out),
+    padding var(--dur-move) var(--ease-out),
+    background-color var(--dur-move) var(--ease-soft),
+    box-shadow var(--dur-move) var(--ease-soft);
 }
-.ig-menu.is-stuck {
-  scale: 0.94;
+.ig-nav.is-compact .ig-nav__bar {
+  height: 60px;
+  margin: 10px -16px 0;
+  padding: 0 8px 0 16px;
+  background: color-mix(in srgb, var(--ig-cream) 92%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgb(42 24 16 / 0.12);
 }
 
-.ig-menu__item {
-  --item: color-mix(in srgb, var(--ig-yellow) 48%, #fff);
-  --hand-up: -100%;
+.ig-nav__logo {
+  justify-self: start;
+  display: block;
+}
+.ig-nav__logo img {
+  display: block;
+  height: 40px;
+  width: auto;
+  transition: height var(--dur-move) var(--ease-out);
+}
+.ig-nav.is-compact .ig-nav__logo img {
+  height: 28px;
+}
+
+.ig-nav__menu {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* one item. the box is ::after, the hand ::before further back, so the hand really sits behind the box.
+   (a negative z-index child paints above its own parent's background, so the box can't be the background) */
+.ig-nav__item {
+  --item-bg: transparent;
   position: relative;
   isolation: isolate;
   display: inline-flex;
   align-items: center;
   height: var(--item-h);
-  padding: 0 18px;
+  padding: 0 14px;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--r-box);
   background: none;
   color: var(--ig-ink);
-  font: 600 16px/1 var(--ig-font);
+  font: 500 16px/1 var(--ig-font);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: translate var(--dur-ui) var(--ease-out);
 }
-/* the tile is ::after, so the hand (::before, further back) is really hidden behind it.
-   a negative z-index child paints above its own parent's background, not below it */
-.ig-menu__item::after {
+.ig-nav__item::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: var(--item);
-  transition:
-    background-color var(--dur-ui) var(--ease-soft),
-    box-shadow var(--dur-move) var(--ease-out);
+  background: var(--item-bg);
+  transition: background-color var(--dur-ui) var(--ease-soft);
 }
-.ig-menu__item:hover {
-  --item: color-mix(in srgb, var(--ig-yellow) 72%, #fff);
-  translate: 0 -2px;
-}
-/* the current page: filled. #C84413 instead of the brand orange, so cream text stays readable (AA) */
-.ig-menu__item[aria-current] {
-  --item: var(--ig-orange-text);
-  color: var(--ig-cream);
-}
-.ig-menu__item[aria-current]:hover {
-  --item: color-mix(in srgb, var(--ig-orange-text) 88%, var(--ig-ink));
-}
-.ig-menu__item:focus-visible {
-  outline: 3px solid var(--ig-ink);
-  outline-offset: 2px;
-}
-
-/* the mini hand, in the tile's colour */
-.ig-menu__item::before {
+/* the mini hand, in the same light yellow as the box */
+.ig-nav__item::before {
   content: '';
   position: absolute;
   z-index: -2;
@@ -117,98 +130,236 @@
   width: 26px; /* about 22px tall */
   aspect-ratio: 140 / 126;
   margin-left: -15px;
-  background: var(--item);
+  background: var(--item-hover);
   -webkit-mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
   mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
   transform-origin: 78% 92%;
   rotate: 30deg;
   translate: 0 0;
   scale: 0.85;
+  opacity: 0; /* the items have no box, so the hand would show through: hidden until it pops up */
   transition:
     translate 200ms var(--ease-in),
     scale 200ms var(--ease-in),
-    background-color var(--dur-ui) var(--ease-soft);
+    opacity 0ms linear 200ms;
 }
-.ig-menu__item:hover::before,
-.ig-menu__item[aria-current]::before {
-  translate: 0 var(--hand-up);
+.ig-nav__item:hover,
+.ig-nav__item[aria-current],
+.ig-nav__drop.is-open > .ig-nav__item {
+  --item-bg: var(--item-hover);
+}
+.ig-nav__item:hover::before,
+.ig-nav__item[aria-current]::before {
+  translate: 0 -100%;
   scale: 1;
+  opacity: 1;
   transition:
     translate 380ms var(--ease-spring),
     scale 380ms var(--ease-spring),
-    background-color var(--dur-ui) var(--ease-soft);
+    opacity 0ms;
 }
-.ig-menu__toggle {
+.ig-nav__item:focus-visible,
+.ig-nav__subitem:focus-visible,
+.ig-nav__icon:focus-visible,
+.ig-nav__sheet-item:focus-visible {
+  outline: 3px solid var(--ig-ink);
+  outline-offset: 2px;
+}
+/* the small arrow of the dropdown item */
+.ig-nav__caret {
+  width: 10px;
+  height: 10px;
+  margin-left: 6px;
+  transition: rotate var(--dur-ui) var(--ease-soft);
+}
+.ig-nav__drop.is-open .ig-nav__caret {
+  rotate: 180deg;
+}
+
+/* "over ons": a small dropdown with ons team and projecten */
+.ig-nav__drop {
+  position: relative;
+}
+.ig-nav__sub {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
   display: none;
+  min-width: 190px;
+  padding: 6px;
+  border-radius: var(--r-box);
+  background: var(--ig-cream);
+  box-shadow: 0 14px 34px rgb(42 24 16 / 0.16);
 }
-.ig-menu--many {
-  margin: 0 auto 12px;
+.ig-nav__drop.is-open .ig-nav__sub {
+  display: grid;
+  gap: 2px;
+}
+.ig-nav__subitem {
+  display: flex;
+  align-items: center;
+  height: var(--item-h);
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--ig-ink);
+  font: 500 16px/1 var(--ig-font);
+  text-decoration: none;
+}
+.ig-nav__subitem:hover,
+.ig-nav__subitem[aria-current] {
+  background: var(--item-hover);
 }
 
-/* floating over the page: a soft shadow under each tile, so the group reads as its own layer */
-.ig-menu.is-stuck .ig-menu__item::after,
-.ig-menu.is-stuck .ig-btn-split__label,
-.ig-menu.is-stuck .ig-btn-split__arrow {
-  box-shadow: 0 8px 22px rgb(42 24 16 / 0.16);
+.ig-nav__tools {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-
-/* the last item: the split button at menu size */
-.ig-menu__cta .ig-btn-split {
+/* search and cart: square, quiet, the same 44px height as everything else */
+.ig-nav__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--item-h);
+  min-width: var(--item-h);
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-box);
+  background: var(--ig-cream);
+  color: var(--ig-ink);
+  font: 600 14px/1 var(--ig-font);
+  cursor: pointer;
+  transition: background-color var(--dur-ui) var(--ease-soft);
+}
+.ig-nav.is-compact .ig-nav__icon {
+  background: #fff;
+}
+.ig-nav__icon:hover {
+  background: var(--item-hover);
+}
+/* the cart count bumps when something is added (the cart adds .is-bumping for a moment) */
+.ig-nav__count {
+  display: inline-block;
+  min-width: 20px;
+  padding: 3px 6px;
+  border-radius: var(--r-tag);
+  background: #fff;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+}
+.ig-nav__count.is-full {
+  background: var(--ig-orange);
+  color: var(--ig-ink);
+}
+.ig-nav__count.is-bumping {
+  animation: ig-count-bump 420ms var(--ease-spring);
+}
+@keyframes ig-count-bump {
+  0% {
+    scale: 1;
+  }
+  40% {
+    scale: 1.35;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.ig-nav__tools .ig-btn-split {
   --h: var(--item-h);
 }
-.ig-menu__cta .ig-btn-split__label {
-  padding: 0 18px;
+.ig-nav__tools .ig-btn-split__label {
+  padding: 0 16px;
 }
-.ig-menu__cta .ig-btn-split__arrow svg {
+.ig-nav__tools .ig-btn-split__arrow svg {
   width: 20px;
   height: 20px;
 }
 
-/* the folded tile lines up with the bar's side padding */
-@container (min-width: 768px) {
-  .ig-menu--many {
-    --menu-edge: 64px;
-  }
+.ig-nav__toggle {
+  display: none;
 }
 
-/* narrow: the tiles fold into one "menu" tile on the right, which opens the list */
-@container (max-width: 1239px) {
-  .ig-menubar__phone {
+/* the full screen menu (phone and small screens) */
+.ig-nav__sheet {
+  pointer-events: auto;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px 20px 28px;
+  background: var(--ig-cream);
+}
+.ig-nav.is-open .ig-nav__sheet {
+  display: flex;
+}
+.ig-nav__sheet-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.ig-nav__sheet-top img {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+.ig-nav__sheet-item {
+  display: block;
+  padding: 10px 0;
+  color: var(--ig-ink);
+  font: 600 30px/1.1 var(--ig-font);
+  text-decoration: none;
+}
+.ig-nav__sheet-item[aria-current] {
+  color: var(--ig-orange-text);
+}
+.ig-nav__sheet-label {
+  margin-top: 14px;
+  color: rgb(42 24 16 / 0.65);
+  font: 500 15px/1 var(--ig-font);
+}
+.ig-nav__sheet-sub {
+  padding-left: 16px;
+  font-size: 24px;
+}
+.ig-nav__sheet-cta {
+  margin-top: auto;
+  padding-top: 24px;
+}
+.ig-nav__sheet-cta .ig-btn-split {
+  display: flex;
+  width: 100%;
+}
+.ig-nav__sheet-cta .ig-btn-split__label {
+  flex: 1;
+}
+
+/* narrower than 1180px: the items and the button don't fit next to the logo any more */
+@container (max-width: 1179px) {
+  .ig-nav__bar {
+    grid-template-columns: auto 1fr;
+  }
+  .ig-nav__menu,
+  .ig-nav__tools .ig-btn-split,
+  .ig-nav__search {
     display: none;
   }
-}
-@container (max-width: 1199px) {
-  .ig-menu {
-    margin: calc((80px + var(--item-h)) / -2) var(--menu-edge, 24px) 0 auto;
-  }
-  /* the search and cart buttons make room for the folded "menu" tile */
-  .ig-menubar__tools {
-    margin-right: 96px;
-  }
-  .ig-menu.is-stuck {
-    scale: 1;
-  }
-  .ig-menu__toggle {
+  .ig-nav__toggle {
     display: inline-flex;
   }
-  .ig-menu__list {
-    display: none;
+}
+@container (max-width: 767px) {
+  .ig-nav {
+    --nav-h: 72px;
   }
-  .ig-menu.is-open .ig-menu__list {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: max-content;
-    min-width: 220px;
-    padding: 8px;
-    border-radius: var(--r-box);
-    background: var(--ig-cream);
-    box-shadow: 0 12px 32px rgb(42 24 16 / 0.18);
-  }
-  .ig-menu.is-open .ig-menu__item::before {
-    display: none; /* no hands in the open list, they'd poke into the tile above */
+  .ig-nav__logo img {
+    height: 34px;
   }
 }

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { PencilMark, SplitBtn } from './motionui'
-import { initFooterReveal, initMenu } from './motion'
+import { initFooterReveal, initNav } from './motion'
 import { CLIENTS, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
 export type PageId =
@@ -136,6 +136,7 @@ export function Link({
   children: ReactNode
   onClick?: () => void
   'aria-current'?: 'page'
+  'aria-label'?: string
 }) {
   const { go } = useContext(Ctx)
   return (
@@ -335,13 +336,19 @@ export function ContactCta({ id = 'CTA' }: { id?: string }) {
   )
 }
 
-const NAV: { label: string; to: PageId }[] = [
-  { label: 'home', to: 'home' },
-  { label: 'sessies en workshops', to: 'workshops' },
-  { label: 'onze spellen', to: 'games' },
-  { label: 'projecten', to: 'projects' },
+// five items, short labels. home is the logo. "over ons" holds the team and the projects
+type NavLink = { label: string; to: PageId }
+const NAV: (NavLink | { label: string; sub: NavLink[] })[] = [
+  { label: 'workshops', to: 'workshops' },
+  { label: 'spellen', to: 'games' },
   { label: 'train-de-trainer', to: 'trainer' },
-  { label: 'ons team', to: 'team' },
+  {
+    label: 'over ons',
+    sub: [
+      { label: 'ons team', to: 'team' },
+      { label: 'projecten', to: 'projects' },
+    ],
+  },
   { label: 'contact', to: 'contact' },
 ]
 
@@ -394,101 +401,144 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
   )
 }
 
-// the header in two parts (src/motion/header.css): the bar with logo, search and cart scrolls away,
-// the menu tiles stay at the top (.ig-menu, sticky). narrower than 1200px the tiles fold into one
-// "menu" tile that opens the list (src/motion/menu.js)
+// the header: one bar on the content grid (src/motion/header.css). the logo is the home link, five quiet
+// items in the middle, search, cart and the one orange button on the right. after 200px it becomes a
+// compact floating bar; narrower than 1180px the items move into a full screen menu (src/motion/menu.js)
 export function Header({ active }: { active: PageId }) {
   const { go, cart, toggleCart, ann } = useContext(Ctx)
-  const [cartOpen, setCartOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [cartOpen, setCartOpen] = useState(false)
   const [stop, setStop] = useState(false)
-  const menu = useMotion<HTMLElement>(initMenu)
+  const nav = useMotion<HTMLElement>(initNav)
+  const count = cart.length
   const items = cart.map((s) => GAMES.find((g) => g.slug === s)!).filter(Boolean)
+  const current = (to: PageId) => (GROUP[active] === to ? ('page' as const) : undefined)
+  const caret = (
+    <svg className="ig-nav__caret" viewBox="0 0 10 10" aria-hidden>
+      <path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
   return (
-    <>
-      <header className="relative z-[61]">
-        {ann && <span className="absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
-        <div className="ig-menubar mx-auto max-w-[calc(1280px+8rem)] @3xl:px-16!">
-          <Link to="home" className="ig-menubar__logo shrink-0">
-            <img src="/assets/logo.png" alt="InnerGames, naar de homepage" />
+    <header ref={nav} className="ig-nav">
+      {ann && <span className="pointer-events-auto absolute left-0 top-0 z-50 bg-black px-2 py-1 text-[11px] text-white">NAV · header + navigatie</span>}
+      <div className="ig-nav__inner">
+        <div className="ig-nav__bar">
+          <Link to="home" className="ig-nav__logo" aria-label="InnerGames home">
+            <img src="/assets/logo-clear.png" alt="" width={804} height={391} />
           </Link>
-          <div className="ig-menubar__tools flex items-center gap-2">
-            <button
-              onClick={() => { setSearchOpen(!searchOpen); setCartOpen(false) }}
-              aria-expanded={searchOpen}
-              aria-label="Zoeken"
-              className={`${iconBtn} w-11 px-0!`}
-            >
+          <nav className="ig-nav__menu" aria-label="Hoofdmenu">
+            {NAV.map((n) =>
+              'sub' in n ? (
+                <div key={n.label} className="ig-nav__drop">
+                  <button type="button" className="ig-nav__item" aria-expanded="false" aria-current={n.sub.some((s) => current(s.to)) ? 'page' : undefined}>
+                    {n.label}
+                    {caret}
+                  </button>
+                  <div className="ig-nav__sub">
+                    {n.sub.map((s) => (
+                      <Link key={s.to} to={s.to} className="ig-nav__subitem" aria-current={current(s.to)}>
+                        {s.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link key={n.to} to={n.to} className="ig-nav__item" aria-current={current(n.to)}>
+                  {n.label}
+                </Link>
+              ),
+            )}
+          </nav>
+          <div className="ig-nav__tools">
+            <button type="button" onClick={() => { setSearchOpen(!searchOpen); setCartOpen(false) }} aria-expanded={searchOpen} aria-label="Zoeken" className="ig-nav__icon ig-nav__search">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
                 <circle cx="11" cy="11" r="6.5" />
                 <path d="M16 16l4.5 4.5" />
               </svg>
             </button>
-            <button
-              onClick={() => { setCartOpen(!cartOpen); setSearchOpen(false) }}
-              aria-expanded={cartOpen}
-              aria-label={`Winkelmand, ${cart.length} product${cart.length === 1 ? '' : 'en'}`}
-              className={iconBtn}
-            >
+            <button type="button" onClick={() => { setCartOpen(!cartOpen); setSearchOpen(false) }} aria-expanded={cartOpen} aria-label={`Winkelmand, ${count} product${count === 1 ? '' : 'en'}`} className="ig-nav__icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
                 <path d="M3 4h3l2.5 11h10L21 7H7" />
                 <circle cx="10" cy="20" r="1.5" />
                 <circle cx="18" cy="20" r="1.5" />
               </svg>
-              <span className={`min-w-5 rounded-full px-1.5 text-center text-xs ${cart.length ? 'bg-ig-orange text-white' : 'bg-white'}`}>{cart.length}</span>
+              <span key={count} className={`ig-nav__count ${count ? 'is-full is-bumping' : ''}`}>{count}</span>
+            </button>
+            <SplitBtn onClick={() => go('workshops')}>boek een workshop</SplitBtn>
+            <button type="button" className="ig-nav__icon ig-nav__toggle" data-nav-open aria-expanded="false" aria-controls="ig-nav-sheet">
+              menu
             </button>
           </div>
         </div>
         {searchOpen && (
-          <div className="mx-auto max-w-[calc(1280px+8rem)] px-5 pb-3 @3xl:px-16">
-            <div className="rounded-[var(--r-box)] bg-ig-cream p-3">
-              <Search autoFocus placeholder="zoek in spellen en workshops" />
-            </div>
+          <div className="pointer-events-auto mt-2 rounded-[var(--r-box)] bg-ig-cream p-3 shadow-[0_14px_34px_rgb(42_24_16/0.12)]">
+            <Search autoFocus placeholder="zoek in spellen en workshops" />
           </div>
         )}
         {cartOpen && (
-          <div className="absolute right-5 top-[72px] z-50 w-[min(20rem,calc(100%-2.5rem))] rounded-[var(--r-box)] bg-white p-4 shadow-[0_14px_36px_rgb(42_24_16/0.18)] @3xl:right-16">
-            <p className="text-sm font-medium text-neutral-600">winkelmand</p>
-            {items.length === 0 ? (
-              <p className="mt-3 text-sm">Je mand is nog leeg. Speel eerst een preview!</p>
-            ) : (
-              <ul className="mt-3 divide-y divide-ig-ink/10">
-                {items.map((g) => (
-                  <li key={g.slug} className="flex items-center justify-between gap-3 py-2 text-sm">
-                    <span className="font-medium">{g.title}</span>
-                    <button onClick={() => toggleCart(g.slug)} className="shrink-0 text-xs underline">verwijder</button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="mt-4 flex gap-2">
-              <Btn className="w-auto! flex-1 py-2!" variant="dark" disabled={items.length === 0} onClick={() => setStop(true)}>afrekenen</Btn>
-              <Btn className="w-auto! py-2!" variant="ghost" onClick={() => { setCartOpen(false); go('games') }}>verder kijken</Btn>
+          <div className="pointer-events-auto relative">
+            <div className="absolute right-0 top-2 z-50 w-[min(20rem,100%)] rounded-[var(--r-box)] bg-white p-4 shadow-[0_14px_36px_rgb(42_24_16/0.18)]">
+              <p className="text-sm font-medium text-neutral-600">winkelmand</p>
+              {items.length === 0 ? (
+                <p className="mt-3 text-sm">Je mand is nog leeg. Speel eerst een preview!</p>
+              ) : (
+                <ul className="mt-3 divide-y divide-ig-ink/10">
+                  {items.map((g) => (
+                    <li key={g.slug} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <span className="font-medium">{g.title}</span>
+                      <button onClick={() => toggleCart(g.slug)} className="shrink-0 text-xs underline">verwijder</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mt-4 flex gap-2">
+                <Btn className="w-auto! flex-1 py-2!" variant="dark" disabled={items.length === 0} onClick={() => setStop(true)}>afrekenen</Btn>
+                <Btn className="w-auto! py-2!" variant="ghost" onClick={() => { setCartOpen(false); go('games') }}>verder kijken</Btn>
+              </div>
+              {stop ? (
+                <p role="status" className="mt-3 bg-ig-yellow px-3 py-2 text-sm font-bold">hier stopt de test</p>
+              ) : (
+                <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
+              )}
             </div>
-            {stop ? (
-              <p role="status" className="mt-3 bg-ig-yellow px-3 py-2 text-sm font-bold">hier stopt de test</p>
-            ) : (
-              <p className="mt-3 text-xs text-neutral-500">prototype · afrekenen verloopt straks via WooCommerce</p>
-            )}
           </div>
         )}
-      </header>
-      <nav ref={menu} className="ig-menu ig-menu--many" aria-label="Hoofdmenu">
-        <button type="button" className="ig-menu__toggle ig-menu__item" aria-expanded="false">
-          menu
-        </button>
-        <div className="ig-menu__list">
-          {NAV.map((n) => (
-            <Link key={n.to} to={n.to} className="ig-menu__item" aria-current={GROUP[active] === n.to ? 'page' : undefined}>
+      </div>
+
+      {/* the full screen menu for phones and small screens */}
+      <div id="ig-nav-sheet" className="ig-nav__sheet" role="dialog" aria-label="Menu">
+        <div className="ig-nav__sheet-top">
+          <Link to="home" aria-label="InnerGames home">
+            <img src="/assets/logo-clear.png" alt="" width={804} height={391} />
+          </Link>
+          <button type="button" className="ig-nav__icon" data-nav-close>
+            sluit
+          </button>
+        </div>
+        <div className="mb-4">
+          <Search placeholder="zoek in spellen en workshops" />
+        </div>
+        {NAV.map((n) =>
+          'sub' in n ? (
+            <div key={n.label}>
+              <p className="ig-nav__sheet-label">{n.label}</p>
+              {n.sub.map((s) => (
+                <Link key={s.to} to={s.to} className="ig-nav__sheet-item ig-nav__sheet-sub" aria-current={current(s.to)}>
+                  {s.label}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Link key={n.to} to={n.to} className="ig-nav__sheet-item" aria-current={current(n.to)}>
               {n.label}
             </Link>
-          ))}
-          <span className="ig-menu__cta">
-            <SplitBtn onClick={() => go('workshops')}>boek een workshop</SplitBtn>
-          </span>
+          ),
+        )}
+        <div className="ig-nav__sheet-cta">
+          <SplitBtn onClick={() => go('workshops')}>boek een workshop</SplitBtn>
         </div>
-      </nav>
-    </>
+      </div>
+    </header>
   )
 }
 

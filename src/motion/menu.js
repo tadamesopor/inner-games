@@ -1,5 +1,8 @@
-// .ig-menu: knows when the tiles float over the page (.is-stuck: shadow, 94%), and opens and closes
-// the folded list on narrow screens. works inside a scrolling box (the lab demo) and on a normal page.
+// .ig-nav: makes the bar compact after 200px of scrolling (.is-compact), opens and closes the
+// "over ons" dropdown, and the full screen menu on small screens (.is-open). Escape closes everything.
+// works on a normal page and inside a scrolling box (the motion lab demo).
+
+const COMPACT_AT = 200
 
 function scrollParent(el) {
   for (let p = el.parentElement; p; p = p.parentElement) {
@@ -9,33 +12,65 @@ function scrollParent(el) {
   return null // the page itself
 }
 
-export function initMenu(nav) {
-  // an empty marker where the menu would normally be; once it's scrolled past the top, the menu floats
-  const sentinel = document.createElement('div')
-  sentinel.setAttribute('aria-hidden', 'true')
-  sentinel.style.cssText = 'height:1px;margin-bottom:-1px'
-  nav.before(sentinel)
-  const io = new IntersectionObserver(
-    ([e]) => nav.classList.toggle('is-stuck', !e.isIntersecting && e.boundingClientRect.top < (e.rootBounds?.top ?? 0) + 12),
-    { root: scrollParent(nav), rootMargin: '-12px 0px 0px 0px' },
-  )
-  io.observe(sentinel)
+export function initNav(nav) {
+  const box = scrollParent(nav)
+  const target = box || window
+  const onScroll = () => nav.classList.toggle('is-compact', (box ? box.scrollTop : window.scrollY) > COMPACT_AT)
 
-  const toggle = nav.querySelector('.ig-menu__toggle')
+  const drops = [...nav.querySelectorAll('.ig-nav__drop')]
+  const setDrop = (drop, open) => {
+    drop.classList.toggle('is-open', open)
+    drop.querySelector(':scope > button')?.setAttribute('aria-expanded', String(open))
+  }
+  const closeDrops = () => drops.forEach((d) => setDrop(d, false))
+
+  const opener = nav.querySelector('[data-nav-open]')
   const setOpen = (open) => {
     nav.classList.toggle('is-open', open)
-    toggle?.setAttribute('aria-expanded', String(open))
+    opener?.setAttribute('aria-expanded', String(open))
+    if (open) nav.querySelector('.ig-nav__sheet [data-nav-close]')?.focus()
+    else if (nav.contains(document.activeElement)) opener?.focus()
   }
-  const onToggle = () => setOpen(!nav.classList.contains('is-open'))
-  const onKey = (e) => e.key === 'Escape' && setOpen(false)
-  toggle?.addEventListener('click', onToggle)
-  nav.addEventListener('keydown', onKey)
+
+  const onClick = (e) => {
+    const t = e.target
+    const dropBtn = t.closest('.ig-nav__drop > button')
+    if (dropBtn) {
+      const drop = dropBtn.parentElement
+      const open = !drop.classList.contains('is-open')
+      closeDrops()
+      setDrop(drop, open)
+      return
+    }
+    if (t.closest('[data-nav-open]')) return setOpen(true)
+    if (t.closest('[data-nav-close]')) return setOpen(false)
+    // a link in the dropdown or the full screen menu: close them, the page changes underneath
+    if (t.closest('.ig-nav__sub a, .ig-nav__sheet a, .ig-nav__sheet .ig-btn-split')) {
+      closeDrops()
+      nav.classList.remove('is-open')
+    }
+  }
+  const onDocClick = (e) => {
+    if (!e.target.closest?.('.ig-nav__drop')) closeDrops()
+  }
+  const onKey = (e) => {
+    if (e.key !== 'Escape') return
+    closeDrops()
+    if (nav.classList.contains('is-open')) setOpen(false)
+  }
+
+  nav.addEventListener('click', onClick)
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKey)
+  target.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
 
   return () => {
-    io.disconnect()
-    sentinel.remove()
-    toggle?.removeEventListener('click', onToggle)
-    nav.removeEventListener('keydown', onKey)
-    nav.classList.remove('is-stuck', 'is-open')
+    nav.removeEventListener('click', onClick)
+    document.removeEventListener('click', onDocClick)
+    document.removeEventListener('keydown', onKey)
+    target.removeEventListener('scroll', onScroll)
+    nav.classList.remove('is-compact', 'is-open')
+    closeDrops()
   }
 }
