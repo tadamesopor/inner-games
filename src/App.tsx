@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Ctx, Footer, logEvent, type Cart, type PageId } from './wf'
 import TestMode from './test'
+import { applyMeta, fromUrl, metaFor, toUrl } from './seo'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
 import { igNavigate, initCards } from './motion'
 import { Contact, Legal, Home, Projects, Trainer, Workshop, Workshops } from './pages'
@@ -29,8 +30,10 @@ const PAGES: Record<PageId, () => React.ReactNode> = {
 }
 
 export default function App() {
-  const [page, setPage] = useState<PageId>('home')
-  const [sel, setSel] = useState('')
+  // the page comes from the url, so a link like /workshops/energiek-team opens that page (and a reload stays)
+  const start = fromUrl(location.pathname, location.search)
+  const [page, setPage] = useState<PageId>(start.page)
+  const [sel, setSel] = useState(start.sel)
   // the cart survives page changes and a reload (localStorage). a new test session empties it
   const [cart, setCart] = useState<Cart>(() => {
     try {
@@ -85,6 +88,23 @@ export default function App() {
     return view.current ? initCards(view.current) : undefined
   }, [page, sel])
 
+  // title, description and Open Graph tags per page (src/seo.ts)
+  useEffect(() => {
+    if (!lab) applyMeta(metaFor(page, sel), toUrl(page, sel))
+  }, [page, sel, lab])
+
+  // the back and forward buttons of the browser
+  useEffect(() => {
+    const onPop = () => {
+      if (isLab()) return
+      const r = fromUrl(location.pathname, location.search)
+      setPage(r.page)
+      setSel(r.sel)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
   // the lab's own menu uses #fx-... links, so only ever switch the lab on here, never off
   useEffect(() => {
     const onHash = () => isLab() && setLab(true)
@@ -104,11 +124,14 @@ export default function App() {
   // slow the tasks down. reduced motion: a short fade. the first page load has no transition
   const go = (p: PageId, id = '') => {
     setCartOpen(false)
-    const update = () =>
+    const update = () => {
+      const url = toUrl(p, id)
+      if (url !== location.pathname + location.search) history.pushState(null, '', url)
       flushSync(() => {
         setPage(p)
         setSel(id)
       })
+    }
     igNavigate(update, { mode: tasks ? 'short' : 'full', fadeTarget: view.current ?? undefined })
   }
   const addToCart = (slug: string, n: number) => {

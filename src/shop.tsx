@@ -73,6 +73,7 @@ export function Games() {
         tone="orange"
       />
       <Section id="B" label="shop-overzicht" className="bg-white" note="WooCommerce-grid · filter · preview-label">
+        <h2 className="sr-only">alle spellen</h2>
         <div className="mb-8 flex flex-wrap items-center gap-2" role="tablist" aria-label="Filter op doelgroep">
           {(['alle', ...AUDS] as const).map((t) => (
             <button
@@ -205,7 +206,7 @@ export function Game() {
               {g.gallery.map((p, k) => (
                 <button key={k} onClick={() => setImg(k)} aria-label={`Foto ${k + 1}`} className={`overflow-hidden rounded-[8px] ${img === k ? 'ring-3 ring-ig-orange' : 'ring-1 ring-ig-ink/12'}`}>
                   {/* all thumbnails the same: square, the same crop, the same white background */}
-                  <Photo src={p} alt="" sizes="80px" className="aspect-square w-20 bg-white!" />
+                  <Photo src={p} alt={ALT[p] ?? ''} sizes="80px" className="aspect-square w-20 bg-white!" />
                 </button>
               ))}
             </div>

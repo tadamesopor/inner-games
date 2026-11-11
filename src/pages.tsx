@@ -306,6 +306,7 @@ export function Workshops() {
         tone="cream"
       />
       <Section id="B" label="overzicht + filter" className="bg-white" note="filter op doelgroep · kaart → detailpagina">
+        <h2 className="sr-only">alle workshops</h2>
         <div className="mb-8 flex flex-wrap items-center gap-2" role="tablist" aria-label="Filter op doelgroep">
           {TABS.map((t) => (
             <button
@@ -534,7 +535,7 @@ export function Projects() {
           {PROJECTS.map((p) => (
             <article key={p.title} className="ig-card__body flex flex-col rounded-[var(--r-box)] bg-white p-[10px] ring-1 ring-ig-ink/12">
               <div className="ig-card__media">
-                <Photo src={p.photo} alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
+                <Photo src={p.photo} alt={ALT[p.photo] ?? ''} sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
               </div>
               <div className="flex flex-1 flex-col gap-3 px-2 pb-2 pt-4">
                 <div className="flex flex-wrap gap-1.5">

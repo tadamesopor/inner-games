@@ -42,6 +42,11 @@ export const ALT: Record<string, string> = {
   [img('games/impact-imperium')]: 'Spelbord en kaarten van Impact Imperium',
   [img('games/sociality')]: 'Speldoos en kaarten van Sociality',
   [img('games/kansen-keren')]: 'Speldozen van Kansen Keren',
+  [img('projects/kansenkeren-senior')]: 'Een groep test een nieuw bordspel aan een lange tafel',
+  [img('projects/memorystory-app')]: 'Drie mensen overleggen aan tafel, achter hen een banier van InnerGames',
+  [img('projects/ready-to-board')]: 'Mensen werken aan een tafel vol gekleurde briefjes en kaarten',
+  [img('projects/sociality-cases')]: 'Groepjes spelen aan tafels met speldozen en kaarten',
+  [img('projects/wisselwerk')]: 'Twee mannen lachen aan een tafel met een tablet',
 }
 
 export const AUD_LABEL: Record<Aud, string> = { onderwijs: 'onderwijs', organisaties: 'organisaties', zorg: 'zorg', trainers: 'trainers' }
