@@ -67,7 +67,7 @@ const PILLARS = [
 function MemberCard({ m }: { m: Member }) {
   const [hover, setHover] = useState(false)
   return (
-    <article onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} className="ig-card ig-card--white ig-card--outline">
+    <article onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} className="ig-card">
       <div className="ig-card__body flex flex-col">
       <div className={`ig-card__media relative aspect-[4/3] transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
         {m.photo && (
@@ -186,10 +186,12 @@ export function Team() {
           </div>
           <div className="grid gap-4 @3xl:grid-cols-3">
             {PILLARS.map(([t, d], i) => (
-              <div key={t} className="rounded-[var(--r-box)] bg-white p-5">
-                <p className="text-3xl text-ig-orange">0{i + 1}</p>
-                <h3 className="mt-3 text-2xl font-semibold lowercase">{t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-700">{d}</p>
+              <div key={t} className="ig-card ig-card--still ig-card--text">
+                <div className="ig-card__body">
+                  <p className="text-3xl text-[#C84413]">0{i + 1}</p>
+                  <h3 className="ig-card__title mt-3">{t}</h3>
+                  <p className="ig-card__text mt-2">{d}</p>
+                </div>
               </div>
             ))}
           </div>

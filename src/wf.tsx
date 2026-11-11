@@ -43,11 +43,8 @@ export function logEvent(type: string, detail = '') {
 
 export const Ctx = createContext<CtxT>({ ann: false, footer: 'hand', hero: 'nieuw', sel: '', cart: {}, go: () => {}, addToCart: () => {}, setQty: () => {}, openCart: () => {} })
 
-// calm cards: white, a thin soft line, no black border or offset shadow (brand rule).
-// the workshop and game cards are .ig-card (the hand pops up on hover), see src/motion/cards.css
-const SOFT = ' rounded-[var(--r-box)] bg-white ring-1 ring-ig-ink/12'
-export const cardStatic = `${SOFT} overflow-hidden`
-export const card = `${cardStatic} transition duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgb(42_24_16/0.12)]`
+// every card is .ig-card (src/motion/cards.css): white, a line and an offset shadow in a darker tint of the
+// section it sits on. a card that's a link gets the hand on hover; .ig-card--still for cards that aren't
 
 export function Section({
   id,

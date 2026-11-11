@@ -1,15 +1,19 @@
-/* .ig-card: on hover the InnerGames hand pops up from behind the card, like someone raising a hand
-   in a workshop ("kies mij"). the card tilts a little and lifts. one wave, never a loop.
-   the hand has exactly the card's colour, so it looks like a part of the card that pops up.
+/* .ig-card: the one card. white, a 1.5px line and a solid offset shadow (6px down, 6px right) in a darker
+   tint of the surface the card sits on, so it looks a little 3D without the black version. the tint comes
+   from the section: --ig-edge (tokens.css, per background colour).
+   hover: the card lifts (3px up-left, the shadow grows to 9px) and the InnerGames hand pops up from behind
+   it, like someone raising a hand in a workshop ("kies mij"). one wave, never a loop.
    the hand is the wrapper's ::before with the logo hand as a mask, so in Enfold it's only css classes:
-   <div class="ig-card ig-card--cream"><div class="ig-card__body"><div class="ig-card__media"><img></div>...</div></div>
-   a card on a background of its own colour gets .ig-card--outline: a 1.5px line around card and hand.
+   <div class="ig-card"><div class="ig-card__body"><div class="ig-card__media"><img></div>...</div></div>
+   .ig-card--hot (workshop cards): on hover the card turns dark orange with white text.
+   .ig-card--text: a card with only text, more padding.
+   .ig-card--still: a card that isn't a link: no hand, no lift.
    cards.js adds a tiny random tilt and position per card, and the touch-screen version. */
 
 .ig-card {
-  --card-bg: var(--ig-cream);
-  --hand-color: var(--card-bg);
-  --outline: color-mix(in srgb, var(--card-bg) 72%, var(--ig-ink));
+  --edge: var(--ig-edge, #f0dcc0);
+  --card-bg: #fff;
+  --hand-color: #fde7b0; /* a white hand would disappear on cream: the light yellow of the menu */
   --hand-size: 84px; /* the hand drawing is about 75px tall at this width */
   --hand-x: 0px;
   --hand-tilt: 0deg;
@@ -17,52 +21,35 @@
   position: relative;
   isolation: isolate;
 }
-.ig-card--orange {
-  --card-bg: var(--ig-orange);
-}
-.ig-card--yellow {
-  --card-bg: var(--ig-yellow);
-}
-/* .ig-card--hot (the workshop cards): on hover the card turns dark orange with white text, and the hand
-   that pops up is the brand orange. #C84413 instead of #EA561F, so the white text passes AA (4.8:1) */
-@media (hover: hover) and (pointer: fine) {
-  .ig-card--hot:hover {
-    --hand-color: var(--ig-orange);
-  }
-  .ig-card--hot:hover .ig-card__body {
-    background: var(--ig-orange-text);
-    box-shadow: none;
-    transition:
-      transform 200ms var(--ease-out),
-      background-color var(--dur-ui) var(--ease-soft);
-  }
-  .ig-card--hot:hover .ig-card__body :is(h3, p, span, button, dd, dt) {
-    color: #fff;
-    border-color: #fff;
-  }
-  .ig-card--hot:hover .ig-card__body .ig-tag {
-    color: var(--ig-ink);
-  }
-}
-.ig-card--hot .ig-card__body {
+
+.ig-card__body {
+  position: relative;
+  height: 100%;
+  padding: 10px;
+  border: 1.5px solid var(--edge);
+  border-radius: var(--r-box);
+  background: var(--card-bg);
+  box-shadow: 6px 6px 0 var(--edge);
+  /* on mouse leave the card waits until the hand has sunk back */
   transition:
-    transform 200ms var(--ease-out) 140ms,
+    translate 200ms var(--ease-out) 140ms,
+    box-shadow 200ms var(--ease-out) 140ms,
     background-color var(--dur-ui) var(--ease-soft);
 }
-
-/* a white card: a white hand would disappear on cream, so the hand is the light yellow of the menu */
-.ig-card--white {
-  --card-bg: #fff;
-  --hand-color: #fde7b0;
+.ig-card--text .ig-card__body {
+  padding: 24px;
 }
-.ig-card--white.ig-card--outline::after {
-  display: none; /* the yellow hand needs no outline */
+.ig-card__media {
+  overflow: hidden;
+  border-radius: 8px;
+}
+.ig-card__media img {
+  aspect-ratio: 4 / 3;
+  transition: scale 300ms var(--ease-out);
 }
 
-/* the hand, hidden behind the top edge, about 20px in from the left corner.
-   ::after is only the outline of the same hand, on top of it, only shown with .ig-card--outline */
-.ig-card::before,
-.ig-card--outline::after {
+/* the hand, hidden behind the top edge, about 20px in from the left corner */
+.ig-card:not(.ig-card--still)::before {
   content: '';
   position: absolute;
   z-index: -1;
@@ -82,43 +69,18 @@
     translate 200ms var(--ease-in),
     scale 200ms var(--ease-in);
 }
-.ig-card--outline::after {
-  background: var(--outline);
-  -webkit-mask-image: url('/assets/brand/innergames-hand-outline.svg');
-  mask-image: url('/assets/brand/innergames-hand-outline.svg');
-}
-.ig-card--outline .ig-card__body {
-  box-shadow: 0 0 0 1.5px var(--outline);
-}
-
-.ig-card__body {
-  position: relative;
-  height: 100%;
-  padding: 10px;
-  border-radius: var(--r-box);
-  background: var(--card-bg);
-  /* on mouse leave the card waits until the hand has sunk back */
-  transition: transform 200ms var(--ease-out) 140ms;
-}
-.ig-card__media {
-  overflow: hidden;
-  border-radius: 8px;
-}
-.ig-card__media img {
-  transition: scale 300ms var(--ease-out);
-}
 
 /* hover with a mouse */
 @media (hover: hover) and (pointer: fine) {
-  .ig-card:hover .ig-card__body {
-    transform: translateY(-6px) rotate(-2deg);
+  .ig-card:not(.ig-card--still):hover .ig-card__body {
+    translate: -3px -3px;
+    box-shadow: 9px 9px 0 var(--edge);
     transition-delay: 0ms;
   }
-  .ig-card:hover .ig-card__media img {
+  .ig-card:not(.ig-card--still):hover .ig-card__media img {
     scale: 1.03;
   }
-  .ig-card:hover::before,
-  .ig-card--outline:hover::after {
+  .ig-card:not(.ig-card--still):hover::before {
     translate: 0 var(--hand-up);
     scale: 1;
     transition:
@@ -126,10 +88,22 @@
       scale 380ms var(--ease-spring) 60ms;
     animation: ig-hand-wave 500ms var(--ease-soft) 460ms;
   }
+  /* the workshop cards: dark orange with white text, and the hand that pops up is the brand orange.
+     #C84413 instead of #EA561F, so the white text passes AA (4.8:1) */
+  .ig-card--hot:hover {
+    --hand-color: var(--ig-orange);
+    --card-bg: var(--ig-orange-text);
+  }
+  .ig-card--hot:hover .ig-card__body :is(h3, p, span, button, dd, dt) {
+    color: #fff;
+    border-color: #fff;
+  }
+  .ig-card--hot:hover .ig-card__body .ig-tag {
+    color: var(--ig-ink);
+  }
 }
 /* touch screens: cards.js adds .is-greeting once, when the card scrolls into view */
-.ig-card.is-greeting::before,
-.ig-card--outline.is-greeting::after {
+.ig-card.is-greeting::before {
   translate: 0 var(--hand-up);
   scale: 1;
   transition:
@@ -159,16 +133,13 @@
 }
 
 /* reduced motion: no pop and no wave, the hand is simply there at its end position on hover */
-.ig-reduced .ig-card::before,
-.ig-reduced .ig-card--outline::after {
+.ig-reduced .ig-card::before {
   translate: 0 var(--hand-up);
   scale: 1;
   opacity: 0;
 }
 .ig-reduced .ig-card:hover::before,
-.ig-reduced .ig-card.is-greeting::before,
-.ig-reduced .ig-card--outline:hover::after,
-.ig-reduced .ig-card--outline.is-greeting::after {
+.ig-reduced .ig-card.is-greeting::before {
   opacity: 1;
 }
 
@@ -207,7 +178,4 @@
   font-size: 14px;
   line-height: 1.4;
   color: rgb(42 24 16 / 0.72);
-}
-.ig-card__media img {
-  aspect-ratio: 4 / 3;
 }

@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type React
 import { initBoxscene, initHeroTable, initHeroWaves, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { AudIcon, LEGAL, Todo, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
+import { AudIcon, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -17,7 +17,7 @@ function AudTags({ aud }: { aud: Aud[] }) {
 function WorkshopCard({ w }: { w: WS }) {
   const { go } = useContext(Ctx)
   return (
-    <article className="ig-card ig-card--white ig-card--outline ig-card--hot cursor-pointer" onClick={() => go('workshop', w.slug)}>
+    <article className="ig-card ig-card--hot cursor-pointer" onClick={() => go('workshop', w.slug)}>
       <div className="ig-card__body flex flex-col">
       <div className="ig-card__media">
         <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 300px, 100vw" className="aspect-[4/3] w-full" />
@@ -181,7 +181,7 @@ export function Home() {
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
         <div className="ig-grid mt-2">
           {audCards.map((c) => (
-            <div key={c.key} className="ig-card ig-card--white ig-card--outline">
+            <div key={c.key} className="ig-card">
               <div className="ig-card__body flex flex-col">
                 <div className="ig-card__media">
                   <Photo src={c.photo} alt="" sizes="(min-width: 1024px) 300px, 100vw" className="aspect-[4/3] w-full" />
@@ -220,10 +220,12 @@ export function Home() {
           </div>
           <ol className="grid gap-5 @3xl:grid-cols-3">
             {HOW.map(([t, d], i) => (
-              <li key={t} className="rounded-[var(--r-box)] bg-white p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ig-orange text-lg font-bold text-ig-ink">{i + 1}</span>
-                <h3 className="mt-4 text-xl font-bold leading-tight">{t}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+              <li key={t} className="ig-card ig-card--still ig-card--text">
+                <div className="ig-card__body">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ig-orange text-lg font-bold text-ig-ink">{i + 1}</span>
+                  <h3 className="ig-card__title mt-4">{t}</h3>
+                  <p className="ig-card__text mt-2">{d}</p>
+                </div>
               </li>
             ))}
           </ol>
@@ -266,15 +268,17 @@ export function Home() {
           </div>
           <div className="flex gap-4">
             {MEMBERS.slice(0, 3).map((m) => (
-              <div key={m.first} className="flex-1 overflow-hidden rounded-2xl bg-white">
-                <div className="aspect-[3/4] overflow-hidden">
+              <div key={m.first} className="ig-card ig-card--still flex-1">
+                <div className="ig-card__body">
+                <div className="ig-card__media aspect-[3/4]">
                   {m.photo ? (
                     <Photo src={m.photo} alt={m.first} sizes="200px" className="h-full w-full" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-ig-cream text-xs text-neutral-500">foto volgt</div>
                   )}
                 </div>
-                <p className="px-3 py-2 text-sm font-semibold">{m.first}</p>
+                <p className="px-1 pt-2 text-sm font-semibold">{m.first}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -386,13 +390,15 @@ export function Workshop() {
             <H2 className="mb-6">waar gaat het over?</H2>
             {w.story.map((p, i) => <p key={i}>{p}</p>)}
           </div>
-          <aside className={`${cardStatic} self-start p-6`}>
-            <p className="text-sm font-medium text-ig-orange">voor wie</p>
-            <ul className="mt-4 space-y-3">
-              {w.who.map((x) => (
-                <li key={x} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{x}</li>
-              ))}
-            </ul>
+          <aside className="ig-card ig-card--still ig-card--text self-start">
+            <div className="ig-card__body">
+              <p className="text-sm font-medium text-[#C84413]">voor wie</p>
+              <ul className="mt-4 space-y-3">
+                {w.who.map((x) => (
+                  <li key={x} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{x}</li>
+                ))}
+              </ul>
+            </div>
           </aside>
         </div>
       </Section>
@@ -419,10 +425,12 @@ export function Workshop() {
         <H2>wat levert het op?</H2>
         <div className="ig-grid ig-grid--still mt-10">
           {w.gets.map(([t, d], i) => (
-            <div key={t} className={`${cardStatic} bg-ig-cream p-6 shadow-none`}>
-              <p className="text-3xl text-ig-orange">0{i + 1}</p>
-              <h3 className="ig-card__title mt-3">{t}</h3>
-              <p className="ig-card__text mt-2">{d}</p>
+            <div key={t} className="ig-card ig-card--still ig-card--text">
+              <div className="ig-card__body">
+                <p className="text-3xl text-[#C84413]">0{i + 1}</p>
+                <h3 className="ig-card__title mt-3">{t}</h3>
+                <p className="ig-card__text mt-2">{d}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -456,10 +464,12 @@ export function Workshop() {
             <h3 className="text-2xl font-semibold">{game ? 'speel het zelf' : 'bij elkaar horend'}</h3>
             <div className="mt-5 space-y-4">
               {game ? (
-                <button onClick={() => go('game', game.slug)} className={`${card} flex w-full items-center gap-4 p-3 text-left`}>
-                  <Photo src={game.photo} alt="" sizes="80px" contain className="h-20 w-20 shrink-0 rounded-xl" />
-                  <span className="font-semibold">{game.title}</span>
-                  <span className="ml-auto pr-2">→</span>
+                <button onClick={() => go('game', game.slug)} className="ig-card mt-12 block w-full text-left">
+                  <span className="ig-card__body flex items-center gap-4">
+                    <Photo src={game.photo} alt="" sizes="80px" contain className="h-20 w-20 shrink-0 rounded-[8px]" />
+                    <span className="ig-card__title">{game.title}</span>
+                    <span className="ml-auto pr-2">→</span>
+                  </span>
                 </button>
               ) : (
                 <p className="text-[15px] text-neutral-700">Voor deze workshop is geen apart spel. Bekijk onze andere spellen.</p>
@@ -534,7 +544,8 @@ export function Projects() {
         <H2>waar we nu aan werken</H2>
         <div className="ig-grid ig-grid--still mt-10">
           {PROJECTS.map((p) => (
-            <article key={p.title} className="ig-card__body flex flex-col rounded-[var(--r-box)] bg-white p-[10px] ring-1 ring-ig-ink/12">
+            <article key={p.title} className="ig-card ig-card--still">
+              <div className="ig-card__body flex flex-col">
               <div className="ig-card__media">
                 <Photo src={p.photo} alt={ALT[p.photo] ?? ''} sizes="(min-width: 1024px) 300px, 100vw" className="aspect-[4/3] w-full" />
               </div>
@@ -545,6 +556,7 @@ export function Projects() {
                 <h3 className="ig-card__title">{p.title}</h3>
                 {p.with && <p className="ig-card__meta font-semibold text-[#C84413]!">met {p.with}</p>}
                 <p className="ig-card__text">{p.text}</p>
+              </div>
               </div>
             </article>
           ))}
@@ -599,9 +611,11 @@ export function Trainer() {
             ['duur', '8 uur'],
             ['opbouw', '4 uur theorie (individueel of in groepen tot 10) en 4 uur praktijk, begeleid in je eigen setting'],
           ].map(([k, v]) => (
-            <div key={k} className="rounded-2xl bg-ig-cream p-6">
-              <p className="text-sm text-neutral-600">{k}</p>
-              <p className={`mt-1 ${k === 'opbouw' ? 'text-base' : 'text-3xl'} font-semibold leading-snug`}>{v}</p>
+            <div key={k} className="ig-card ig-card--still ig-card--text">
+              <div className="ig-card__body">
+                <p className="ig-card__meta">{k}</p>
+                <p className={`mt-1 ${k === 'opbouw' ? 'text-base' : 'text-3xl'} font-semibold leading-snug`}>{v}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -611,22 +625,26 @@ export function Trainer() {
         <H2>zo word je spelleider</H2>
         <div className="ig-grid ig-grid--still mt-10">
           {TRAIN.map(([t, d], i) => (
-            <div key={t} className={`${cardStatic} p-6`}>
-              <p className="text-3xl text-ig-orange">0{i + 1}</p>
-              <h3 className="ig-card__title mt-3">{t}</h3>
-              <p className="ig-card__text mt-2">{d}</p>
+            <div key={t} className="ig-card ig-card--still ig-card--text">
+              <div className="ig-card__body">
+                <p className="text-3xl text-[#C84413]">0{i + 1}</p>
+                <h3 className="ig-card__title mt-3">{t}</h3>
+                <p className="ig-card__text mt-2">{d}</p>
+              </div>
             </div>
           ))}
         </div>
       </Section>
       <Section id="D" label="welke spellen leer je" className="bg-white" note="vier spellen">
         <H2>welke spellen leer je</H2>
-        <div className="ig-grid ig-grid--still mt-10">
+        <div className="ig-grid">
           {TRAIN_GAMES.map(([t, d, kind, slug]) => (
-            <button key={t} onClick={() => go(kind, slug)} className={`${card} p-6 text-left`}>
-              <h3 className="ig-card__title">{t}</h3>
-              <p className="ig-card__text mt-2">{d}</p>
-              <p className="mt-4 text-sm font-semibold text-[#C84413]">meer lezen →</p>
+            <button key={t} onClick={() => go(kind, slug)} className="ig-card ig-card--text text-left">
+              <span className="ig-card__body block">
+                <h3 className="ig-card__title">{t}</h3>
+                <p className="ig-card__text mt-2">{d}</p>
+                <p className="mt-4 text-sm font-semibold text-[#C84413]">meer lezen →</p>
+              </span>
             </button>
           ))}
         </div>
@@ -708,7 +726,8 @@ export function Contact() {
               <p className="mt-4 text-sm text-neutral-600">(dit is een test, er is niets verzonden)</p>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 rounded-[var(--r-box)] bg-white p-6 ring-1 ring-ig-ink/12 @3xl:p-8">
+            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="ig-card ig-card--still ig-card--text self-start">
+              <div className="ig-card__body space-y-4">
               {/* naam and organisatie side by side, so the whole form fits on one desktop screen */}
               <div className="grid gap-4 @xl:grid-cols-2">
                 <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
@@ -729,6 +748,7 @@ export function Contact() {
               </label>
               <label className="block text-sm font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
               <Btn split type="submit" variant="dark">verstuur</Btn>
+              </div>
             </form>
           )}
         </div>

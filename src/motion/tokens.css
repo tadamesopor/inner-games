@@ -64,3 +64,22 @@
 .ig-paused::after {
   animation-play-state: paused !important;
 }
+
+/* the edge of a card (its line and offset shadow): a darker tint of the surface it sits on, never black.
+   a section's background class sets it, the cards inside pick it up (cards.css) */
+.bg-white,
+.ig-on-white {
+  --ig-edge: #f0dcc0;
+}
+.bg-ig-cream,
+.ig-on-cream {
+  --ig-edge: #e8cfa8;
+}
+.bg-ig-yellow,
+.ig-on-yellow {
+  --ig-edge: #e0a20e;
+}
+.bg-ig-orange,
+.ig-on-orange {
+  --ig-edge: #c84413;
+}

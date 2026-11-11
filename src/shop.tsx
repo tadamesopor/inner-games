@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, btnLink, card, cardStatic, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { Btn, btnLink, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
 /** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
@@ -20,7 +20,7 @@ function GameCard({ g }: { g: G }) {
     return () => clearTimeout(t)
   }, [added])
   return (
-    <article className="ig-card ig-card--white ig-card--outline cursor-pointer" onClick={() => go('game', g.slug)}>
+    <article className="ig-card cursor-pointer" onClick={() => go('game', g.slug)}>
       <div className="ig-card__body flex flex-col">
       <div className="ig-card__media relative">
         <Photo src={g.photo} alt={ALT[g.photo] ?? g.title} sizes="(min-width: 1024px) 300px, 100vw" contain className="aspect-[4/3] w-full" />
@@ -292,11 +292,13 @@ export function Game() {
             <H2 className="mb-6">over dit spel</H2>
             {g.story.map((p, i) => <p key={i}>{p}</p>)}
           </div>
-          <aside className={`${cardStatic} self-start bg-ig-cream p-6 shadow-none`}>
-            <p className="text-sm font-medium text-ig-orange">wat zit er in de doos</p>
-            <ul className="mt-4 space-y-3">
-              {g.contents.map((c) => <li key={c} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{c}</li>)}
-            </ul>
+          <aside className="ig-card ig-card--still ig-card--text self-start">
+            <div className="ig-card__body">
+              <p className="text-sm font-medium text-[#C84413]">wat zit er in de doos</p>
+              <ul className="mt-4 space-y-3">
+                {g.contents.map((c) => <li key={c} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{c}</li>)}
+              </ul>
+            </div>
           </aside>
         </div>
       </Section>
@@ -307,9 +309,11 @@ export function Game() {
         {g.previewKey ? (
           <Teaser game={g} />
         ) : (
-          <div className={`${cardStatic} p-8 text-ig-ink`}>
-            <p className="text-xl font-semibold">Voor dit spel is nog geen preview. Het wordt herzien.</p>
-            <Btn variant="dark" className="mt-5" onClick={() => go('contact')}>laat het me weten</Btn>
+          <div className="ig-card ig-card--still ig-card--text text-ig-ink">
+            <div className="ig-card__body">
+              <p className="text-xl font-semibold">Voor dit spel is nog geen preview. Het wordt herzien.</p>
+              <Btn variant="dark" className="mt-5" onClick={() => go('contact')}>laat het me weten</Btn>
+            </div>
           </div>
         )}
       </Section>
@@ -318,12 +322,14 @@ export function Game() {
         <Section id="D" label="workshops bij dit spel" className="bg-white" note="echte relatie spel ↔ workshop">
           <div id="workshops-bij-spel" className="scroll-mt-24">
             <H2 className="mb-8">workshops met dit spel</H2>
-            <div className="ig-grid ig-grid--still">
+            <div className="ig-grid">
               {matching.map((w) => (
-                <button key={w.slug} onClick={() => go('workshop', w.slug)} className={`${card} p-5 text-left`}>
-                  <h3 className="ig-card__title">{w.title}</h3>
-                  <p className="ig-card__meta mt-1">{w.duration} · {w.price}</p>
-                  <p className="mt-3 text-sm font-semibold text-[#C84413]">bekijk de workshop →</p>
+                <button key={w.slug} onClick={() => go('workshop', w.slug)} className="ig-card ig-card--text text-left">
+                  <span className="ig-card__body block">
+                    <h3 className="ig-card__title">{w.title}</h3>
+                    <p className="ig-card__meta mt-1">{w.duration} · {w.price}</p>
+                    <p className="mt-3 text-sm font-semibold text-[#C84413]">bekijk de workshop →</p>
+                  </span>
                 </button>
               ))}
             </div>
