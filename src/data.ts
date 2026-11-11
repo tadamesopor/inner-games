@@ -468,10 +468,10 @@ export const PARTNERS = [
 ]
 
 export const PROJECTS = [
-  { title: 'KansenKeren Senior', text: 'Bordspel over ongelijke kansen bij ouderen, met buro KAN.', when: 'verwacht december 2026', photo: img('projects/kansenkeren-senior') },
+  { title: 'KansenKeren Senior', text: 'Bordspel over ongelijke kansen bij ouderen, met buro KAN.', with: 'buro KAN', when: 'verwacht december 2026', photo: img('projects/kansenkeren-senior') },
   { title: 'MemoryStory app', text: 'Deel tekeningen, geluid, foto’s en video op een digibord en speel samen. Voor klassen, teams en zorg.', when: 'verwacht eind 2026', photo: img('projects/memorystory-app') },
   { title: 'Ready to Board', text: 'Een speelse gesprekstool voor sollicitatie en onboarding, vooral voor neurodivergente mensen.', when: 'bèta', photo: img('projects/ready-to-board') },
-  { title: 'Sociality cases', text: 'Nieuwe praktijkcasussen, gemaakt met studenten sociaal werk van de HAN.', when: 'in ontwikkeling', photo: img('projects/sociality-cases') },
+  { title: 'Sociality cases', text: 'Nieuwe praktijkcasussen, gemaakt met studenten sociaal werk van de HAN.', with: 'studenten sociaal werk van de HAN', when: 'in ontwikkeling', photo: img('projects/sociality-cases') },
   { title: 'Wisselwerk', text: 'Een app voor teams over verschillende werk- en communicatiestijlen.', when: 'in ontwikkeling', photo: img('projects/wisselwerk') },
 ]
 

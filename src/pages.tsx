@@ -351,31 +351,64 @@ export function Workshop() {
 }
 
 export function Projects() {
+  const { go } = useContext(Ctx)
+  const soc = GAMES.find((g) => g.slug === 'sociality')!
   return (
     <>
       <Header active="projects" />
       <PageHero
         id="A"
         label="paginakop"
-        kicker="projecten"
+        kicker="over ons / projecten"
         title="projecten"
-        sub="Waar we nu aan werken. Alles op deze pagina is nog in ontwikkeling."
+        sub="Spellen en tools die we samen met organisaties en onderwijs maken. Van een vraag uit de praktijk tot iets wat je echt kunt spelen."
         photo={PROJECTS[0].photo}
         alt="Een groep test een nieuw bordspel aan tafel"
         tone="white"
       />
-      <Section id="B" label="projectkaarten" className="bg-ig-cream" note="elke kaart: ‘in ontwikkeling’-label">
-        <div className="grid gap-7 @3xl:grid-cols-3">
+
+      {/* the main case: everything here comes from the Sociality text on innergames.nl.
+          TODO Ariën: one result or quote from the HAN (only with permission) */}
+      <Section id="B" label="uitgelichte case" className="bg-ig-cream" note="case: opdrachtgever · vraag · wat we maakten">
+        <article className="grid gap-8 @3xl:grid-cols-[1fr_1.1fr] @3xl:gap-14">
+          <Photo src={soc.photo} alt={ALT[soc.photo]} contain className="aspect-square w-full rounded-[var(--r-box)] bg-white" />
+          <div className="self-center">
+            <p className="text-sm font-medium text-[#C84413]">case · met de HAN</p>
+            <H2 className="mt-2">sociality</H2>
+            <dl className="mt-8 space-y-6 text-lg leading-relaxed">
+              <div>
+                <dt className="text-sm font-semibold text-neutral-600">opdrachtgever</dt>
+                <dd>Het lectoraat Versterken van Sociale Kwaliteit van de HAN</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-semibold text-neutral-600">de vraag</dt>
+                <dd>Het model Sociale Kwaliteit is waardevol, maar ook abstract. Hoe oefen je het in echte situaties?</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-semibold text-neutral-600">wat we maakten</dt>
+                <dd>Een bordspel met praktijkcasussen, gemaakt door het lectoraat samen met Ariën Kingma. Nu maken we nieuwe casussen met studenten sociaal werk.</dd>
+              </div>
+            </dl>
+            <Btn variant="ghost" className="mt-8" onClick={() => go('game', soc.slug)}>bekijk het spel →</Btn>
+          </div>
+        </article>
+      </Section>
+
+      <Section id="C" label="lopende projecten" className="bg-white" note="per project: met wie · wat · stand van zaken">
+        <H2>waar we nu aan werken</H2>
+        <div className="mt-10 grid gap-7 @3xl:grid-cols-2 @5xl:grid-cols-3">
           {PROJECTS.map((p) => (
-            <article key={p.title} className={`${cardStatic} flex flex-col`}>
-              <Photo src={p.photo} alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
-              <div className="flex flex-1 flex-col gap-3 p-5">
+            <article key={p.title} className="ig-card__body flex flex-col rounded-[var(--r-box)] bg-white p-[10px] ring-1 ring-ig-ink/12">
+              <div className="ig-card__media">
+                <Photo src={p.photo} alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/3] w-full" />
+              </div>
+              <div className="flex flex-1 flex-col gap-3 px-2 pb-2 pt-4">
                 <div className="flex flex-wrap gap-1.5">
-                  <Tag tone="yellow">in ontwikkeling</Tag>
+                  <Tag tone="cream">{p.when}</Tag>
                 </div>
-                <h3 className="text-2xl font-semibold leading-tight">{p.title}</h3>
+                <h3 className="text-xl font-bold leading-tight">{p.title}</h3>
+                {p.with && <p className="text-sm font-semibold text-[#C84413]">met {p.with}</p>}
                 <p className="text-[15px] leading-relaxed text-neutral-700">{p.text}</p>
-                <p className="mt-auto pt-2 text-sm font-semibold text-ig-orange">{p.when}</p>
               </div>
             </article>
           ))}
