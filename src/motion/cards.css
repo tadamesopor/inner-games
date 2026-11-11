@@ -10,7 +10,7 @@
   --card-bg: var(--ig-cream);
   --hand-color: var(--card-bg);
   --outline: color-mix(in srgb, var(--card-bg) 72%, var(--ig-ink));
-  --hand-size: 98px; /* the hand drawing is about 88px tall at this width */
+  --hand-size: 84px; /* the hand drawing is about 75px tall at this width */
   --hand-x: 0px;
   --hand-tilt: 0deg;
   --hand-up: -96%; /* fingers and part of the palm come out, the rest stays behind the card */
@@ -170,4 +170,44 @@
 .ig-reduced .ig-card--outline:hover::after,
 .ig-reduced .ig-card--outline.is-greeting::after {
   opacity: 1;
+}
+
+/* .ig-grid: one grid for every list of cards. 3 to 4 cards a row on desktop, 2 on a tablet, 1 on a phone.
+   the rows are further apart than the columns: the hand needs room to pop up above a card.
+   in Enfold: a Code Block with this class around the cards, or the same css on a masonry element */
+.ig-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 72px 24px;
+  max-width: 1200px;
+  padding-top: 64px;
+}
+.ig-grid > * {
+  max-width: 380px;
+}
+/* a grid of text cards without the hand needs no extra room */
+.ig-grid--still {
+  row-gap: 24px;
+  padding-top: 0;
+}
+
+/* the same type in every card: title 22px, text 16px, meta (duration, price, date) 14px */
+.ig-card__title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.ig-card__text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(42 24 16 / 0.8);
+}
+.ig-card__meta {
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgb(42 24 16 / 0.72);
+}
+.ig-card__media img {
+  aspect-ratio: 4 / 3;
 }

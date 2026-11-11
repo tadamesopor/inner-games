@@ -69,13 +69,13 @@ function MemberCard({ m }: { m: Member }) {
   return (
     <article onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} className="ig-card ig-card--white ig-card--outline">
       <div className="ig-card__body flex flex-col">
-      <div className={`ig-card__media relative aspect-[4/5] transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
+      <div className={`ig-card__media relative aspect-[4/3] transition-colors ${hover ? 'bg-ig-orange/20' : 'bg-ig-cream'}`}>
         {m.photo && (
           <Photo
             src={m.photo}
             alt={`Portret van ${m.first} ${m.last}`}
-            sizes="(min-width: 1024px) 25vw, 50vw"
-            className="absolute inset-0 h-full w-full"
+            sizes="(min-width: 1024px) 300px, 100vw"
+            className="absolute inset-0 h-full w-full object-[center_22%]"
           />
         )}
         {!m.photo && (
@@ -89,9 +89,8 @@ function MemberCard({ m }: { m: Member }) {
       </div>
       <div className="flex flex-1 flex-col gap-4 px-2 pb-2 pt-4">
         {/* names keep their capitals: lowercase is only for titles */}
-        <h3 className="normal-case! leading-[0.95]">
-          <span className="block text-4xl font-semibold tracking-tight">{m.first}</span>
-          <span className="block text-2xl font-semibold tracking-tight text-neutral-600">{m.last}</span>
+        <h3 className="ig-card__title normal-case!">
+          {m.first} <span className="text-ig-ink/60">{m.last}</span>
         </h3>
         <ul className="flex flex-wrap gap-1.5">
           {m.roles.map((r) => (
@@ -100,7 +99,7 @@ function MemberCard({ m }: { m: Member }) {
             </li>
           ))}
         </ul>
-        <p className="text-[15px] leading-relaxed text-neutral-800">{m.bio}</p>
+        <p className="ig-card__text">{m.bio}</p>
         <a
           href={`mailto:info@innergames.nl?subject=Vraag%20voor%20${encodeURIComponent(m.first)}`}
           className="mt-auto inline-flex items-center gap-2 self-start border-b-2 border-ig-orange pb-0.5 text-sm font-semibold text-ig-ink hover:border-ig-ink"
@@ -168,7 +167,7 @@ export function Team() {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-x-6 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">
+          <div className="ig-grid">
             {shown.map((m) => (
               <MemberCard key={m.first} m={m} />
             ))}

@@ -23,7 +23,7 @@ function GameCard({ g }: { g: G }) {
     <article className="ig-card ig-card--white ig-card--outline cursor-pointer" onClick={() => go('game', g.slug)}>
       <div className="ig-card__body flex flex-col">
       <div className="ig-card__media relative">
-        <Photo src={g.photo} alt={ALT[g.photo] ?? g.title} sizes="(min-width: 1024px) 33vw, 100vw" contain className="aspect-[4/3] w-full" />
+        <Photo src={g.photo} alt={ALT[g.photo] ?? g.title} sizes="(min-width: 1024px) 300px, 100vw" contain className="aspect-[4/3] w-full" />
         {g.previewKey && <span className="absolute left-3 top-3"><Tag tone="orange">preview</Tag></span>}
         {g.status && <span className="absolute left-3 top-3"><Tag tone="white">{g.status}</Tag></span>}
       </div>
@@ -31,8 +31,8 @@ function GameCard({ g }: { g: G }) {
         <div className="flex flex-wrap gap-1.5">
           {g.aud.map((a) => <Tag key={a} tone="cream">{AUD_LABEL[a]}</Tag>)}
         </div>
-        <h3 className="text-xl font-semibold leading-tight tracking-tight">{g.title}</h3>
-        <p className="text-[15px] text-neutral-700">{g.short}</p>
+        <h3 className="ig-card__title">{g.title}</h3>
+        <p className="ig-card__text">{g.short}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-3">
           <span className="text-lg font-semibold">{g.price}</span>
           {!g.status ? (
@@ -88,7 +88,7 @@ export function Games() {
           ))}
           <span className="ml-auto text-sm text-neutral-500">{list.length} van {GAMES.length}</span>
         </div>
-        <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">
+        <div className="ig-grid">
           {list.map((g) => <GameCard key={g.slug} g={g} />)}
         </div>
       </Section>
@@ -318,12 +318,12 @@ export function Game() {
         <Section id="D" label="workshops bij dit spel" className="bg-white" note="echte relatie spel ↔ workshop">
           <div id="workshops-bij-spel" className="scroll-mt-24">
             <H2 className="mb-8">workshops met dit spel</H2>
-            <div className="grid gap-4 @3xl:grid-cols-3">
+            <div className="ig-grid ig-grid--still">
               {matching.map((w) => (
                 <button key={w.slug} onClick={() => go('workshop', w.slug)} className={`${card} p-5 text-left`}>
-                  <h3 className="text-xl font-semibold">{w.title}</h3>
-                  <p className="mt-1 text-sm text-neutral-600">{w.duration} · {w.price}</p>
-                  <p className="mt-3 text-sm font-semibold text-ig-orange">bekijk de workshop →</p>
+                  <h3 className="ig-card__title">{w.title}</h3>
+                  <p className="ig-card__meta mt-1">{w.duration} · {w.price}</p>
+                  <p className="mt-3 text-sm font-semibold text-[#C84413]">bekijk de workshop →</p>
                 </button>
               ))}
             </div>
@@ -333,7 +333,7 @@ export function Game() {
 
       <Section id="E" label="meer spellen" className="bg-ig-cream" note="cross-sell">
         <H2 className="mb-8">meer om te spelen</H2>
-        <div className="grid gap-x-7 gap-y-20 pt-14 @3xl:grid-cols-3 @3xl:gap-y-24">{more.map((x) => <GameCard key={x.slug} g={x} />)}</div>
+        <div className="ig-grid">{more.map((x) => <GameCard key={x.slug} g={x} />)}</div>
       </Section>
     </>
   )
