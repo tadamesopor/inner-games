@@ -65,6 +65,12 @@ const ROUTES: [string, Aud][] = [
   ['ik ben trainer', 'trainers'],
 ]
 // file -> width / height of the cut-out logo, so each keeps its own shape
+// TODO Ariën: check the three steps
+const HOW: [string, string][] = [
+  ['vertel ons over je groep', 'Wie zijn jullie, hoe groot is de groep en wat wil je bereiken? Via het formulier, WhatsApp of de telefoon.'],
+  ['we stellen samen een sessie samen', 'We kiezen samen de workshop of het spel dat past, en stemmen het af op jouw groep.'],
+  ['we komen spelen', 'Op jullie locatie of bij ons in Eindhoven. Daarna kijken we samen terug.'],
+]
 const PROOF: Record<string, number> = { asml: 108 / 52, fontys: 122 / 77, han: 90 / 77, summa: 155 / 76 }
 
 function HeroNew() {
@@ -203,6 +209,26 @@ export function Home() {
         </div>
       </Section>
 
+      {/* zo werkt het: what happens after you click "boek een workshop". a stop on the speelpad */}
+      <Section id="ZO" label="zo werkt het" stop note="drie stappen voor een workshop">
+        <div className="grid gap-10 @4xl:grid-cols-[1fr_2fr]">
+          <div>
+            <H2>zo werkt het</H2>
+            <p className="mt-4 max-w-sm text-lg leading-snug">Een workshop boeken gaat in drie stappen.</p>
+            <Btn split variant="dark" className="mt-7" onClick={() => go('contact')}>vertel over je groep</Btn>
+          </div>
+          <ol className="grid gap-5 @3xl:grid-cols-3">
+            {HOW.map(([t, d], i) => (
+              <li key={t} className="rounded-[var(--r-box)] bg-white p-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ig-orange text-lg font-bold text-ig-ink">{i + 1}</span>
+                <h3 className="mt-4 text-xl font-bold leading-tight">{t}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-neutral-700">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Section>
+
       {/* the box scene: the game lands next to the text while you scroll (src/motion/boxscene.css).
           the photo is the cut-out of box + cards + floor cards, there's no photo of only the box yet */}
       <Section id="D" label="uitgelicht spel" className="ig-section--rounded bg-ig-yellow pb-0!" innerClassName="ig-boxscene" innerRef={box} note="enige gele sectie op deze pagina">
@@ -221,11 +247,10 @@ export function Home() {
           </div>
       </Section>
 
-      <Section id="E" label="quote" className="bg-white" note={QUOTE.note}>
-        <blockquote className="mx-auto max-w-3xl text-center">
-          <p className="text-3xl font-medium leading-tight tracking-tight @3xl:text-5xl">“{QUOTE.text}”</p>
-          <footer className="mt-6 text-sm font-medium text-ig-orange">{QUOTE.who}</footer>
-        </blockquote>
+      {/* the quote that was here was an example, not a real one: never show that as real in a test.
+          TODO Ariën: a real quote from a participant or client, with name and organisation (with permission) */}
+      <Section id="E" label="quote" className="bg-white" note="echte quote volgt">
+        <Todo className="mx-auto max-w-3xl text-center">Hier komt een echte quote van een deelnemer of opdrachtgever, met naam en organisatie.</Todo>
       </Section>
 
       <ClientStrip />
