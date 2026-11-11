@@ -60,45 +60,53 @@ export function Home() {
   const { go } = useContext(Ctx)
   const box = useMotion<HTMLDivElement>(initBoxscene)
   const e5 = GAMES[0]
-  // photo: a real InnerGames photo from a workshop for that group, shown softly behind the card
+  // photo: a real InnerGames photo from a workshop for that group. texts short, so the cards stay even
   const audCards: { key: Aud; text: string; cta: string; photo: string; act: () => void }[] = [
-    { key: 'onderwijs', text: 'Spellen en lessen die je zo in de klas inzet, met een handleiding erbij.', cta: 'workshops voor onderwijs', photo: WORKSHOPS[7].photo, act: () => go('workshops', 'onderwijs') },
-    { key: 'organisaties', text: 'Workshops voor teams die dichter bij elkaar en bij zichzelf willen komen.', cta: 'workshops voor organisaties', photo: WORKSHOPS[0].photo, act: () => go('workshops', 'organisaties') },
+    { key: 'onderwijs', text: 'Spellen en lessen voor in de klas.', cta: 'workshops voor onderwijs', photo: WORKSHOPS[7].photo, act: () => go('workshops', 'onderwijs') },
+    { key: 'organisaties', text: 'Workshops die je team dichter bij elkaar brengen.', cta: 'workshops voor organisaties', photo: WORKSHOPS[0].photo, act: () => go('workshops', 'organisaties') },
     { key: 'zorg', text: 'Spel maakt zorg effectiever en prettiger.', cta: 'workshops voor zorg', photo: WORKSHOPS[8].photo, act: () => go('workshops', 'zorg') },
-    { key: 'trainers', text: 'Leer zelf spel-workshops geven en werk met onze methodes.', cta: 'train-de-trainer', photo: PHOTOS.trainerHero, act: () => go('trainer') },
+    { key: 'trainers', text: 'Leer zelf spel-workshops geven.', cta: 'train-de-trainer', photo: WORKSHOPS[5].photo, act: () => go('trainer') },
   ]
   return (
     <>
       <Header active="home" />
-      <Section id="A" label="hero" className="ig-section--rounded relative overflow-hidden bg-ig-orange py-0! text-white" note="FULL-WIDTH ACHTERGRONDFOTO met oranje overlay">
-        <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="100vw" eager className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 bg-ig-orange/80" />
-        <div className="relative flex min-h-[560px] flex-col justify-center py-16 @3xl:min-h-[720px]">
-          <p className="mb-5 text-base font-medium">spelen om te leren · spelen om te groeien</p>
-          <H1 className="max-w-4xl">inner growth for outer change.</H1>
-          <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">
-            Spelen is een mooie manier om te leren, te veranderen, om jezelf te ontwikkelen, om jezelf te leren kennen en te groeien.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Btn split variant="dark" onClick={() => go('workshops')}>boek een workshop</Btn>
-            <Btn variant="light" onClick={() => go('preview', 'elemental-five-compleet')}>speel een preview</Btn>
+      {/* hero: text on cream, the photo in its own box so the people stay visible (no orange layer over them) */}
+      <Section id="A" label="hero" className="bg-ig-cream pb-6! pt-8! @3xl:pb-10! @3xl:pt-12!" note="tekst op crème · foto in een eigen kader rechts">
+        <div className="grid items-center gap-8 @3xl:grid-cols-[1.05fr_1fr] @3xl:gap-14">
+          <div>
+            <p className="mb-5 text-base font-medium">spelen om te leren · spelen om te groeien</p>
+            <H1 className="max-w-4xl">inner growth for outer change.</H1>
+            <p className="mt-6 max-w-xl text-lg leading-snug @3xl:text-2xl">
+              Spelen is een mooie manier om te leren, te veranderen, om jezelf te ontwikkelen, om jezelf te leren kennen en te groeien.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Btn split variant="dark" onClick={() => go('workshops')}>boek een workshop</Btn>
+              <Btn variant="ghost" onClick={() => go('preview', 'elemental-five-compleet')}>speel een preview</Btn>
+            </div>
           </div>
+          <Photo src={PHOTOS.homeHero} alt={ALT[PHOTOS.homeHero]} sizes="(min-width: 1024px) 50vw, 100vw" eager className="aspect-[4/3] w-full rounded-[var(--r-box)] @3xl:aspect-[5/4]" />
         </div>
       </Section>
 
       <Speelpad>
       <Section id="B" label="vier doelgroepen" stop note="onderwijs · organisaties · zorg · trainers">
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
-        <div className="mt-10 grid gap-6 @3xl:grid-cols-4">
+        <div className="mt-10 grid gap-x-6 gap-y-20 pt-12 @xl:grid-cols-2 @5xl:grid-cols-4">
           {audCards.map((c) => (
-            <div key={c.key} className={`${cardStatic} relative isolate flex min-h-[340px] flex-col gap-4 p-6`}>
-              <Photo src={c.photo} alt="" sizes="(min-width: 1024px) 25vw, 100vw" className="absolute inset-x-0 top-0 -z-10 h-[62%] w-full opacity-70" />
-              {/* the photo fades into white where the text starts, so the text stays easy to read */}
-              <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/10 via-white via-60% to-white" aria-hidden />
-              <AudIcon aud={c.key} />
-              <h3 className="text-3xl font-semibold tracking-tight">{AUD_LABEL[c.key]}</h3>
-              <p className="text-[15px] leading-relaxed text-neutral-700">{c.text}</p>
-              <Btn variant="ghost" className="mt-auto whitespace-nowrap px-4!" onClick={c.act}>{c.cta} →</Btn>
+            <div key={c.key} className="ig-card ig-card--white ig-card--outline">
+              <div className="ig-card__body flex flex-col">
+                <div className="ig-card__media">
+                  <Photo src={c.photo} alt="" sizes="(min-width: 1024px) 25vw, 100vw" className="aspect-[16/10] w-full" />
+                </div>
+                <div className="flex flex-1 flex-col gap-3 px-2 pb-2 pt-4">
+                  <div className="flex items-center gap-3">
+                    <AudIcon aud={c.key} className="h-10! w-10! [&_svg]:h-5 [&_svg]:w-5" />
+                    <h3 className="text-2xl font-bold tracking-tight">{AUD_LABEL[c.key]}</h3>
+                  </div>
+                  <p className="min-h-[2lh] text-[15px] leading-relaxed text-neutral-700">{c.text}</p>
+                  <Btn variant="ghost" className="mt-auto whitespace-nowrap px-4!" onClick={c.act}>{c.cta} →</Btn>
+                </div>
+              </div>
             </div>
           ))}
         </div>
