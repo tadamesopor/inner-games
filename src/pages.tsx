@@ -517,7 +517,8 @@ export function Trainer() {
 
 export function Contact() {
   const [sent, setSent] = useState(false)
-  const input = 'w-full rounded-xl bg-ig-cream px-4 py-3 text-base outline-none focus:ring-2 focus:ring-ig-orange'
+  // a clear focus: 2px orange around the field (instead of the general ink outline)
+  const input = 'w-full rounded-[var(--r-box)] bg-ig-cream px-4 py-2.5 text-base focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
   return (
     <>
       <Header active="contact" />
@@ -543,14 +544,19 @@ export function Contact() {
             </a>
           </div>
           {sent ? (
-            <div role="status" className={`${cardStatic} self-start bg-ig-cream p-8 shadow-none`}>
-              <h2 className="text-3xl font-semibold">verstuurd</h2>
-              <p className="mt-3 text-lg">(dit is een test, er is niets verzonden)</p>
+            <div role="status" className="self-start rounded-[var(--r-box)] bg-ig-cream p-8">
+              <h2 className="text-3xl font-bold">dank je!</h2>
+              {/* TODO Ariën: check the response time */}
+              <p className="mt-3 text-lg">We reageren binnen 2 werkdagen.</p>
+              <p className="mt-4 text-sm text-neutral-600">(dit is een test, er is niets verzonden)</p>
             </div>
           ) : (
             <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="space-y-4 rounded-[var(--r-box)] bg-white p-6 ring-1 ring-ig-ink/12 @3xl:p-8">
-              <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
-              <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
+              {/* naam and organisatie side by side, so the whole form fits on one desktop screen */}
+              <div className="grid gap-4 @xl:grid-cols-2">
+                <label className="block text-sm font-semibold">Naam<input required className={`${input} mt-1`} /></label>
+                <label className="block text-sm font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
+              </div>
               <label className="block text-sm font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
               <label className="block text-sm font-semibold">Waar kunnen we je mee helpen?
                 <select className={`${input} mt-1`}>
@@ -561,7 +567,7 @@ export function Contact() {
                   <option>iets anders</option>
                 </select>
               </label>
-              <label className="block text-sm font-semibold">Bericht<textarea required rows={5} className={`${input} mt-1`} /></label>
+              <label className="block text-sm font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
               <Btn split type="submit" variant="dark">verstuur</Btn>
             </form>
           )}
