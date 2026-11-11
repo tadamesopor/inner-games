@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { SplitBtn } from './motionui'
 import { CLIENTS, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
@@ -36,6 +36,8 @@ export function Section({
   note,
   className = '',
   stop = false,
+  innerClassName = '',
+  innerRef,
   children,
 }: {
   id?: string
@@ -44,6 +46,9 @@ export function Section({
   className?: string
   /** a stop on the speelpad: the path makes a square next to this block and the pawn waits there */
   stop?: boolean
+  /** classes and ref for the 1280px content box, for effects that hang on it (like .ig-boxscene) */
+  innerClassName?: string
+  innerRef?: Ref<HTMLDivElement>
   children: ReactNode
 }) {
   const { ann } = useContext(Ctx)
@@ -61,11 +66,18 @@ export function Section({
       )}
       {/* content stops at 1280px, so cards and text don't stretch on a wide screen. not positioned on purpose:
           absolute backgrounds (the hero photo) still fill the whole section */}
-      <div className="mx-auto w-full max-w-[1280px]" data-speelpad-stop={stop || undefined}>
+      <div ref={innerRef} className={`mx-auto w-full max-w-[1280px] ${innerClassName}`} data-speelpad-stop={stop || undefined}>
         {children}
       </div>
     </section>
   )
+}
+
+/** starts a plain js effect from src/motion/ on an element, and stops it when the page goes */
+export function useMotion<T extends HTMLElement>(init: (el: T) => () => void) {
+  const ref = useRef<T>(null)
+  useEffect(() => (ref.current ? init(ref.current) : undefined), [init])
+  return ref
 }
 
 // src is a base path from data.ts (no extension). the browser picks the 800 or 1600 version itself,

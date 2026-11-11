@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { initSpeelpad } from './motion'
+import { initBoxscene, initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
-import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag } from './wf'
+import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag, useMotion } from './wf'
 
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
@@ -58,6 +58,8 @@ function Speelpad({ children }: { children: ReactNode }) {
 
 export function Home() {
   const { go } = useContext(Ctx)
+  const box = useMotion<HTMLDivElement>(initBoxscene)
+  const e5 = GAMES[0]
   // photo: a real InnerGames photo from a workshop for that group, shown softly behind the card
   const audCards: { key: Aud; text: string; cta: string; photo: string; act: () => void }[] = [
     { key: 'onderwijs', text: 'Spellen en lessen die je zo in de klas inzet, met een handleiding erbij.', cta: 'workshops voor onderwijs', photo: WORKSHOPS[7].photo, act: () => go('workshops', 'onderwijs') },
@@ -113,9 +115,10 @@ export function Home() {
         </div>
       </Section>
 
-      <Section id="D" label="uitgelicht spel" className="bg-ig-yellow" note="enige gele sectie op deze pagina">
-        <div className="grid items-center gap-10 @3xl:grid-cols-2">
-          <div>
+      {/* the box scene: the game lands next to the text while you scroll (src/motion/boxscene.css).
+          the photo is the cut-out of box + cards + floor cards, there's no photo of only the box yet */}
+      <Section id="D" label="uitgelicht spel" className="ig-section--rounded bg-ig-yellow pb-0!" innerClassName="ig-boxscene" innerRef={box} note="enige gele sectie op deze pagina">
+          <div className="ig-boxscene__text">
             <p className="mb-3 text-sm font-medium">uitgelicht spel</p>
             <H2>the elemental five</H2>
             <p className="mt-5 max-w-lg text-lg leading-snug">Vijf elementen, vijf manieren om naar jezelf en elkaar te kijken. Speel eerst 30 seconden en voel het verschil.</p>
@@ -124,8 +127,10 @@ export function Home() {
               <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
             </div>
           </div>
-          <Photo src={GAMES[0].photo} alt={ALT[GAMES[0].photo]} contain className="aspect-[5/4] w-full rounded-2xl" />
-        </div>
+          <div className="ig-boxscene__stage aspect-square!">
+            <img className="ig-boxscene__box" src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-800.webp 800w, ${e5.photo}-1600.webp 1200w`} sizes="400px" alt={ALT[e5.photo]} width={1200} height={1200} loading="lazy" />
+            <span className="ig-boxscene__shadow" aria-hidden />
+          </div>
       </Section>
 
       <Section id="E" label="quote" className="bg-white" note={QUOTE.note}>

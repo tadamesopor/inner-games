@@ -82,6 +82,11 @@
   opacity: var(--k);
 }
 
+/* inside the speelpad every block is z-index 1; the box scene must stay above the next section */
+.ig-bg-speelpad > .ig-section--rounded:has(> .ig-boxscene) {
+  z-index: 2;
+}
+
 /* the drawn arrow to the button draws itself once the box has landed */
 .ig-boxscene__pointer {
   --pencil-draw: 500ms;

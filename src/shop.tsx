@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, card, cardStatic, ContactCta, Ctx, Footer, H2, Header, PageHero, Photo, Section, Tag } from './wf'
+import { Btn, card, cardStatic, ContactCta, Ctx, Footer, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
+import { initBoxscene } from './motion'
 
 function GameCard({ g }: { g: G }) {
   const { go, cart, toggleCart } = useContext(Ctx)
@@ -170,6 +171,7 @@ export function Game() {
   const inCart = cart.includes(g.slug)
   const more = GAMES.filter((x) => x.slug !== g.slug).slice(0, 3)
   const matching = WORKSHOPS.filter((w) => w.gameSlug === g.slug)
+  const box = useMotion<HTMLDivElement>(initBoxscene)
   // unknown facts are left out instead of showing "n.t.b."
   const facts = [
     ['voor wie', g.forWhom],
@@ -219,6 +221,26 @@ export function Game() {
         </div>
       </Section>
 
+      {g.box ? (
+        // with a cut-out of the box: the box scene. the box lands next to the text and steps over the
+        // rounded edge into the preview section (src/motion/boxscene.css)
+        <Section id="B" label="omschrijving" className="ig-section--rounded bg-white pb-0!" innerClassName="ig-boxscene" innerRef={box} note="tekst + inhoud van de doos · doos landt bij scrollen">
+          <div className="ig-boxscene__text space-y-5 pb-12 text-lg leading-relaxed">
+            <H2 className="mb-6">over dit spel</H2>
+            {g.story.map((p, i) => <p key={i}>{p}</p>)}
+            <div className="rounded-[var(--r-box)] bg-ig-cream p-6 text-base">
+              <p className="text-sm font-medium text-[#C84413]">wat zit er in de doos</p>
+              <ul className="mt-4 space-y-2">
+                {g.contents.map((c) => <li key={c} className="flex gap-3"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ig-orange" />{c}</li>)}
+              </ul>
+            </div>
+          </div>
+          <div className="ig-boxscene__stage" style={{ aspectRatio: `${g.box.w} / ${g.box.h}` }}>
+            <img className="ig-boxscene__box" src={g.box.src} alt={`Speldoos van ${g.title.split(',')[0]}`} width={g.box.w} height={g.box.h} loading="lazy" />
+            <span className="ig-boxscene__shadow" aria-hidden />
+          </div>
+        </Section>
+      ) : (
       <Section id="B" label="omschrijving" className="bg-white" note="tekst + inhoud van de doos">
         <div className="grid gap-12 @3xl:grid-cols-[1.2fr_1fr]">
           <div className="space-y-5 text-lg leading-relaxed">
@@ -233,6 +255,7 @@ export function Game() {
           </aside>
         </div>
       </Section>
+      )}
 
       <Section id="C" label="preview ingebed" className="bg-ig-orange text-white" note="speelbare teaser (±30 sec) eindigt in koop/boek-CTA · Kansen Keren: geen preview">
         <H2 className="mb-8">probeer het eerst</H2>
