@@ -4,6 +4,13 @@ export type Aud = 'onderwijs' | 'organisaties' | 'zorg' | 'trainers'
 // a photo is a base path: <Photo> adds -800.webp / -1600.webp itself
 const img = (name: string) => `/assets/img/${name}`
 
+// the brightest real photos we have, until Ariën sends better ones (see docs/OPEN_QUESTIONS.md)
+export const BRIGHT = {
+  workshops: img('workshops/memorystory'), // people playing at a table
+  games: img('workshops/kansen-keren'), // a game board on the table
+  trainer: img('workshops/hoezo-raar'), // a group at work in a light room
+}
+
 export const PHOTOS = {
   homeHero: img('site/home-hero'),
   tafel: img('site/samen-aan-tafel'),

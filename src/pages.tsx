@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { initBoxscene, initPile, initSpeelpad } from './motion'
-import { ALT, AUD_LABEL, AUDS, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
+import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { AudIcon, LEGAL, Todo, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
@@ -301,8 +301,8 @@ export function Workshops() {
         kicker="sessies en workshops"
         title="sessies en workshops"
         sub="Negen sessies waarin je speelt, reflecteert en beweegt. Voor teams, klassen, zorg en trainers."
-        photo={PHOTOS.workshopsHero}
-        alt={ALT[PHOTOS.workshopsHero]}
+        photo={BRIGHT.workshops}
+        alt={ALT[BRIGHT.workshops]}
         tone="cream"
       />
       <Section id="B" label="overzicht + filter" className="bg-white" note="filter op doelgroep · kaart → detailpagina">
@@ -585,9 +585,9 @@ export function Trainer() {
         // one line: never break after the hyphens. smaller than the other page titles so it fits
         titleClass="whitespace-nowrap text-[2.3rem]! @3xl:text-[3.4rem]! @6xl:text-[4.6rem]!"
         sub="Leer spel-workshops geven. Van zelf spelen tot zelf begeleiden."
-        // a photo of a session with a trainer, not the team photo again. TODO Ariën: a photo of a train-de-trainer day
-        photo={WORKSHOPS[6].photo}
-        alt={ALT[WORKSHOPS[6].photo]}
+        // a group at work, not the team photo again. TODO Ariën: a photo of a train-de-trainer day
+        photo={BRIGHT.trainer}
+        alt={ALT[BRIGHT.trainer]}
         tone="cream"
       />
       <Section id="B" label="het aanbod" className="bg-white" note="echt aanbod: € 1.800 · 8 uur">

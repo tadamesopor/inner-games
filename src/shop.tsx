@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react'
-import { ALT, AUD_LABEL, AUDS, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
+import { ALT, AUD_LABEL, AUDS, BRIGHT, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
 import { Btn, btnLink, card, cardStatic, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, Tag, useMotion } from './wf'
 import { initBoxscene } from './motion'
 
@@ -68,8 +68,8 @@ export function Games() {
         kicker="onze spellen"
         title="onze spellen"
         sub="Zes spellen om te spelen, te leren en te groeien. Probeer eerst een preview van 30 seconden."
-        photo={PHOTOS.gamesHero}
-        alt={ALT[PHOTOS.gamesHero]}
+        photo={BRIGHT.games}
+        alt={ALT[BRIGHT.games]}
         tone="orange"
       />
       <Section id="B" label="shop-overzicht" className="bg-white" note="WooCommerce-grid · filter · preview-label">
