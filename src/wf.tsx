@@ -33,12 +33,15 @@ export function Section({
   label,
   note,
   className = '',
+  stop = false,
   children,
 }: {
   id?: string
   label?: string
   note?: string
   className?: string
+  /** a stop on the speelpad: the path makes a square next to this block and the pawn waits there */
+  stop?: boolean
   children: ReactNode
 }) {
   const { ann } = useContext(Ctx)
@@ -56,7 +59,9 @@ export function Section({
       )}
       {/* content stops at 1280px, so cards and text don't stretch on a wide screen. not positioned on purpose:
           absolute backgrounds (the hero photo) still fill the whole section */}
-      <div className="mx-auto w-full max-w-[1280px]">{children}</div>
+      <div className="mx-auto w-full max-w-[1280px]" data-speelpad-stop={stop || undefined}>
+        {children}
+      </div>
     </section>
   )
 }

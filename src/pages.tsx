@@ -1,4 +1,5 @@
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { initSpeelpad } from './motion'
 import { ALT, AUD_LABEL, AUDS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { AudIcon, Btn, card, cardStatic, ClientStrip, ContactCta, Ctx, Footer, H1, H2, Header, Marquee, PageHero, PartnerStrip, Photo, Section, Tag } from './wf'
@@ -39,6 +40,18 @@ function WorkshopCard({ w }: { w: WS }) {
   )
 }
 
+// the speelpad: the drawn game path with the pawn, behind the homepage blocks. sections inside without
+// a background of their own let the line through; sections with a colour hide it, like a tunnel
+function Speelpad({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => (ref.current ? initSpeelpad(ref.current) : undefined), [])
+  return (
+    <div ref={ref} className="ig-bg-speelpad bg-ig-cream">
+      {children}
+    </div>
+  )
+}
+
 export function Home() {
   const { go } = useContext(Ctx)
   // photo: a real InnerGames photo from a workshop for that group, shown softly behind the card
@@ -68,7 +81,8 @@ export function Home() {
       </Section>
 
       <Marquee text="ontdek de kracht van spelen" />
-      <Section id="B" label="vier doelgroepen" className="bg-ig-cream" note="onderwijs · organisaties · zorg · trainers">
+      <Speelpad>
+      <Section id="B" label="vier doelgroepen" stop note="onderwijs · organisaties · zorg · trainers">
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
         <div className="mt-10 grid gap-6 @3xl:grid-cols-4">
           {audCards.map((c) => (
@@ -85,7 +99,7 @@ export function Home() {
         </div>
       </Section>
 
-      <Section id="C" label="uitgelichte workshops" className="bg-white" note="3 van 9 · link naar overzicht">
+      <Section id="C" label="uitgelichte workshops" stop note="3 van 9 · link naar overzicht">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <H2>uit onze sessies</H2>
           <Btn variant="ghost" onClick={() => go('workshops')}>alle 9 workshops →</Btn>
@@ -120,7 +134,7 @@ export function Home() {
       <ClientStrip />
       <PartnerStrip />
 
-      <Section id="F" label="team-teaser" className="bg-white" note="verwijst naar ons team">
+      <Section id="F" label="team-teaser" stop note="verwijst naar ons team">
         <div className="grid items-center gap-10 @3xl:grid-cols-[1fr_1.3fr]">
           <div>
             <H2>vijf spelers, één idee</H2>
@@ -129,7 +143,7 @@ export function Home() {
           </div>
           <div className="flex gap-4">
             {MEMBERS.slice(0, 3).map((m) => (
-              <div key={m.first} className="flex-1 overflow-hidden rounded-2xl bg-ig-cream">
+              <div key={m.first} className="flex-1 overflow-hidden rounded-2xl bg-white">
                 <div className="aspect-[3/4] overflow-hidden">
                   {m.photo ? (
                     <Photo src={m.photo} alt={m.first} sizes="200px" className="h-full w-full" />
@@ -143,6 +157,7 @@ export function Home() {
           </div>
         </div>
       </Section>
+      </Speelpad>
 
       <ContactCta />
       <Footer />
