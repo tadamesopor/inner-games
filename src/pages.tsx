@@ -113,6 +113,32 @@ function HeroNew() {
           </div>
           <button type="button" className="ig-table__tidy" hidden>opruimen</button>
         </div>
+        {/* on a phone: no table but a row you swipe through. one object per tile, with its curly arrow and label */}
+        <div className="ig-swipe" aria-label="waar wil je heen?">
+          {[
+            { key: 'ws', label: 'bekijk de workshops', to: () => go('workshops') },
+            { key: 'box', label: 'bekijk de spellen', to: () => go('games') },
+            { key: 'e5', label: 'speel het spel', to: () => playE5(go) },
+          ].map((t) => (
+            <button key={t.key} type="button" className={`ig-swipe__tile ig-swipe__tile--${t.key}`} onClick={t.to}>
+              <span className="ig-swipe__stage" aria-hidden>
+                {t.key === 'ws' && (
+                  <span className="ig-table__print ig-swipe__print">
+                    <img src={`${WORKSHOPS[0].photo}-800.webp`} alt="" width={800} height={600} />
+                    <span className="ig-swipe__caption">energiek team!</span>
+                  </span>
+                )}
+                {t.key === 'box' && <img className="ig-swipe__cutout" src="/assets/img/games/sociality-box.png" alt="" width={398} height={459} />}
+                {t.key === 'e5' && <img className="ig-swipe__cutout" src={`${e5.photo}-800.webp`} alt="" width={800} height={800} />}
+              </span>
+              <svg className="ig-swipe__arrow" viewBox="0 0 48 64" aria-hidden>
+                <path d="M26 3C12 14 10 30 22 32c10 2 10-10 2-9-9 1-10 16 0 34" />
+                <path d="M16 50l8 8 7-9" />
+              </svg>
+              <span className="ig-table__label ig-swipe__label">{t.label} →</span>
+            </button>
+          ))}
+        </div>
       </div>
     </Section>
   )

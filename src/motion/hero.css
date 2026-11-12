@@ -64,6 +64,43 @@
   cursor: grabbing;
   scale: 1.04;
 }
+/* hover with a mouse: the object lifts a little and gives a small wiggle, so you see you can pick it up.
+   (hero.js sets rotate inline, so the wiggle uses transform, which adds on top of it) */
+@media (hover: hover) and (pointer: fine) {
+  .ig-table.is-live .ig-table__item:not(.is-settling, .is-dragging) {
+    transition:
+      scale 200ms var(--ease-out),
+      translate 200ms var(--ease-out),
+      box-shadow var(--dur-ui) var(--ease-soft),
+      filter var(--dur-ui) var(--ease-soft);
+  }
+  .ig-table.is-live .ig-table__item:hover:not(.is-dragging) {
+    translate: 0 -6px;
+    scale: 1.03;
+    animation: ig-table-wiggle 520ms var(--ease-soft);
+  }
+  .ig-table.is-live .ig-table__print:hover:not(.is-dragging) {
+    box-shadow: 0 22px 38px rgb(42 24 16 / 0.3);
+  }
+  .ig-table.is-live .ig-table__cutout:hover:not(.is-dragging) {
+    filter: drop-shadow(0 24px 26px rgb(42 24 16 / 0.32));
+  }
+}
+@keyframes ig-table-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-2.5deg);
+  }
+  65% {
+    transform: rotate(1.5deg);
+  }
+}
+.ig-reduced .ig-table__item:hover {
+  animation: none !important;
+}
 /* after a drop (or "opruimen") it settles with a small bounce */
 .ig-table__item.is-settling {
   transition:
@@ -198,6 +235,96 @@
 }
 .ig-table:not(.is-live) .ig-table__tidy {
   display: none;
+}
+
+/* ---------- the phone: a row to swipe through instead of the table ---------- */
+.ig-swipe {
+  display: none;
+}
+@container (max-width: 767px) {
+  .ig-table {
+    display: none;
+  }
+  .ig-swipe {
+    display: flex;
+    gap: 12px;
+    /* edge to edge, so the next tile peeks in from the right */
+    margin: 0 -20px;
+    padding: 4px 20px 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    scrollbar-width: none;
+  }
+  .ig-swipe::-webkit-scrollbar {
+    display: none;
+  }
+}
+.ig-swipe__tile {
+  flex: 0 0 74%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+.ig-swipe__stage {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 210px;
+}
+.ig-swipe__print {
+  --s: 0.82;
+  position: relative;
+  display: block;
+  width: 88%;
+  rotate: -4deg;
+}
+.ig-swipe__print img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.ig-swipe__caption {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  color: var(--ig-ink);
+  font: italic 500 15px/1 var(--ig-font);
+}
+.ig-swipe__cutout {
+  display: block;
+  max-height: 200px;
+  width: auto;
+  filter: drop-shadow(0 14px 18px rgb(42 24 16 / 0.3));
+}
+.ig-swipe__tile--box .ig-swipe__cutout {
+  max-height: 180px;
+  rotate: 6deg;
+}
+.ig-swipe__tile--e5 .ig-swipe__cutout {
+  rotate: -3deg;
+}
+/* the same curly arrow as on the table, but drawn once and still */
+.ig-swipe__arrow {
+  width: 34px;
+  height: 46px;
+  margin: 2px 0 4px;
+  fill: none;
+  stroke: var(--ig-cream);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ig-swipe__tile:active .ig-swipe__label {
+  background: var(--ig-yellow-light);
 }
 
 /* the client logos in the calm strip under the hero: one ink tone, a little transparent */
