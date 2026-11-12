@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Ctx, Footer, logEvent, type Cart, type PageId } from './wf'
 import TestMode from './test'
+import Participant, { testGroup } from './participant'
 import { applyMeta, fromUrl, metaFor, toUrl } from './seo'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
 import { igNavigate, initCards } from './motion'
@@ -68,7 +69,7 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName
-      if (e.key.toLowerCase() !== 'g' || tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (testGroup() || e.key.toLowerCase() !== 'g' || tag === 'INPUT' || tag === 'TEXTAREA') return
       const now = Date.now()
       taps.current = [...taps.current.filter((t) => now - t < 1200), now]
       if (taps.current.length >= 3) {
@@ -81,6 +82,10 @@ export default function App() {
   }, [])
   const bus = useRef<(() => void) | undefined>(undefined)
   const [lab, setLab] = useState(isLab)
+  // the remote test (?test=klant or ?test=nieuw): no prototype tools at all, and the ?test= stays in
+  // the url on every page, so a reload continues the test
+  const [group] = useState(testGroup)
+  const withTest = (url: string) => (group ? `${url}${url.includes('?') ? '&' : '?'}test=${group}` : url)
 
   const view = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -125,14 +130,14 @@ export default function App() {
   const go = (p: PageId, id = '') => {
     setCartOpen(false)
     const update = () => {
-      const url = toUrl(p, id)
+      const url = withTest(toUrl(p, id))
       if (url !== location.pathname + location.search) history.pushState(null, '', url)
       flushSync(() => {
         setPage(p)
         setSel(id)
       })
     }
-    igNavigate(update, { mode: tasks ? 'short' : 'full', fadeTarget: view.current ?? undefined })
+    igNavigate(update, { mode: tasks || group ? 'short' : 'full', fadeTarget: view.current ?? undefined })
   }
   const addToCart = (slug: string, n: number) => {
     setCart((c) => ({ ...c, [slug]: Math.min(99, (c[slug] ?? 0) + n) }))
@@ -166,10 +171,11 @@ export default function App() {
         </div>
       </div>
       <CartDrawer open={cartOpen} onClose={closeCart} />
-      {tasks && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
+      {tasks && !group && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
+      {group && <Participant group={group} pageKey={sel ? `${page}/${sel}` : page} go={go} />}
       {/* the prototype options: a small ⚙ bottom left, opened on click. completely hidden in test mode,
           so it can't cover anything; the test leader brings it back by pressing G three times */}
-      {!(tasks && !tools) && (
+      {!group && !(tasks && !tools) && (
         <div className="fixed bottom-4 left-4 z-[70] flex items-end gap-2">
           <button
             type="button"

@@ -600,6 +600,7 @@ export function Checkout() {
         ) : (
           <div className="mt-10 grid gap-10 @4xl:grid-cols-[1.2fr_1fr]">
             <form
+              name="afrekenen"
               onSubmit={(e) => {
                 e.preventDefault()
                 setStop(true)
