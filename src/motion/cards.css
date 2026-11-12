@@ -166,6 +166,13 @@
   padding-top: 0;
 }
 
+/* a secondary button (ig-btn-2, white) inside a white card would disappear: there it's cream */
+.ig-card__body .ig-btn-2:not(:hover) {
+  background: var(--ig-cream);
+  border-color: transparent;
+  box-shadow: none;
+}
+
 /* the same type in every card: title 22px, text 16px, meta (duration, price, date) 14px */
 .ig-card__title {
   font-size: 22px;

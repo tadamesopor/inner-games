@@ -188,14 +188,15 @@ export function Link({
 
 type Variant = 'primary' | 'dark' | 'light' | 'ghost' | 'ghostLight'
 // two kinds of buttons only. main actions: the split button (Btn split, the variant picks its colour).
-// everything else: one secondary style, an outline with ink text (cream on dark backgrounds)
-export const OUTLINE = 'border-ig-ink/70 bg-transparent text-ig-ink hover:border-ig-ink hover:bg-ig-ink hover:text-white'
+// everything else: one secondary style, solid white with ink text and a soft shadow, light yellow on hover.
+// (the see-through outline looked unfinished.) on the orange: solid dark orange with white text
+export const OUTLINE = 'ig-btn-2 border-ig-ink/10 bg-white text-ig-ink shadow-[0_2px_10px_rgb(42_24_16/0.08)] hover:border-ig-yellow-light hover:bg-ig-yellow-light'
 const VARIANT: Record<Variant, string> = {
   primary: OUTLINE,
   dark: OUTLINE,
   light: OUTLINE,
   ghost: OUTLINE,
-  ghostLight: 'border-ig-cream/80 bg-transparent text-ig-cream hover:bg-ig-cream hover:text-ig-ink',
+  ghostLight: 'border-transparent bg-ig-orange-text text-white hover:bg-ig-ink',
 }
 /** the secondary button look, for links (like the WhatsApp link) */
 export const btnLink = `inline-flex items-center justify-center gap-2 rounded-box border-[1.5px] px-5 py-3 text-body font-semibold lowercase transition-colors duration-150 ${OUTLINE}`

@@ -17,7 +17,7 @@ token classes (`text-lead`, `rounded-box`, `shadow-soft`, `text-ig-orange-text`)
 
 ## Components
 
-- **Buttons:** the split button for main actions, one outline style for the rest (cream outline on dark). No other buttons.
+- **Buttons:** the split button for main actions, one secondary style for the rest: solid white with ink text and a soft shadow (`ig-btn-2`), cream inside a white card, dark orange with white text on the orange. No see-through buttons.
 - **Card:** `.ig-card` everywhere (src/motion/cards.css). `--hot` for workshop cards, `--text` for text-only cards, `--still` for cards that aren't links (no hand, no lift). The old `card` and `cardStatic` classes are gone.
 - **Grid:** `.ig-grid` for every card list (auto-fill, min 280px, max 380px a card, 1200px wide).
 - **Tag:** `<Tag>` everywhere, also the team roles, "oprichter" and the partner names.

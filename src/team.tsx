@@ -139,11 +139,14 @@ export function Team() {
               </Btn>
             </div>
           </div>
-          <div className="relative h-[340px] overflow-hidden rounded-box bg-ig-cream @3xl:h-[440px]">
+          {/* the cut-out without a box: the three of them stand on the bottom edge of the yellow section */}
+          <div className="-mb-16 flex justify-center self-end @3xl:-mb-24">
             <img
-              src="/assets/team-group.png"
+              src="/assets/team-group-cut.webp"
               alt="Ariën, Sanne en Aron van InnerGames staan lachend naast elkaar"
-              className="absolute bottom-0 left-1/2 h-[125%] max-w-none -translate-x-1/2"
+              width={791}
+              height={1044}
+              className="h-[420px] w-auto drop-shadow-[0_18px_24px_rgb(42_24_16/0.18)] @3xl:h-[600px]"
             />
           </div>
         </div>
