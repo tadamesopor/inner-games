@@ -118,8 +118,12 @@
 
 /* on the orange, before the bar turns cream */
 .ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) {
-  --item-hover: rgb(255 246 230 / 0.2); /* the box and the mini hand: cream at 20% */
+  /* the box and the mini hand: solid cream. see-through looked patchy over the waves */
+  --item-hover: var(--ig-cream);
   --nav-ink: var(--ig-cream);
+}
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__item:is(:hover, [aria-current]) {
+  color: var(--ig-ink);
 }
 .ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__logo img {
   display: none;
@@ -127,16 +131,9 @@
 .ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__logo .ig-nav__logo--cream {
   display: block;
 }
-.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__icon {
-  background: rgb(255 246 230 / 0.2);
-  color: var(--ig-cream);
-}
+/* search and cart: cream like the button next to them */
 .ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__icon:hover {
-  background: rgb(255 246 230 / 0.32);
-}
-.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__count:not(.is-full) {
-  background: var(--ig-cream);
-  color: var(--ig-ink);
+  background: var(--ig-yellow-light);
 }
 /* the button turns cream with ink text, like the button in the hero */
 .ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__tools .ig-btn-split {
