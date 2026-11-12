@@ -1,4 +1,4 @@
-export type Aud = 'onderwijs' | 'organisaties' | 'zorg' | 'trainers'
+export type Aud = 'onderwijs' | 'organisaties' | 'trainers'
 
 // real photos from innergames.nl, made by scripts/fetch-images.mjs.
 // a photo is a base path: <Photo> adds -800.webp / -1600.webp itself
@@ -49,8 +49,8 @@ export const ALT: Record<string, string> = {
   [img('projects/wisselwerk')]: 'Twee mannen lachen aan een tafel met een tablet',
 }
 
-export const AUD_LABEL: Record<Aud, string> = { onderwijs: 'onderwijs', organisaties: 'organisaties', zorg: 'zorg', trainers: 'trainers' }
-export const AUDS: Aud[] = ['onderwijs', 'organisaties', 'zorg', 'trainers']
+export const AUD_LABEL: Record<Aud, string> = { onderwijs: 'onderwijs', organisaties: 'organisaties', trainers: 'trainers' }
+export const AUDS: Aud[] = ['onderwijs', 'organisaties', 'trainers']
 
 export const LOCATION = 'op kantoor in Eindhoven of op locatie (reiskosten extra)'
 
@@ -133,7 +133,7 @@ export const WORKSHOPS: Workshop[] = [
     slug: 'hoezo-raar',
     title: 'Hoezo Raar?!',
     tagline: 'Een speelse, veilige ruimte om iets “raars” over jezelf te delen.',
-    aud: ['onderwijs', 'organisaties', 'zorg'],
+    aud: ['onderwijs', 'organisaties'],
     duration: '1,5 uur',
     group: 'tot 25 personen',
     price: '€ 350',
@@ -155,7 +155,7 @@ export const WORKSHOPS: Workshop[] = [
     slug: 'positive-masculinity',
     title: 'Positive Masculinity',
     tagline: 'Wat betekent man zijn, voorbij sterk, dominant of succesvol?',
-    aud: ['onderwijs', 'zorg'],
+    aud: ['onderwijs'],
     duration: '± 2 uur',
     group: '3 tot 12 personen',
     price: '€ 350',
@@ -222,7 +222,7 @@ export const WORKSHOPS: Workshop[] = [
     slug: 'hoofd-en-lichaam',
     title: 'Het spel tussen hoofd en lichaam',
     tagline: 'Meer focus, veerkracht, energie en balans onder druk.',
-    aud: ['organisaties', 'zorg', 'trainers'],
+    aud: ['organisaties', 'trainers'],
     duration: '± 4 uur (halve of hele dag mogelijk)',
     group: 'tot 12 personen, 1 trainer',
     price: '€ 950 per groep',
@@ -279,7 +279,7 @@ export const WORKSHOPS: Workshop[] = [
     slug: 'memorystory',
     title: 'MemoryStory',
     tagline: 'Maak zelf memorykaarten en open het gesprek.',
-    aud: ['onderwijs', 'organisaties', 'zorg'],
+    aud: ['onderwijs', 'organisaties'],
     duration: '1 tot 3 uur',
     group: '4 tot 30 personen',
     price: '€ 423,50',
@@ -381,7 +381,7 @@ export const GAMES: Game[] = [
     slug: 'sociality',
     title: 'Sociality, een kijk op sociale kwaliteit',
     short: 'Een bordspel van HAN en InnerGames over het model Sociale Kwaliteit, met praktijkcasussen.',
-    aud: ['zorg', 'onderwijs'],
+    aud: ['onderwijs'],
     price: '€ 69',
     photo: img('games/sociality'),
     gallery: [img('games/sociality')],

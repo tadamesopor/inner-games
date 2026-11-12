@@ -70,8 +70,8 @@ export function metaFor(page: PageId, sel = ''): Meta {
   switch (page) {
     case 'workshops':
       return {
-        title: 'Workshops voor teams, onderwijs en zorg · InnerGames',
-        description: 'Speelse workshops met reflectie en lichaamsgericht werk, voor teams, klassen, zorg en trainers. Met duur, groepsgrootte en prijs per workshop.',
+        title: 'Workshops voor teams en onderwijs · InnerGames',
+        description: 'Speelse workshops met reflectie en lichaamsgericht werk, voor teams, klassen en trainers. Met duur, groepsgrootte en prijs per workshop.',
         image: photo(BRIGHT.workshops),
       }
     case 'workshop':
@@ -128,7 +128,7 @@ export function metaFor(page: PageId, sel = ''): Meta {
   }
   return {
     title: 'InnerGames · spellen en workshops vanuit Eindhoven',
-    description: 'Spellen en workshops die teams, klassen en zorg in beweging brengen. Van een workshop voor je team tot een spel voor in de klas.',
+    description: 'Spellen en workshops die teams en klassen in beweging brengen. Van een workshop voor je team tot een spel voor in de klas.',
     image: photo(PHOTOS.tafel),
   }
 }

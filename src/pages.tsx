@@ -94,7 +94,7 @@ function HeroNew() {
         <div className="max-w-[640px]">
           {/* TODO Ariën: check this title. white on orange only passes as large text, so everything here is big */}
           <h1 className="text-display font-bold tracking-tight">
-            spellen en workshops voor teams, klassen en zorg
+            spellen en workshops voor teams en klassen
           </h1>
           <p className="mt-8 text-lead leading-snug">Spelen om te leren, spelen om te groeien. Vanuit Eindhoven.</p>
           <div className="mt-10">
@@ -174,7 +174,6 @@ export function Home() {
   const audCards: { key: Aud; text: string; cta: string; photo: string; act: () => void }[] = [
     { key: 'onderwijs', text: 'Spellen en lessen voor in de klas.', cta: 'workshops voor onderwijs', photo: WORKSHOPS[7].photo, act: () => go('workshops', 'onderwijs') },
     { key: 'organisaties', text: 'Workshops die je team dichter bij elkaar brengen.', cta: 'workshops voor organisaties', photo: WORKSHOPS[0].photo, act: () => go('workshops', 'organisaties') },
-    { key: 'zorg', text: 'Spel maakt zorg effectiever en prettiger.', cta: 'workshops voor zorg', photo: WORKSHOPS[8].photo, act: () => go('workshops', 'zorg') },
     { key: 'trainers', text: 'Leer zelf spel-workshops geven.', cta: 'train-de-trainer', photo: WORKSHOPS[5].photo, act: () => go('trainer') },
   ]
   return (
@@ -204,9 +203,9 @@ export function Home() {
       <ProofStrip />
 
       <Speelpad>
-      <Section id="B" label="vier doelgroepen" stop note="onderwijs · organisaties · zorg · trainers">
+      <Section id="B" label="drie doelgroepen" stop note="onderwijs · organisaties · trainers">
         <H2 className="max-w-2xl">waar kom jij voor?</H2>
-        <div className="ig-grid mt-2">
+        <div className="ig-grid mt-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))' }}>
           {audCards.map((c) => (
             <div key={c.key} className="ig-card">
               <div className="ig-card__body flex flex-col">
@@ -332,7 +331,7 @@ export function Workshops() {
         label="paginakop"
         kicker="sessies en workshops"
         title="sessies en workshops"
-        sub="Negen sessies waarin je speelt, reflecteert en beweegt. Voor teams, klassen, zorg en trainers."
+        sub="Negen sessies waarin je speelt, reflecteert en beweegt. Voor teams, klassen en trainers."
         photo={BRIGHT.workshops}
         alt={ALT[BRIGHT.workshops]}
         tone="cream"
@@ -768,7 +767,6 @@ export function Contact() {
                 <select className={`${input} mt-1`} defaultValue={from ? 'een workshop voor mijn team' : undefined}>
                   <option>een workshop voor mijn team</option>
                   <option>een les of spel voor mijn klas</option>
-                  <option>iets voor mijn cliënten of zorgteam</option>
                   <option>train-de-trainer</option>
                   <option>iets anders</option>
                 </select>

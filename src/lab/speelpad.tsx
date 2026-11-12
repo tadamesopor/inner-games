@@ -27,7 +27,7 @@ export function SpeelpadDemo({ on }: { on: boolean }) {
         <div data-speelpad-stop className={`${block} w-full max-w-[500px] @3xl:ml-[24%]`}>
           <h3 className="text-[28px] font-semibold leading-tight">waar kom jij voor?</h3>
           <div className="mt-4 flex flex-wrap gap-2">
-            {['onderwijs', 'organisaties', 'zorg', 'trainers'].map((a) => (
+            {['onderwijs', 'organisaties', 'trainers'].map((a) => (
               <span key={a} className="rounded-[var(--r-tag)] bg-ig-cream px-3 py-1 text-[15px]">{a}</span>
             ))}
           </div>

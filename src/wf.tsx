@@ -261,13 +261,11 @@ export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string 
   const paths: Record<Aud, string> = {
     onderwijs: 'M3 5h6a3 3 0 013 3v12a2 2 0 00-2-2H3zM21 5h-6a3 3 0 00-3 3v12a2 2 0 012-2h7z',
     organisaties: 'M5 21V4h9v17M14 9h5v12M8 8h3M8 12h3M8 16h3M3 21h18',
-    zorg: 'M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z',
     trainers: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z',
   }
   const bg: Record<Aud, string> = {
     onderwijs: 'bg-ig-yellow text-ig-ink',
     organisaties: 'bg-ig-orange text-white',
-    zorg: 'bg-ig-cream text-ig-orange',
     trainers: 'bg-ig-ink text-ig-yellow',
   }
   return (
