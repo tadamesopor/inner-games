@@ -6,6 +6,11 @@
   if (window.parent === window) return;
   const send = (type, detail) => window.parent.postMessage({ type, detail: detail || '' }, location.origin);
 
+  // inside the site the frame is exactly one screen: no scrollbars, the screens fit on their own
+  const st = document.createElement('style');
+  st.textContent = '*{scrollbar-width:none}*::-webkit-scrollbar{display:none}';
+  document.head.appendChild(st);
+
   // the shop links: the site navigates the top window
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href]');

@@ -181,7 +181,7 @@ function Teaser({ game }: { game: G }) {
 }
 
 // the whole Elemental Five game (public/games/elemental-five, a copy of the game's own repo). it only loads
-// after a click, in an iframe, so its css and the site's never mix. on a phone it opens full screen.
+// after a click, in an iframe, so its css and the site's never mix. one screen high, also on a phone.
 // the game sends postMessage: e5:link (koop / workshop) to open our own pages, and e5:start,
 // e5:element-done and e5:finished for the test tool.
 // WP: Code Block with the same iframe (see docs/WORDPRESS_ENFOLD_MAPPING.md)
@@ -200,11 +200,8 @@ function FullGame() {
   const { go } = useContext(Ctx)
   const ref = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
-  const [phone, setPhone] = useState(false)
 
   const start = () => {
-    // a phone gets the whole screen: the game is made for that
-    setPhone((ref.current?.closest('.\\@container')?.clientWidth ?? window.innerWidth) < 768)
     setOpen(true)
     logEvent('e5:open')
   }
@@ -243,34 +240,21 @@ function FullGame() {
     return () => window.removeEventListener('message', onMsg)
   }, [open, go])
 
-  // full screen on a phone: the page behind it stands still and doesn't scroll
-  useEffect(() => {
-    if (!open || !phone) return
-    const cover = document.querySelector('.ig-reveal-cover')
-    cover?.classList.add('ig-paused')
-    document.documentElement.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    window.addEventListener('keydown', onKey)
-    return () => {
-      cover?.classList.remove('ig-paused')
-      document.documentElement.style.overflow = ''
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [open, phone])
-
-  const frame = <iframe src={E5_SRC} title="The Elemental Five, het hele spel" allow="autoplay; fullscreen" className="block h-full w-full border-0" />
   return (
-    <Section id="SPEL" label="speel het hele spel" className="bg-ig-cream" note="iframe · laadt pas na de klik">
+    <Section id="SPEL" label="speel de demo" className="bg-ig-cream" note="iframe · laadt pas na de klik">
       <div ref={ref}>
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <H2>speel het hele spel</H2>
+            <H2>speel de demo</H2>
             <p className="mt-4 max-w-xl text-lead">Kies per element de kaart die bij je past. Speel één element of alle vijf. Er is geen goed of fout.</p>
           </div>
-          {open && !phone && <Btn variant="ghost" onClick={() => setOpen(false)}>sluit het spel</Btn>}
+          {open && <Btn variant="ghost" onClick={() => setOpen(false)}>sluit de demo</Btn>}
         </div>
-        {open && !phone ? (
-          <div id="spel" className="h-[min(80vh,760px)] overflow-hidden rounded-box bg-ig-ink shadow-lift">{frame}</div>
+        {open ? (
+          // one screen high under the menu, so the whole game is in view without scrolling or full screen
+          <div id="spel" className="h-[calc(100svh-112px)] max-h-[860px] min-h-[520px] overflow-hidden rounded-box bg-ig-ink shadow-lift">
+            <iframe src={E5_SRC} title="The Elemental Five, demo" allow="autoplay; fullscreen" scrolling="no" className="block h-full w-full border-0" />
+          </div>
         ) : (
           <div className="relative flex flex-col items-center gap-8 overflow-hidden rounded-box bg-ig-ink px-6 pb-10 pt-12">
             {/* the five card-1s from the game, in a fan */}
@@ -286,19 +270,7 @@ function FullGame() {
                 />
               ))}
             </div>
-            <Btn split variant="light" onClick={start}>speel het hele spel</Btn>
-          </div>
-        )}
-        {open && phone && (
-          <div className="fixed inset-0 z-[90] flex flex-col bg-ig-ink" role="dialog" aria-label="The Elemental Five">
-            {/* a bar of its own above the game, so the close button never covers the game's own buttons */}
-            <div className="flex h-14 shrink-0 items-center justify-between px-4 text-ig-cream">
-              <span className="text-body font-semibold">the elemental five</span>
-              <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-box bg-ig-cream px-4 text-meta font-semibold text-ig-ink">
-                sluit het spel
-              </button>
-            </div>
-            <div className="min-h-0 flex-1">{frame}</div>
+            <Btn split variant="light" onClick={start}>speel de demo</Btn>
           </div>
         )}
       </div>
@@ -342,7 +314,7 @@ export function Game() {
               {g.aud.map((a) => <Tag key={a} tone="white">{AUD_LABEL[a]}</Tag>)}
               {g.status && <Tag tone="yellow">{g.status}</Tag>}
             </div>
-            <h1 className="mt-4 text-h1 font-bold tracking-tight">{g.title}</h1>
+            <h1 className="mt-4 text-h2 font-bold tracking-tight">{g.title}</h1>
             <p className="mt-5 text-lead leading-snug">{g.short}</p>
             <dl className="mt-6 grid grid-cols-1 gap-3 text-meta @3xl:grid-cols-2">
               {facts.map(([k, v]) => (
@@ -373,9 +345,9 @@ export function Game() {
                 <Btn variant="primary" onClick={() => document.getElementById('workshops-bij-spel')?.scrollIntoView({ behavior: 'smooth' })}>bekijk de workshops</Btn>
               )}
               {matching.length === 0 && <Btn variant="primary" onClick={() => go('contact')}>vraag een sessie aan</Btn>}
-              {/* the whole game is lower on this page (FullGame) */}
+              {/* the demo is lower on this page (FullGame) */}
               {g.slug.startsWith('elemental-five') && (
-                <Btn variant="ghost" onClick={() => window.dispatchEvent(new Event('ig:e5-open'))}>speel het hele spel ↓</Btn>
+                <Btn variant="ghost" onClick={() => window.dispatchEvent(new Event('ig:e5-open'))}>speel de demo ↓</Btn>
               )}
             </div>
             {added !== null && (
@@ -428,6 +400,7 @@ export function Game() {
       </Section>
       )}
 
+      {!g.slug.startsWith('elemental-five') && (
       <Section id="C" label="preview ingebed" className="bg-ig-orange text-white" note="speelbare teaser (±30 sec) eindigt in koop/boek-CTA · Kansen Keren: geen preview">
         <H2 className="mb-8">probeer het eerst</H2>
         {g.previewKey ? (
@@ -441,6 +414,7 @@ export function Game() {
           </div>
         )}
       </Section>
+      )}
 
       {g.slug.startsWith('elemental-five') && <FullGame />}
 
