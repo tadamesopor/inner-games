@@ -5,7 +5,7 @@
    it, like someone raising a hand in a workshop ("kies mij"). one wave, never a loop.
    the hand is the wrapper's ::before with the logo hand as a mask, so in Enfold it's only css classes:
    <div class="ig-card"><div class="ig-card__body"><div class="ig-card__media"><img></div>...</div></div>
-   .ig-card--hot (workshop cards): on hover the card turns dark orange with white text.
+   .ig-card--hot (workshop cards): on hover the card turns orange with white text.
    .ig-card--text: a card with only text, more padding.
    .ig-card--still: a card that isn't a link: no hand, no lift.
    cards.js adds a tiny random tilt and position per card, and the touch-screen version. */
@@ -88,11 +88,15 @@
       scale 380ms var(--ease-spring) 60ms;
     animation: ig-hand-wave 500ms var(--ease-soft) 460ms;
   }
-  /* the workshop cards: dark orange with white text, and the hand that pops up is the brand orange.
-     #C84413 instead of #EA561F, so the white text passes AA (4.8:1) */
+  /* the workshop cards: the brand orange with white text. the line around the card takes the same orange,
+     so no beige line runs across the bottom of the hand; the 3d edge becomes the darker orange */
   .ig-card--hot:hover {
     --hand-color: var(--ig-orange);
-    --card-bg: var(--ig-orange-text);
+    --card-bg: var(--ig-orange);
+    --edge: var(--ig-orange-text);
+  }
+  .ig-card--hot:hover .ig-card__body {
+    border-color: var(--ig-orange);
   }
   .ig-card--hot:hover .ig-card__body :is(h3, p, span, button, dd, dt) {
     color: #fff;
