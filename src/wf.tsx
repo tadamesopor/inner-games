@@ -441,7 +441,7 @@ export function Search({ placeholder, autoFocus, onDark }: { placeholder: string
 // section, so the strip behind the bar matches it ('hero': the homepage hero slides up under the menu).
 // after 120px it becomes a compact floating bar; narrower than 1024px the items move into a full screen
 // menu (src/motion/menu.js)
-export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'white' | 'cream' | 'yellow' | 'orange' | 'hero' }) {
+export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'white' | 'cream' | 'yellow' | 'orange' | 'hero' | 'clear' }) {
   const { go, cart, ann, openCart } = useContext(Ctx)
   const [searchOpen, setSearchOpen] = useState(false)
   const nav = useMotion<HTMLElement>(initNav)

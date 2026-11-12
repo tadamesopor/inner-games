@@ -50,6 +50,10 @@
 .ig-nav--hero {
   --nav-strip: transparent;
 }
+/* a coloured hero with waves that is not orange (ons team): no strip, the floating cream bar from the start */
+.ig-nav--clear {
+  --nav-strip: transparent;
+}
 /* before 120px the bar sits on a strip, so content never slides under the logo. compact, only the
    floating bar is left: the empty space around it must not catch clicks */
 .ig-nav.is-compact {

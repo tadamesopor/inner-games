@@ -748,15 +748,18 @@ export function Contact() {
   const [sent, setSent] = useState(false)
   // a clear focus: 2px orange around the field (instead of the general ink outline)
   const input = 'w-full rounded-box bg-ig-cream px-4 py-2.5 text-body focus-visible:outline-2! focus-visible:outline-offset-0! focus-visible:outline-ig-orange!'
+  const waves = useMotion<SVGSVGElement>(initHeroWaves)
   return (
     <>
-      <Header active="contact" />
-      <Section id="A" label="contactformulier" className="bg-white" note="formulier · straks via WordPress-formulier">
-        <div className="grid gap-12 @3xl:grid-cols-[1fr_1.1fr]">
+      <Header active="contact" tone="hero" />
+      {/* orange with the breathing waves of the homepage hero: Ariën's card and the form lie on top, in white */}
+      <Section id="A" label="contactformulier" className="ig-hero ig-section--rounded bg-ig-orange text-white" note="formulier · straks via WordPress-formulier · oranje golven">
+        <svg ref={waves} className="ig-hero__waves" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" data-waves="warm" aria-hidden />
+        <div className="ig-hero__body mt-6 grid gap-12 @3xl:mt-12 @3xl:grid-cols-[1fr_1.1fr]">
           <div>
             <H1>contact</H1>
             {/* clients come through Ariën himself, so the page starts with him, not with a form */}
-            <div className="ig-card ig-card--still mt-8">
+            <div className="ig-card ig-card--still mt-8 text-ig-ink">
               <div className="ig-card__body grid gap-5 p-5! @xl:grid-cols-[140px_1fr]">
                 <Photo src={ARIEN.photo!} alt={`${ARIEN.first} ${ARIEN.last}`} sizes="160px" className="aspect-square w-32 rounded-media @xl:w-full" />
                 <div>
@@ -771,16 +774,16 @@ export function Contact() {
                 </div>
               </div>
             </div>
-            <div className="mt-8 space-y-1 text-body">
+            <div className="mt-8 space-y-1 text-body text-white">
               <p className="font-semibold">InnerGames</p>
               <p>Bezoekadres: Kronehoefstraat 87, 5612 HL Eindhoven</p>
               <p>Postadres: Westrik 3, 5629 CE Eindhoven</p>
               <p>{CONTACT.phone}</p>
-              <p><a className="underline" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
+              <p><a className="underline underline-offset-2" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
             </div>
           </div>
           {sent ? (
-            <div role="status" className="self-start rounded-box bg-ig-cream p-8">
+            <div role="status" className="self-start rounded-box bg-ig-cream p-8 text-ig-ink">
               <h2 className="text-lead font-bold">dank je!</h2>
               {/* TODO Ariën: check the response time */}
               <p className="mt-3 text-lead">We reageren binnen 2 werkdagen.</p>
@@ -789,7 +792,7 @@ export function Contact() {
           ) : (
             <div className="self-start">
             <H2 className="mb-6">of stuur een aanvraag</H2>
-            <form name="aanvraag" onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="ig-card ig-card--still ig-card--text">
+            <form name="aanvraag" onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="ig-card ig-card--still ig-card--text text-ig-ink">
               <div className="ig-card__body space-y-4">
               {/* naam and organisatie side by side, so the whole form fits on one desktop screen */}
               <div className="grid gap-4 @xl:grid-cols-2">

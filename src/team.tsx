@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 import { PHOTOS, ALT } from './data'
-import { Btn, chip, Ctx, ContactCta, H2, Header, Img, Photo, Section, Tag } from './wf'
+import { Btn, chip, Ctx, ContactCta, H2, Header, Img, Photo, Section, Tag, useMotion } from './wf'
+import { initHeroWaves } from './motion'
 
 type Member = {
   first: string
@@ -116,13 +117,16 @@ export function Team() {
   const { go } = useContext(Ctx)
   const [filter, setFilter] = useState('iedereen')
   const shown = MEMBERS.filter((m) => filter === 'iedereen' || m.tags.includes(filter))
+  const waves = useMotion<SVGSVGElement>(initHeroWaves)
 
   return (
     <div>
-      <Header active="team" tone="yellow" />
+      <Header active="team" tone="clear" />
 
-      <Section id="A" label="hero + groepsfoto" className="bg-ig-yellow text-ig-ink" note="PORTRETFOTO (vrijgesteld, groep)">
-        <div className="grid items-center gap-8 @3xl:grid-cols-[1.1fr_1fr] @3xl:gap-12">
+      {/* the same breathing waves as the homepage hero, in yellow tints */}
+      <Section id="A" label="hero + groepsfoto" className="ig-hero bg-ig-yellow text-ig-ink" note="PORTRETFOTO (vrijgesteld, groep) · gele golven">
+        <svg ref={waves} className="ig-hero__waves" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" data-waves="yellow" aria-hidden />
+        <div className="ig-hero__body mt-6 grid items-center gap-8 @3xl:mt-0 @3xl:grid-cols-[1.1fr_1fr] @3xl:gap-12">
           <div>
             <p className="mb-4 text-body font-medium">spelen om te leren · spelen om te groeien</p>
             <h1 className="text-h1 font-bold lowercase tracking-tight">ons team</h1>

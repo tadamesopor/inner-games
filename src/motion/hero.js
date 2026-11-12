@@ -20,17 +20,27 @@ function closed(p) {
   return d + 'Z'
 }
 
-// the dark tints stay on the left behind the white title, the yellow ones on the right behind the objects
-const WAVES = [
-  { c: '#DD4C17', a: 30, pts: [[-150, -120], [420, -150], [380, 90], [120, 170], [-150, 150]] },
-  { c: '#E35E25', a: 40, pts: [[-200, 520], [260, 470], [560, 620], [700, 900], [-200, 900]] },
-  { c: '#F59A2E', a: 44, pts: [[900, -150], [1500, -80], [1800, 250], [1700, 700], [1250, 640], [1000, 330]] },
-  { c: '#FAB512', a: 40, pts: [[1120, -160], [1700, -120], [1700, 330], [1400, 420], [1180, 160]] },
-  { c: '#F27C48', a: 30, pts: [[1150, 700], [1550, 600], [1750, 820], [1500, 950], [1200, 900]] },
+// the same five shapes, in a palette per background (data-waves on the svg). orange (the homepage): the
+// dark tints stay on the left behind the white title, the yellow ones on the right behind the objects.
+// yellow (ons team): soft lighter tints on the left behind the ink text, warm orange on the right
+const SHAPES = [
+  { a: 30, pts: [[-150, -120], [420, -150], [380, 90], [120, 170], [-150, 150]] },
+  { a: 40, pts: [[-200, 520], [260, 470], [560, 620], [700, 900], [-200, 900]] },
+  { a: 44, pts: [[900, -150], [1500, -80], [1800, 250], [1700, 700], [1250, 640], [1000, 330]] },
+  { a: 40, pts: [[1120, -160], [1700, -120], [1700, 330], [1400, 420], [1180, 160]] },
+  { a: 30, pts: [[1150, 700], [1550, 600], [1750, 820], [1500, 950], [1200, 900]] },
 ]
+const PALETTES = {
+  orange: ['#DD4C17', '#E35E25', '#F59A2E', '#FAB512', '#F27C48'],
+  yellow: ['#FBC233', '#F8AC0E', '#F59A2E', '#FCCB4A', '#F39327'],
+  // contact: white titles on both sides, so orange tints at the top and the yellow only bottom right
+  warm: ['#DD4C17', '#E35E25', '#F07436', '#EF6A2C', '#FAB512'],
+}
 
-/** svg: an empty <svg viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice"> */
+/** svg: an empty <svg viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" data-waves="orange|yellow|warm"> */
 export function initHeroWaves(svg) {
+  const colors = PALETTES[svg.dataset.waves] || PALETTES.orange
+  const WAVES = SHAPES.map((s, i) => ({ ...s, c: colors[i] }))
   const paths = WAVES.map((w) => {
     const p = document.createElementNS(NS, 'path')
     p.setAttribute('fill', w.c)
