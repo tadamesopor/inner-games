@@ -64,20 +64,17 @@
   cursor: grabbing;
   scale: 1.04;
 }
-/* hover with a mouse: the object lifts a little and gives a small wiggle, so you see you can pick it up.
-   (hero.js sets rotate inline, so the wiggle uses transform, which adds on top of it) */
+/* the objects follow the mouse a little (hero.js sets translate and transform inline). hover on one:
+   it lifts a little with a bigger shadow, so you see you can pick it up */
 @media (hover: hover) and (pointer: fine) {
   .ig-table.is-live .ig-table__item:not(.is-settling, .is-dragging) {
     transition:
       scale 200ms var(--ease-out),
-      translate 200ms var(--ease-out),
       box-shadow var(--dur-ui) var(--ease-soft),
       filter var(--dur-ui) var(--ease-soft);
   }
   .ig-table.is-live .ig-table__item:hover:not(.is-dragging) {
-    translate: 0 -6px;
     scale: 1.03;
-    animation: ig-table-wiggle 520ms var(--ease-soft);
   }
   .ig-table.is-live .ig-table__print:hover:not(.is-dragging) {
     box-shadow: 0 22px 38px rgb(42 24 16 / 0.3);
@@ -86,21 +83,7 @@
     filter: drop-shadow(0 24px 26px rgb(42 24 16 / 0.32));
   }
 }
-@keyframes ig-table-wiggle {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  30% {
-    transform: rotate(-2.5deg);
-  }
-  65% {
-    transform: rotate(1.5deg);
-  }
-}
-.ig-reduced .ig-table__item:hover {
-  animation: none !important;
-}
+
 /* after a drop (or "opruimen") it settles with a small bounce */
 .ig-table__item.is-settling {
   transition:

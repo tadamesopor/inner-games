@@ -257,6 +257,36 @@ export function initHeroTable(stage) {
   }
   const onTidy = () => reset(true)
 
+  /* the mouse over the hero: the objects follow it a little and tilt with it, each by its own amount,
+     so the table has some depth. only with a mouse, only on the live table, never with reduced motion.
+     it eases with rAF and stops when everything is back in place */
+  const hero = stage.closest('section') || stage.parentElement
+  const DEPTH = [1, 0.55, 0.8, 1.25] // per item, in the order of the markup
+  const MAX_X = 12, MAX_Y = 9, MAX_TILT = 2.5 // px, px, deg at the edge of the hero
+  let aim = [0, 0], cur = [0, 0], raf = 0
+  const tick = () => {
+    cur = cur.map((c, i) => c + (aim[i] - c) * 0.08)
+    items.forEach((el, i) => {
+      if (el.classList.contains('is-dragging')) return
+      const d = DEPTH[i % DEPTH.length]
+      el.style.translate = `${(cur[0] * MAX_X * d).toFixed(2)}px ${(cur[1] * MAX_Y * d).toFixed(2)}px`
+      el.style.transform = `rotate(${(cur[0] * MAX_TILT * d).toFixed(2)}deg)`
+    })
+    raf = Math.abs(aim[0] - cur[0]) + Math.abs(aim[1] - cur[1]) > 0.002 ? requestAnimationFrame(tick) : 0
+  }
+  const follow = (e) => {
+    if (e.pointerType !== 'mouse' || !live || isReduced()) return
+    const r = hero.getBoundingClientRect()
+    aim = [clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1), clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1)]
+    if (!raf) raf = requestAnimationFrame(tick)
+  }
+  const rest = () => {
+    aim = [0, 0]
+    if (!raf) raf = requestAnimationFrame(tick)
+  }
+  hero.addEventListener('pointermove', follow)
+  hero.addEventListener('pointerleave', rest)
+
   stage.addEventListener('pointerdown', down)
   stage.addEventListener('pointermove', move)
   stage.addEventListener('pointerup', up)
@@ -272,6 +302,9 @@ export function initHeroTable(stage) {
 
   return () => {
     ro.disconnect()
+    cancelAnimationFrame(raf)
+    hero.removeEventListener('pointermove', follow)
+    hero.removeEventListener('pointerleave', rest)
     stage.removeEventListener('pointerdown', down)
     stage.removeEventListener('pointermove', move)
     stage.removeEventListener('pointerup', up)
