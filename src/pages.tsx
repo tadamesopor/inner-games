@@ -5,6 +5,23 @@ import { MEMBERS } from './team'
 import { playE5 } from './shop'
 import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
 
+// TODO Ariën: check the hero title and subtitle (draft from the midterm: say what InnerGames does).
+// the workshops in data.ts take 1,5 to 4 uur (energiek team is 3 sessions of 4 uur), not "2 tot 3 uur"
+const HERO = {
+  title: 'workshops met spellen voor teams en klassen',
+  sub: 'Samen spelen, praten en ontdekken wat er in je groep speelt. Een workshop duurt 1,5 tot 4 uur, bij jullie op locatie of in Eindhoven.',
+}
+
+// TODO Ariën: is this his own number and address, or the general InnerGames ones? (now the ones from innergames.nl)
+const ARIEN = MEMBERS.find((m) => m.first === 'Ariën')!
+
+const CONTACT = {
+  phone: '+31 (0)6 – 215 27 855',
+  tel: 'tel:+31621527855',
+  whatsapp: 'https://wa.me/31621527855',
+  email: 'info@innergames.nl',
+}
+
 function AudTags({ aud }: { aud: Aud[] }) {
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -92,13 +109,13 @@ function HeroNew() {
       <svg ref={waves} className="ig-hero__waves" viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" aria-hidden />
       <div className="ig-hero__body grid items-center gap-12 @6xl:grid-cols-[minmax(0,520px)_1fr] @6xl:gap-12">
         <div className="max-w-[640px]">
-          {/* TODO Ariën: check this title. white on orange only passes as large text, so everything here is big */}
-          <h1 className="text-display font-bold tracking-tight">
-            spellen en workshops voor teams en klassen
-          </h1>
-          <p className="mt-8 text-lead leading-snug">Spelen om te leren, spelen om te groeien. Vanuit Eindhoven.</p>
-          <div className="mt-10">
-            <Btn split variant="light" onClick={() => go('workshops')}>boek een workshop</Btn>
+          {/* white on orange only passes as large text, so everything here is big */}
+          <h1 className="text-display font-bold tracking-tight">{HERO.title}</h1>
+          <p className="mt-8 text-lead leading-snug">{HERO.sub}</p>
+          {/* two buttons only: what we do, and who you talk to */}
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Btn split variant="light" onClick={() => go('workshops')}>bekijk de workshops</Btn>
+            <Btn variant="ghostLight" className="normal-case!" onClick={() => go('contact')}>plan een gesprek met Ariën</Btn>
           </div>
         </div>
         <div ref={table} className="ig-table">
@@ -111,7 +128,6 @@ function HeroNew() {
             <button type="button" className="ig-table__label" data-for="box" data-at="396,284" onClick={() => go('games')}>bekijk de spellen →</button>
             <button type="button" className="ig-table__label" data-for="e5" data-at="300,572" onClick={() => playE5(go)}>speel het spel →</button>
           </div>
-          <button type="button" className="ig-table__tidy" hidden>opruimen</button>
         </div>
         {/* on a phone: no table but a row you swipe through. one object per tile, with its curly arrow and label */}
         <div className="ig-swipe" aria-label="waar wil je heen?">
@@ -170,6 +186,7 @@ export function Home() {
   const { go, hero } = useContext(Ctx)
   const box = useMotion<HTMLDivElement>(initBoxscene)
   const e5 = GAMES[0]
+  const [laptop, setLaptop] = useState(false)
   // photo: a real InnerGames photo from a workshop for that group. texts short, so the cards stay even
   const audCards: { key: Aud; text: string; cta: string; photo: string; act: () => void }[] = [
     { key: 'onderwijs', text: 'Spellen en lessen voor in de klas.', cta: 'workshops voor onderwijs', photo: WORKSHOPS[7].photo, act: () => go('workshops', 'onderwijs') },
@@ -226,6 +243,35 @@ export function Home() {
         </div>
       </Section>
 
+      {/* the game, right under the routes: at the midterm nobody found the demo. the box scene: the game
+          lands next to the text while you scroll (src/motion/boxscene.css).
+          on a phone (under 640px) the game isn't ready yet: the button offers to mail the link instead */}
+      <Section id="D" label="speel het spel" className="ig-section--rounded bg-ig-yellow pb-0!" innerClassName="ig-boxscene" innerRef={box} note="de demo van the elemental five · op een telefoon: stuur de link">
+          <div className="ig-boxscene__text">
+            <H2>speel 2 minuten the elemental five</H2>
+            <p className="mt-5 max-w-lg text-lead leading-snug">Ontdek in een paar minuten welk element bij jou past. Geen test, gewoon voelen en kiezen.</p>
+            <div className="mt-8">
+              <Btn split variant="dark" className="@max-[640px]:hidden!" onClick={() => playE5(go)}>speel het spel</Btn>
+              <Btn split variant="dark" className="@min-[640px]:hidden!" onClick={() => setLaptop(true)}>bekijk op een laptop</Btn>
+            </div>
+            {laptop && (
+              <div role="status" className="mt-5 max-w-md rounded-box bg-white p-5 shadow-soft @min-[640px]:hidden">
+                <p className="text-body">Het spel werkt nu nog het best op een laptop of tablet.</p>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent('The Elemental Five van InnerGames')}&body=${encodeURIComponent(`Speel het spel op een laptop of tablet: ${location.origin}/spellen/elemental-five-compleet`)}`}
+                  className={`${btnLink} mt-4`}
+                >
+                  stuur mij de link
+                </a>
+              </div>
+            )}
+          </div>
+          <div className="ig-boxscene__stage aspect-square!">
+            <img className="ig-boxscene__box" src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-800.webp 800w, ${e5.photo}-1600.webp 1200w`} sizes="400px" alt={ALT[e5.photo]} width={1200} height={1200} loading="lazy" />
+            <span className="ig-boxscene__shadow" aria-hidden />
+          </div>
+      </Section>
+
       <Section id="C" label="uitgelichte workshops" stop note="3 van 9 · link naar overzicht">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <H2>uit onze sessies</H2>
@@ -256,24 +302,6 @@ export function Home() {
             ))}
           </ol>
         </div>
-      </Section>
-
-      {/* the box scene: the game lands next to the text while you scroll (src/motion/boxscene.css).
-          the photo is the cut-out of box + cards + floor cards, there's no photo of only the box yet */}
-      <Section id="D" label="uitgelicht spel" className="ig-section--rounded bg-ig-yellow pb-0!" innerClassName="ig-boxscene" innerRef={box} note="enige gele sectie op deze pagina">
-          <div className="ig-boxscene__text">
-            <p className="mb-3 text-meta font-medium">uitgelicht spel</p>
-            <H2>the elemental five</H2>
-            <p className="mt-5 max-w-lg text-lead leading-snug">Vijf elementen, vijf manieren om naar jezelf en elkaar te kijken. Speel eerst 30 seconden en voel het verschil.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Btn split variant="dark" onClick={() => go('preview', 'elemental-five-compleet')}>speel de preview</Btn>
-              <Btn variant="light" onClick={() => go('game', 'elemental-five-compleet')}>meer over het spel</Btn>
-            </div>
-          </div>
-          <div className="ig-boxscene__stage aspect-square!">
-            <img className="ig-boxscene__box" src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-800.webp 800w, ${e5.photo}-1600.webp 1200w`} sizes="400px" alt={ALT[e5.photo]} width={1200} height={1200} loading="lazy" />
-            <span className="ig-boxscene__shadow" aria-hidden />
-          </div>
       </Section>
 
       {/* the quote that was here was an example, not a real one: never show that as real in a test.
@@ -727,22 +755,29 @@ export function Contact() {
         <div className="grid gap-12 @3xl:grid-cols-[1fr_1.1fr]">
           <div>
             <H1>contact</H1>
-            <p className="mt-6 max-w-md text-lead leading-snug">Vertel ons over je team, klas of cliënten. We denken graag mee.</p>
-            <div className="mt-8 space-y-1 text-lead">
+            {/* clients come through Ariën himself, so the page starts with him, not with a form */}
+            <div className="ig-card ig-card--still mt-8">
+              <div className="ig-card__body grid gap-5 p-5! @xl:grid-cols-[140px_1fr]">
+                <Photo src={ARIEN.photo!} alt={`${ARIEN.first} ${ARIEN.last}`} sizes="160px" className="aspect-square w-32 rounded-media @xl:w-full" />
+                <div>
+                  <p className="ig-card__title">Ariën Kingma, oprichter van InnerGames</p>
+                  {/* TODO Ariën: check the text and the reply time */}
+                  <p className="ig-card__text mt-2">Ik denk graag met je mee. Vertel kort over je groep, dan bel of mail ik je binnen twee werkdagen.</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <a href={CONTACT.tel} className={`${btnLink} normal-case!`}>bel Ariën</a>
+                    <a href={CONTACT.whatsapp} target="_blank" rel="noreferrer" className={`${btnLink} normal-case!`}>stuur een WhatsApp</a>
+                    <a href={`mailto:${CONTACT.email}`} className={`${btnLink} normal-case!`}>mail Ariën</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 space-y-1 text-body">
               <p className="font-semibold">InnerGames</p>
               <p>Bezoekadres: Kronehoefstraat 87, 5612 HL Eindhoven</p>
               <p>Postadres: Westrik 3, 5629 CE Eindhoven</p>
-              <p>+31 (0)6 – 215 27 855</p>
-              <p><a className="underline" href="mailto:info@innergames.nl">info@innergames.nl</a></p>
+              <p>{CONTACT.phone}</p>
+              <p><a className="underline" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></p>
             </div>
-            <a
-              href="https://wa.me/31621527855"
-              target="_blank"
-              rel="noreferrer"
-              className={`${btnLink} mt-6 w-full @3xl:w-auto`}
-            >
-              app ons op whatsapp
-            </a>
           </div>
           {sent ? (
             <div role="status" className="self-start rounded-box bg-ig-cream p-8">
@@ -752,7 +787,9 @@ export function Contact() {
               <p className="mt-4 text-meta text-ig-ink/70">(dit is een test, er is niets verzonden)</p>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="ig-card ig-card--still ig-card--text self-start">
+            <div className="self-start">
+            <H2 className="mb-6">of stuur een aanvraag</H2>
+            <form name="aanvraag" onSubmit={(e) => { e.preventDefault(); setSent(true) }} className="ig-card ig-card--still ig-card--text">
               <div className="ig-card__body space-y-4">
               {/* naam and organisatie side by side, so the whole form fits on one desktop screen */}
               <div className="grid gap-4 @xl:grid-cols-2">
@@ -772,9 +809,21 @@ export function Contact() {
                 </select>
               </label>
               <label className="block text-meta font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
+              {/* optional: after launch this shows where inquiries come from */}
+              <label className="block text-meta font-semibold">Hoe heeft u ons gevonden? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
+                <select name="gevonden" className={`${input} mt-1`} defaultValue="">
+                  <option value="">kies een antwoord</option>
+                  <option>via Ariën op LinkedIn</option>
+                  <option>iemand raadde het aan</option>
+                  <option>via Google</option>
+                  <option>op een evenement</option>
+                  <option>anders</option>
+                </select>
+              </label>
               <Btn split type="submit" variant="dark">verstuur</Btn>
               </div>
             </form>
+            </div>
           )}
         </div>
       </Section>

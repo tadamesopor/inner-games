@@ -12,7 +12,6 @@
          <img><figcaption>energiek team!</figcaption></figure>
        <img class="ig-table__item ig-table__cutout" data-key="box" ...>
        <div class="ig-table__labels"><a class="ig-table__label" data-for="photo" data-at="x,y">bekijk de workshops →</a>...</div>
-       <button class="ig-table__tidy" hidden>opruimen</button>
      </div>
    </section>
    in Enfold: a colour section with this as a Code Block, hero.js enqueued with the other motion files. */
@@ -84,7 +83,7 @@
   }
 }
 
-/* after a drop (or "opruimen") it settles with a small bounce */
+/* after a drop (or a double-click) it settles with a small bounce */
 .ig-table__item.is-settling {
   transition:
     rotate 500ms var(--ease-spring),
@@ -153,21 +152,21 @@
   display: none;
 }
 
-/* the labels: cream buttons, no pill, ink text */
+/* the labels: small cream buttons, ink text. smaller than the two hero buttons, so they read as extras */
 .ig-table__label {
   display: inline-flex;
   align-items: center;
-  height: 44px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 0 12px;
   border: 0;
   border-radius: var(--r-box);
   background: var(--ig-cream);
   color: var(--ig-ink);
-  font: 600 18px/1 var(--ig-font);
+  font: 600 15px/1 var(--ig-font);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgb(42 24 16 / 0.18);
+  box-shadow: 0 4px 10px rgb(42 24 16 / 0.14);
   transition: background-color var(--dur-ui) var(--ease-soft);
 }
 .ig-table__label:hover {
@@ -202,23 +201,6 @@
   justify-content: space-between;
 }
 
-.ig-table__tidy {
-  position: absolute;
-  right: 0;
-  bottom: -8px;
-  z-index: 92;
-  padding: 4px 2px;
-  border: 0;
-  background: none;
-  color: var(--ig-cream);
-  font: 500 15px/1 var(--ig-font);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
-.ig-table:not(.is-live) .ig-table__tidy {
-  display: none;
-}
 
 /* ---------- the phone: a row to swipe through instead of the table ---------- */
 .ig-swipe {

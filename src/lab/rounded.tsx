@@ -19,7 +19,7 @@ export function RoundedDemo({ on }: { on: boolean }) {
       <section className="bg-ig-cream px-6 pb-12 @3xl:px-12" style={on ? undefined : { paddingTop: 48 }}>
         <h3 className="text-[28px] font-semibold leading-tight">waar kom jij voor?</h3>
         <div className="mt-6 flex flex-wrap gap-2">
-          {['onderwijs', 'organisaties', 'zorg', 'trainers'].map((a) => (
+          {['onderwijs', 'organisaties', 'trainers'].map((a) => (
             <span key={a} className="rounded-[var(--r-tag)] bg-white px-4 py-2 text-base">{a}</span>
           ))}
         </div>

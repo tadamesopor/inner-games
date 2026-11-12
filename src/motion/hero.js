@@ -117,12 +117,10 @@ function edge(box, p, gap) {
  * stage: .ig-table, with
  *   .ig-table__item[data-key][data-at="x,y,deg"][data-pile="x,y,deg"][style="--w: 250"]  (design px)
  *   .ig-table__labels > .ig-table__label[data-for=key][data-at="x,y"]
- *   .ig-table__tidy (the "opruimen" button)
  */
 export function initHeroTable(stage) {
   const items = [...stage.querySelectorAll('.ig-table__item')]
   const labels = [...stage.querySelectorAll('.ig-table__label')]
-  const tidy = stage.querySelector('.ig-table__tidy')
   const svg = document.createElementNS(NS, 'svg')
   svg.setAttribute('class', 'ig-table__arrows')
   svg.setAttribute('aria-hidden', 'true')
@@ -157,7 +155,6 @@ export function initHeroTable(stage) {
       el.style.zIndex = ''
       place(el, s)
     })
-    if (tidy) tidy.hidden = true
     draw()
   }
 
@@ -250,12 +247,10 @@ export function initHeroTable(stage) {
     el.classList.add('is-settling')
     place(el, s)
     drag = null
-    if (tidy) tidy.hidden = false
   }
   const dbl = (e) => {
-    if (live && !e.target.closest('.ig-table__label, .ig-table__tidy')) reset(true)
+    if (live && !e.target.closest('.ig-table__label')) reset(true)
   }
-  const onTidy = () => reset(true)
 
   /* the mouse over the hero: the objects follow it a little and tilt with it, each by its own amount,
      so the table has some depth. only with a mouse, only on the live table, never with reduced motion.
@@ -292,7 +287,6 @@ export function initHeroTable(stage) {
   stage.addEventListener('pointerup', up)
   stage.addEventListener('pointercancel', up)
   stage.addEventListener('dblclick', dbl)
-  tidy?.addEventListener('click', onTidy)
   const ro = new ResizeObserver(measure)
   ro.observe(stage)
   // the labels are text: once the font is in, their size can change
@@ -310,7 +304,6 @@ export function initHeroTable(stage) {
     stage.removeEventListener('pointerup', up)
     stage.removeEventListener('pointercancel', up)
     stage.removeEventListener('dblclick', dbl)
-    tidy?.removeEventListener('click', onTidy)
     svg.remove()
   }
 }
