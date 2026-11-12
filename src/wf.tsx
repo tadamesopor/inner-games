@@ -455,6 +455,23 @@ export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'whi
     prev.current = count
   }, [count])
   const current = (to: PageId) => (GROUP[active] === to ? ('page' as const) : undefined)
+  // the search panel closes again with Escape, a click outside the menu, or when you scroll on
+  useEffect(() => {
+    if (!searchOpen) return
+    const close = () => setSearchOpen(false)
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
+    const onDown = (e: PointerEvent) => !nav.current?.contains(e.target as Node) && close()
+    const y = window.scrollY
+    const onScroll = () => Math.abs(window.scrollY - y) > 80 && close()
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onDown)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [searchOpen, nav])
   return (
     <header ref={nav} className={`ig-nav ig-nav--${tone}`}>
       {ann && <span className="pointer-events-auto absolute left-0 top-0 z-50 bg-black px-2 py-1 text-meta text-white">NAV · header + navigatie</span>}
