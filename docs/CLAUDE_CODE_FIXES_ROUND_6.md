@@ -1,10 +1,18 @@
 # Claude Code task: fixes round 6, before the test on Tuesday 17 November
 
-Do these **before** building the test mode (`docs/CLAUDE_CODE_TEST_MODE_V5.md`), because the test measures exactly these parts. Keep it small: no new features, no redesign. Run `npm run build` at the end.
+Do these **before** building the test mode (`docs/CLAUDE_CODE_TEST_MODE_V6.md`), because the test measures exactly these parts. Keep it small: no new features, no redesign. Run `npm run build` at the end.
 
 Do not add `Co-Authored-By` or any Claude/AI attribution lines to commits.
 
-Zorg is already removed (hero, routes, filters, contact option, SEO). Don't add it back.
+## 0. Remove "zorg" as an audience
+
+Ariën and I decided zorg is not a target group for the website. Remove it as an audience everywhere:
+
+- `src/data.ts`: remove `'zorg'` from the `Aud` type, `AUD_LABEL` and `AUDS`, and from every `aud: [...]` array (workshops and games, also Sociality). Keep the real "voor wie" texts of workshops as they are.
+- `src/pages.tsx`: hero title becomes `spellen en workshops voor teams en klassen` (until section 1 below replaces it). Remove the zorg card from "waar kom jij voor?" so there are three routes, and make that grid fit three cards (no empty fourth slot). Update the section note/label to three audiences. Remove "zorg" from the workshops subtitle and the contact option "iets voor mijn cliënten of zorgteam".
+- `src/seo.ts`: remove zorg from titles and descriptions.
+- `src/wf.tsx` (`AudIcon`), `src/lab/speelpad.tsx` and `src/lab/rounded.tsx`: remove the zorg entries. `src/motion/tokens.css` also mentions zorg: check if it is a colour token that is still used before you remove it.
+- Search the whole repo for `zorg` afterwards and tell me what is left.
 
 ## Why
 
@@ -19,11 +27,11 @@ At the midterm, teachers and the owner said:
 - Replace the title and subtitle with this **draft** (I still check it with Ariën, so put it in one constant at the top of the file with a `// TODO Ariën: check` comment):
   - title: `workshops met spellen voor teams en klassen`
   - subtitle: `Samen spelen, praten en ontdekken wat er in je groep speelt. Een workshop duurt 2 tot 3 uur, bij jullie op locatie of in Eindhoven.`
-  - Check the workshop data in `src/data.ts` first: if the durations there don't fit "2 tot 3 uur", tell me and use the real range.
+  - The durations in `src/data.ts` run from 1,5 to 4 uur (and one is 3 sessions of 4 uur), so "2 tot 3 uur" is not right. Use `De meeste workshops duren 1,5 tot 4 uur` instead, and keep the TODO Ariën comment.
 - Buttons in the hero: only two.
   - main: `bekijk de workshops` → workshops page
   - second: `plan een gesprek met Ariën` → contact page
-- Remove the "opruimen" control (`ig-table__tidy`) completely, nobody understood it.
+- Remove the "opruimen" control (`ig-table__tidy`) completely, nobody understood it. It is in three places: `src/pages.tsx`, `src/motion/hero.js` and `src/motion/hero.css`. Make sure the hero motion still works without it.
 - The labels on the table (`bekijk de workshops`, `bekijk de spellen`, `speel het spel`) may stay as small labels, but they must look secondary to the two buttons.
 
 ## 2. The game gets its own section on the homepage

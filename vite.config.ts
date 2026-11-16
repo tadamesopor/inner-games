@@ -13,12 +13,16 @@ function devApi(): Plugin {
       server.middlewares.use('/api/submit', async (req, res) => {
         let raw = ''
         for await (const chunk of req) raw += chunk
+        // like Vercel: json is parsed, text/plain (sendBeacon) stays a string for the function to parse
         let body: unknown = raw
-        try {
-          body = JSON.parse(raw)
-        } catch {
-          /* the function answers 400 */
+        if (String(req.headers['content-type']).includes('json')) {
+          try {
+            body = JSON.parse(raw)
+          } catch {
+            /* the function answers 400 */
+          }
         }
+        const query = Object.fromEntries(new URL(req.url ?? '/', 'http://x').searchParams)
         const { default: handler } = await server.ssrLoadModule('/api/submit.ts')
         const out = {
           status(code: number) {
@@ -30,7 +34,7 @@ function devApi(): Plugin {
             res.end(JSON.stringify(data))
           },
         }
-        await handler({ method: req.method, headers: req.headers, body }, out)
+        await handler({ method: req.method, headers: req.headers, body, query }, out)
       })
     },
   }

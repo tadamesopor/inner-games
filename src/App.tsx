@@ -82,10 +82,9 @@ export default function App() {
   }, [])
   const bus = useRef<(() => void) | undefined>(undefined)
   const [lab, setLab] = useState(isLab)
-  // the remote test (?test=klant or ?test=nieuw): no prototype tools at all, and the ?test= stays in
-  // the url on every page, so a reload continues the test
+  // the remote test (?test=klant or ?test=nieuw): no prototype tools at all. the test itself remembers
+  // that it is running (participant.tsx), so the urls stay clean and a reload continues the test
   const [group] = useState(testGroup)
-  const withTest = (url: string) => (group ? `${url}${url.includes('?') ? '&' : '?'}test=${group}` : url)
 
   const view = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -130,7 +129,7 @@ export default function App() {
   const go = (p: PageId, id = '') => {
     setCartOpen(false)
     const update = () => {
-      const url = withTest(toUrl(p, id))
+      const url = toUrl(p, id)
       if (url !== location.pathname + location.search) history.pushState(null, '', url)
       flushSync(() => {
         setPage(p)

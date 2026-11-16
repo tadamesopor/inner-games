@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>muispad viewer</title>
+<!--
+  the mouse path from a test session (the .json from the email). plain html, no build, works offline.
+  the file is only read in this browser tab, it is never sent anywhere.
+-->
+<style>
+  :root { --orange: #EA561F; --orange-text: #C84413; --yellow: #FAB512; --ink: #2A1810; --cream: #FFF6E6; --line: rgb(42 24 16 / 0.12); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--cream); color: var(--ink); font: 16px/1.5 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  p { margin: 0; }
+  .muted { color: rgb(42 24 16 / 0.65); }
+  #drop { display: block; margin-top: 20px; border: 2px dashed rgb(42 24 16 / 0.3); border-radius: 12px; padding: 28px; text-align: center; background: #fff; cursor: pointer; }
+  #drop.over { border-color: var(--orange); background: #fff1e6; }
+  #app { display: none; margin-top: 24px; gap: 24px; grid-template-columns: 240px 1fr; }
+  #app.on { display: grid; }
+  @media (max-width: 760px) { #app.on { grid-template-columns: 1fr; } }
+  .tasks button { display: block; width: 100%; text-align: left; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font: inherit; color: inherit; cursor: pointer; }
+  .tasks button[aria-pressed='true'] { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .tasks small { display: block; opacity: 0.75; }
+  .box { position: relative; aspect-ratio: 16 / 9; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  svg { display: block; width: 100%; height: 100%; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
+  .btn { padding: 8px 16px; border-radius: 12px; border: 0; background: var(--ink); color: var(--cream); font: inherit; font-weight: 600; cursor: pointer; }
+  .timeline { position: relative; height: 64px; margin-top: 8px; border-top: 2px solid var(--line); }
+  .timeline span { position: absolute; top: 6px; transform: translateX(-1px); padding-left: 6px; border-left: 2px solid var(--orange); font-size: 13px; white-space: nowrap; }
+  .timeline span:nth-child(even) { top: 30px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  ol { margin: 0; padding-left: 20px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>muispad viewer</h1>
+  <p class="muted">Sleep het .json-bestand uit de mail hierin. Het bestand blijft op deze computer.</p>
+  <label id="drop">Sleep het bestand hier, of klik om het te kiezen<input id="file" type="file" accept=".json,application/json" hidden /></label>
+  <p id="err" style="color: var(--orange-text); margin-top: 8px"></p>
+
+  <div id="app">
+    <div>
+      <p id="who" class="muted" style="margin-bottom: 12px"></p>
+      <div class="tasks" id="tasks"></div>
+    </div>
+    <div>
+      <h2 id="title"></h2>
+      <p id="text" class="muted"></p>
+      <div class="bar">
+        <button class="btn" id="play">afspelen (4x)</button>
+        <span id="clock" class="muted"></span>
+        <span class="legend">
+          <span><span class="dot" style="background: var(--ink)"></span>klik</span>
+          <span><span class="dot" style="background: #D7261E"></span>boze klik</span>
+          <span><span class="dot" style="border: 2px solid var(--orange-text)"></span>dode klik</span>
+        </span>
+      </div>
+      <div class="box"><svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg></div>
+      <div class="timeline" id="timeline"></div>
+      <div class="cols">
+        <div><h2>langst bekeken (hover)</h2><ol id="hover"></ol></div>
+        <div><h2>in deze taak</h2><p id="stats"></p></div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+  // light to dark over time: cream-yellow at the start, ink at the end
+  const from = [250, 181, 18], to = [42, 24, 16]
+  const mix = (k) => `rgb(${from.map((f, i) => Math.round(f + (to[i] - f) * k)).join(',')})`
+  const clamp = (n) => Math.max(0, Math.min(100, n))
+  const X = (x) => clamp(x) * 16, Y = (y) => clamp(y) * 9
+  const $ = (id) => document.getElementById(id)
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
+  let session = null, current = null, timer = null
+
+  function open(file) {
+    const r = new FileReader()
+    r.onload = () => {
+      try {
+        const data = JSON.parse(r.result)
+        session = data.session ?? data // the mail attachment is the session, a download from the end screen has { session }
+        if (!Array.isArray(session.tasks)) throw new Error('geen taken')
+        $('err').textContent = ''
+        show()
+      } catch (e) {
+        $('err').textContent = 'Dit bestand kan ik niet lezen: ' + e.message
+      }
+    }
+    r.readAsText(file)
+  }
+
+  function show() {
+    $('app').classList.add('on')
+    $('who').textContent = `${session.id}, ${session.group}, ${session.profile}. ${session.device?.type ?? ''} ${session.device?.viewport ?? ''}`
+    $('tasks').innerHTML = ''
+    for (const t of session.tasks) {
+      const b = document.createElement('button')
+      b.innerHTML = `Taak ${esc(t.id.slice(1))}: ${esc(t.title)}<small>${t.seconds == null ? 'niet gedaan' : t.seconds + ' s'}, ${(session.mouse?.[t.id] ?? []).length} punten</small>`
+      b.onclick = () => pick(t.id)
+      b.dataset.id = t.id
+      $('tasks').append(b)
+    }
+    pick(session.tasks[0].id)
+  }
+
+  function taskData(id) {
+    const t = session.tasks.find((x) => x.id === id)
+    const ev = (session.events ?? []).filter((e) => e.task === id)
+    const t0 = ev.find((e) => e.type === 'task_start')?.t ?? ev[0]?.t ?? 0
+    const path = session.mouse?.[id] ?? []
+    const end = Math.max(path.at(-1)?.[0] ?? 0, ...(ev.map((e) => e.t - t0)), 1)
+    return { t, ev, t0, path, end }
+  }
+
+  function pick(id) {
+    stop()
+    current = id
+    for (const b of $('tasks').children) b.setAttribute('aria-pressed', b.dataset.id === id)
+    const { t, ev, t0, end } = taskData(id)
+    $('title').textContent = `Taak ${id.slice(1)}: ${t.title}`
+    $('text').textContent = t.text ?? ''
+    $('hover').innerHTML = (t.hoverTop ?? []).map((h) => `<li>${esc(h.label)} <span class="muted">${h.seconds} s</span></li>`).join('') || '<li class="muted">geen</li>'
+    $('stats').innerHTML = [
+      `${t.clicks ?? 0} klikken, ${t.result === 'vast' ? 'kwam er niet uit' : t.result}`,
+      `boze klikken: ${(t.rageClicks ?? []).map(esc).join(', ') || 'geen'}`,
+      `dode klikken: ${(t.deadClicks ?? []).map(esc).join(', ') || 'geen'}`,
+      `muis: ${t.mouseScreens ?? 0} schermbreedtes`,
+      t.id === 't4' ? `spel geopend: ${t.previewOpened ? 'ja, ' + t.previewSeconds + ' s' : 'nee'}` : '',
+    ].filter(Boolean).join('<br>')
+    $('timeline').innerHTML = ev
+      .filter((e) => e.type === 'page')
+      .map((e) => `<span style="left:${Math.min(96, ((e.t - t0) / end) * 100)}%">${esc(e.detail)}</span>`)
+      .join('')
+    draw(Infinity)
+  }
+
+  // the path up to time `until` (ms since the task started)
+  function draw(until) {
+    const { ev, t0, path, end } = taskData(current)
+    let out = ''
+    for (let i = 1; i < path.length && path[i][0] <= until; i++) {
+      const [, x1, y1] = path[i - 1], [t, x2, y2] = path[i]
+      out += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" stroke="${mix(t / end)}" stroke-width="4" stroke-linecap="round"/>`
+    }
+    for (const e of ev) {
+      if (e.x == null || e.t - t0 > until) continue
+      const label = esc(e.detail)
+      if (e.type === 'click' || e.type === 'tap') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="10" fill="#2A1810"><title>${label}</title></circle>`
+      if (e.type === 'rage_click') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="16" fill="#D7261E"><title>boze klik: ${label}</title></circle>`
+      if (e.type === 'dead_click') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="12" fill="none" stroke="#C84413" stroke-width="4"><title>dode klik: ${label}</title></circle>`
+    }
+    const last = [...path].reverse().find((p) => p[0] <= until)
+    if (last && until !== Infinity) out += `<circle cx="${X(last[1])}" cy="${Y(last[2])}" r="12" fill="#EA561F"/>`
+    if (!path.length) out += `<text x="800" y="450" text-anchor="middle" font-size="36" fill="#2A1810" opacity="0.5">geen muispad (telefoon, of niet gedaan)</text>`
+    $('svg').innerHTML = out
+    $('clock').textContent = until === Infinity ? `${Math.round(end / 1000)} s` : `${Math.round(until / 1000)} / ${Math.round(end / 1000)} s`
+  }
+
+  function stop() {
+    cancelAnimationFrame(timer)
+    timer = null
+    $('play').textContent = 'afspelen (4x)'
+  }
+  $('play').onclick = () => {
+    if (timer) return (stop(), draw(Infinity))
+    const { end } = taskData(current)
+    const t0 = performance.now()
+    $('play').textContent = 'stop'
+    const frame = (now) => {
+      const until = (now - t0) * 4
+      draw(until)
+      if (until < end) timer = requestAnimationFrame(frame)
+      else (stop(), draw(Infinity))
+    }
+    timer = requestAnimationFrame(frame)
+  }
+
+  $('file').onchange = (e) => e.target.files[0] && open(e.target.files[0])
+  const drop = $('drop')
+  drop.ondragover = (e) => (e.preventDefault(), drop.classList.add('over'))
+  drop.ondragleave = () => drop.classList.remove('over')
+  drop.ondrop = (e) => {
+    e.preventDefault()
+    drop.classList.remove('over')
+    if (e.dataTransfer.files[0]) open(e.dataTransfer.files[0])
+  }
+</script>
+</body>
+</html>

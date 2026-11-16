@@ -1,24 +1,46 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { PageId } from './wf'
+import { fit, startTracking, summarize, type Extra, type Mouse, type TEv } from './tracking'
 
-// the remote test (v5): a participant does it alone, from a link Ariën sends.
-//   /?test=klant  for clients, /?test=nieuw  for new visitors
+// the remote test (v6): a participant does it alone, from a link Ariën sends.
+//   /?test=klant  for clients, /?test=nieuw  for new visitors (add &demo=1 for the "stuur testmail" button)
 // no test leader, no rounds, no participant numbers. the session is saved in localStorage (a reload
 // continues), and sent to Damian's email through /api/submit when it's done (or, unfinished, when the
 // tab closes). the leader mode in test.tsx is separate and stays as it was.
-// the event log: pages, clicks (the label of what was clicked, never what was typed), scroll depth per
-// page, form submits, task start/done/stuck. no video.
+// the event log: pages, scroll depth per page, form submits, task start/done/stuck. clicks, hovers and the
+// mouse path come from src/tracking.ts. never what was typed. no video.
 
 export type Group = 'klant' | 'nieuw'
-export const testGroup = (): Group | null => {
-  const t = new URLSearchParams(location.search).get('test')
-  return t === 'klant' || t === 'nieuw' ? t : null
+
+// ?test= is only in the url of the first page (go() pushes clean urls), so it's read once at startup and
+// the running session is kept under one key. a reload on /workshops continues the test. the key goes
+// away on the end screen, so after that the site is normal again and a new ?test= link starts over
+const POINTER = 'ig:participant'
+type Start = { group: Group; id?: string; demo: boolean }
+let start: Start | null | undefined
+function readStart(): Start | null {
+  const q = new URLSearchParams(location.search)
+  const t = q.get('test')
+  let saved: { id?: string; group?: string } | null = null
+  try {
+    saved = JSON.parse(localStorage.getItem(POINTER) || 'null')
+  } catch {
+    /* no access */
+  }
+  // the link again: an unfinished session of the same group continues, otherwise a new one
+  if (t === 'klant' || t === 'nieuw') return { group: t, id: saved?.group === t ? saved.id : undefined, demo: q.get('demo') === '1' }
+  return saved?.id && (saved.group === 'klant' || saved.group === 'nieuw') ? { group: saved.group, id: saved.id, demo: false } : null
 }
+const startOf = () => (start === undefined ? (start = readStart()) : start)
+export const testGroup = (): Group | null => startOf()?.group ?? null
 
 // TODO Damian: your email address, shown on the end screen when sending didn't work
 const MAIL_TO_DISPLAY = 'damian…'
-const KEY = 'ig-p5:'
+const KEY = 'ig-p6:' // ig-p6:<id> the session
+const MOUSE_KEY = 'ig-p6m:' // ig-p6m:<id> its mouse path (apart, it changes 4 times a second)
 const MAX_EVENTS = 3000
+const MAX_BODY = 1_000_000 // the mail body, 1 MB
+const MAX_BEACON = 60_000 // sendBeacon stops at 64 KB
 const LOOK_SECONDS = 10
 const ID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no 0/O/1/I
 const RETRY = [1000, 3000, 9000]
@@ -26,11 +48,11 @@ const RETRY = [1000, 3000, 9000]
 type Profile = 'school' | 'organisatie' | 'trainer' | 'anders'
 type TaskId = 't1' | 't2' | 't3' | 't4'
 type Status = 'bezig' | 'compleet' | 'onvolledig'
-type Ev = { t: number; type: string; detail: string; task?: TaskId }
+type Ev = TEv & { task?: TaskId }
 type TaskRes = { start?: number; end?: number; result?: 'klaar' | 'vast' }
 
 type Session = {
-  v: 5
+  v: 6
   id: string
   group: Group
   status: Status
@@ -66,10 +88,10 @@ type Step =
   | { kind: 'view'; text: string; page: PageId }
   | { kind: 'end' }
 
-/* ---------- the texts (docs/CLAUDE_CODE_TEST_MODE_V5.md, section 3) ---------- */
+/* ---------- the texts (docs/CLAUDE_CODE_TEST_MODE_V6.md, section 3) ---------- */
 
 const WELKOM = 'Fijn dat u meedoet. U helpt InnerGames om hun nieuwe website beter te maken. Dit duurt ongeveer 15 minuten. U test de website, niet uzelf. Er zijn geen foute antwoorden. Er wordt niets verkocht en niets echt verstuurd.'
-const CONSENT = "Uw antwoorden worden zonder naam bewaard. Ze worden alleen gebruikt om de website te verbeteren en voor het stageverslag van Damian bij Fontys. We slaan ook op welke pagina's u bekijkt en waar u klikt. Wat u typt in de website zelf slaan we niet op. Alles wordt uiterlijk 31 januari 2027 verwijderd. U kunt altijd stoppen."
+const CONSENT = "Uw antwoorden worden zonder naam bewaard. Ze worden alleen gebruikt om de website te verbeteren en voor het stageverslag van Damian bij Fontys. We slaan ook op welke pagina's u bekijkt, waar u klikt en hoe u de muis beweegt. Er wordt geen video of beeld van uw scherm opgenomen. Wat u typt in de website zelf slaan we niet op. Alles wordt uiterlijk 31 januari 2027 verwijderd. U kunt altijd stoppen."
 
 const WORK: [string, Profile][] = [
   ['op een school of opleiding (mbo of hbo)', 'school'],
@@ -154,20 +176,37 @@ function device(): Session['device'] {
   const os = /iPhone/.test(ua) ? 'iPhone' : /iPad|Macintosh.*Mobile/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : 'anders'
   return { type: w < 640 ? 'telefoon' : w < 1024 ? 'tablet' : 'desktop', viewport: `${w}x${window.innerHeight}`, browser: `${browser} op ${os}` }
 }
-const fresh = (group: Group): Session => ({ v: 5, id: newId(), group, status: 'bezig', step: 0, started: Date.now(), device: device(), ans: {}, tasks: {}, events: [], sent: {} })
+const fresh = (group: Group): Session => ({ v: 6, id: newId(), group, status: 'bezig', step: 0, started: Date.now(), device: device(), ans: {}, tasks: {}, events: [], sent: {} })
+// saved only after the consent box: someone who never starts leaves nothing behind
 const save = (s: Session) => {
+  if (!s.consentAt) return
   try {
     localStorage.setItem(KEY + s.id, JSON.stringify(s))
-    localStorage.setItem(KEY + 'current:' + s.group, s.id)
+    if (s.status === 'bezig') localStorage.setItem(POINTER, JSON.stringify({ id: s.id, group: s.group }))
+    else localStorage.removeItem(POINTER)
   } catch {
     /* private window: the session only lives in memory */
   }
 }
+const saveMouse = (id: string, m: Mouse) => {
+  try {
+    localStorage.setItem(MOUSE_KEY + id, JSON.stringify(m))
+  } catch {
+    /* full or no access: the path stays in memory */
+  }
+}
+const loadMouse = (id: string): Mouse => {
+  try {
+    return JSON.parse(localStorage.getItem(MOUSE_KEY + id) || '{}') as Mouse
+  } catch {
+    return {}
+  }
+}
 function load(group: Group): Session {
   try {
-    const id = localStorage.getItem(KEY + 'current:' + group)
+    const id = startOf()?.id
     const s = id && (JSON.parse(localStorage.getItem(KEY + id) || 'null') as Session | null)
-    if (s && s.v === 5 && s.group === group) return s
+    if (s && s.v === 6 && s.group === group && s.status === 'bezig') return s
   } catch {
     /* nothing saved, or no access */
   }
@@ -191,7 +230,7 @@ function answersOf(s: Session) {
   return out
 }
 
-function taskStats(s: Session) {
+function taskStats(s: Session, mouse: Mouse) {
   const profile = profileOf(s.ans)
   const steps = buildSteps(s.group, profile)
   return (['t1', 't2', 't3', 't4'] as TaskId[]).map((id) => {
@@ -206,7 +245,8 @@ function taskStats(s: Session) {
       result: r.result ?? 'niet gedaan',
       stuck: r.result === 'vast',
       pages,
-      clicks: ev.filter((e) => e.type === 'click').length,
+      clicks: ev.filter((e) => e.type === 'click' || e.type === 'tap').length,
+      ...summarize(ev, mouse[id], s.device.viewport),
     }
     if (id === 't4') {
       // the game: the preview page, or the demo on the product page (e5:open). time until the next page
@@ -229,26 +269,35 @@ function taskStats(s: Session) {
   })
 }
 
-const payload = (s: Session, status: Status, honey: string) =>
-  JSON.stringify({
-    group: s.group,
-    website: honey, // the honeypot: a person never fills this in
-    status,
-    session: {
-      id: s.id,
+// the body for /api/submit. under 1 MB (the beacon under 64 KB): mouse samples go first, never answers.
+// the task summaries are made from the whole path, before anything is dropped
+const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: string, max = MAX_BODY) => {
+  const answers = answersOf(s)
+  const tasks = taskStats(s, mouse)
+  const build = (m: Mouse, eventsFrom: number) =>
+    JSON.stringify({
       group: s.group,
-      profile: profileOf(s.ans) ?? 'onbekend',
+      website: honey, // the honeypot: a person never fills this in
       status,
-      started: new Date(s.started).toISOString(),
-      ended: s.ended ? new Date(s.ended).toISOString() : null,
-      minutes: Math.round(((s.ended ?? Date.now()) - s.started) / 6000) / 10,
-      step: s.step,
-      device: s.device,
-      answers: answersOf(s),
-      tasks: taskStats(s),
-      events: s.events,
-    },
-  })
+      session: {
+        v: 6,
+        id: s.id,
+        group: s.group,
+        profile: profileOf(s.ans) ?? 'onbekend',
+        status,
+        started: new Date(s.started).toISOString(),
+        ended: s.ended ? new Date(s.ended).toISOString() : null,
+        minutes: Math.round(((s.ended ?? Date.now()) - s.started) / 6000) / 10,
+        step: s.step,
+        device: s.device,
+        answers,
+        tasks: eventsFrom === Infinity ? tasks.map((t) => ({ ...t, pages: (t.pages as string[]).slice(-20) })) : tasks,
+        events: eventsFrom === Infinity ? [] : eventsFrom ? s.events.slice(eventsFrom) : s.events,
+        mouse: m,
+      },
+    })
+  return fit(build, mouse, max)
+}
 
 async function post(body: string) {
   for (let i = 0; i <= RETRY.length; i++) {
@@ -272,11 +321,12 @@ async function retryOld(skip: string) {
   retried = true
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i)
-    if (!k?.startsWith(KEY) || k.startsWith(KEY + 'current') || k === KEY + skip) continue
+    if (!k?.startsWith(KEY) || k === KEY + skip) continue
     try {
       const s = JSON.parse(localStorage.getItem(k) || 'null') as Session | null
-      if (!s || s.v !== 5 || s.status !== 'compleet' || s.sent.compleet) continue
-      if (await post(payload(s, 'compleet', ''))) save({ ...s, sent: { ...s.sent, compleet: true } })
+      if (!s || s.v !== 6 || s.status !== 'compleet' || s.sent.compleet || sending.has(s.id)) continue
+      sending.add(s.id)
+      if (await post(payload(s, loadMouse(s.id), 'compleet', ''))) save({ ...s, sent: { ...s.sent, compleet: true } })
     } catch {
       /* broken entry: leave it */
     }
@@ -348,6 +398,7 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   const honey = useRef('')
   const sRef = useRef(s)
   sRef.current = s
+  const [mouse] = useState<Mouse>(() => loadMouse(s.id)) // filled in place by tracking.ts
 
   const profile = profileOf(s.ans)
   const steps = buildSteps(group, profile)
@@ -368,8 +419,8 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   // one event into the log, with the time since the start and the running task
   const runningRef = useRef<TaskId | undefined>(runningTask)
   runningRef.current = runningTask
-  const log = (type: string, detail = '') =>
-    setS((d) => (d.events.length >= MAX_EVENTS ? d : { ...d, events: [...d.events, { t: Date.now() - d.started, type, detail, ...(runningRef.current ? { task: runningRef.current } : {}) }] }))
+  const log = (type: string, detail = '', extra?: Extra) =>
+    setS((d) => (d.events.length >= MAX_EVENTS ? d : { ...d, events: [...d.events, { t: Date.now() - d.started, type, detail, ...extra, ...(runningRef.current ? { task: runningRef.current } : {}) }] }))
   const logRef = useRef(log)
   logRef.current = log
 
@@ -395,21 +446,29 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     return () => window.removeEventListener('scroll', onScroll)
   }, [logging, pageKey])
 
-  // clicks on the site: only the label of the button or link, never the value of a field
+  // clicks, taps, hovers, rage and dead clicks, the mouse path: all in tracking.ts
   useEffect(() => {
     if (!logging) return
-    const onClick = (e: MouseEvent) => {
-      const t = e.target as Element | null
-      if (!t || t.closest('[data-participant]')) return
-      const el = t.closest('button, a, [role=button], [aria-label]')
-      if (!el) return
-      const typed = el.matches('input, textarea, select, [contenteditable]')
-      const label = (el.getAttribute('aria-label') || (typed ? '' : el.textContent) || el.tagName.toLowerCase()).replace(/\s+/g, ' ').trim().slice(0, 60)
-      logRef.current('click', label)
+    const stop = startTracking({
+      log: (type, detail, extra) => logRef.current(type, detail, extra),
+      task: () => runningRef.current,
+      taskStart: () => (runningRef.current ? sRef.current.tasks[runningRef.current]?.start : undefined),
+      page: () => lastPage.current ?? '',
+      mouse,
+    })
+    // the path changes 4 times a second: saved every 3 seconds, not with every sample
+    let saved = -1
+    const iv = setInterval(() => {
+      const n = Object.values(mouse).reduce((a, l) => a + l.length, 0)
+      if (n !== saved) saveMouse(sRef.current.id, mouse)
+      saved = n
+    }, 3000)
+    return () => {
+      stop()
+      clearInterval(iv)
+      saveMouse(sRef.current.id, mouse)
     }
-    document.addEventListener('click', onClick, true)
-    return () => document.removeEventListener('click', onClick, true)
-  }, [logging])
+  }, [logging, mouse])
 
   // events from the site itself: the cart, and the game (e5:open, e5:start, e5:finished ...)
   useEffect(() => {
@@ -441,25 +500,31 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     return () => clearTimeout(t)
   }, [toast])
 
-  // closing the tab before the end: send what there is, once
+  // closing the tab before the end: send what there is. only after the consent box and at least one
+  // answer, and once per participant (a reload fires pagehide too: after the first time it sends nothing).
+  // sendBeacon sends text/plain, which needs no preflight; api/submit.ts parses it itself
   useEffect(() => {
     const onHide = () => {
       const d = sRef.current
-      if (!d.consentAt || d.status !== 'bezig' || d.sent.onvolledig) return
+      saveMouse(d.id, mouse)
+      const answered = Object.values(d.ans).some((a) => a.trim())
+      if (!d.consentAt || !answered || d.status !== 'bezig' || d.sent.onvolledig) return
       const ended = { ...d, events: depth.current && lastPage.current ? [...d.events, { t: Date.now() - d.started, type: 'scroll', detail: `${lastPage.current} ${depth.current}%` }] : d.events }
-      const ok = navigator.sendBeacon?.('/api/submit', new Blob([payload(ended, 'onvolledig', honey.current)], { type: 'application/json' }))
+      const body = payload(ended, mouse, 'onvolledig', honey.current, MAX_BEACON)
+      const ok = navigator.sendBeacon?.('/api/submit', new Blob([body], { type: 'text/plain;charset=UTF-8' }))
       if (ok) save({ ...d, sent: { ...d.sent, onvolledig: true } })
     }
     window.addEventListener('pagehide', onHide)
     return () => window.removeEventListener('pagehide', onHide)
-  }, [])
+  }, [mouse])
 
   // at the end: send (3 retries), otherwise keep it with sent: false and offer the file
   useEffect(() => {
     if (step.kind !== 'end' || s.sent.compleet || sendState !== 'idle' || sending.has(s.id)) return
     sending.add(s.id)
     setSendState('sending')
-    post(payload(s, 'compleet', honey.current)).then((ok) => {
+    saveMouse(s.id, mouse)
+    post(payload(s, mouse, 'compleet', honey.current)).then((ok) => {
       setSendState(ok ? 'ok' : 'failed')
       if (ok) setS((d) => ({ ...d, sent: { ...d.sent, compleet: true } }))
     })
@@ -532,8 +597,28 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     advance({ ...d, consentAt: now, device: dev, events: [{ t: now - d.started, type: 'device', detail: `${dev.type} ${dev.viewport} ${dev.browser}` }] })
   }
 
+  // &demo=1: a short fake session as a mail (status test), to check Resend and the env vars in Vercel
+  const [demo, setDemo] = useState<'idle' | 'sending' | 'ok' | 'failed'>('idle')
+  const sendDemo = async () => {
+    setDemo('sending')
+    const now = Date.now()
+    const t1 = (t: number, type: string, detail: string, extra?: Extra): Ev => ({ t, type, detail, task: 't1', ...extra })
+    const fake: Session = {
+      ...fresh(group),
+      started: now - 90_000,
+      ended: now,
+      consentAt: now - 90_000,
+      status: 'compleet',
+      ans: { werk: WORK[1][0], E4: 'dit is een testmail' },
+      tasks: { t1: { start: now - 80_000, end: now - 40_000, result: 'klaar' } },
+      events: [t1(10_000, 'task_start', 't1'), t1(10_000, 'page', 'home'), t1(14_000, 'hover', 'workshops', { ms: 900, page: 'home' }), t1(15_000, 'click', 'workshops', { x: 40, y: 6, sy: 0 }), t1(16_000, 'page', 'workshops'), t1(50_000, 'task_done', 't1')],
+    }
+    const path: Mouse = { t1: [[0, 50, 50], [2000, 45, 30], [4000, 40, 8], [6000, 41, 6]] }
+    setDemo((await post(payload(fake, path, 'test', honey.current))) ? 'ok' : 'failed')
+  }
+
   const download = () => {
-    const blob = new Blob([payload(s, 'compleet', '')], { type: 'application/json' })
+    const blob = new Blob([payload(s, mouse, 'compleet', '')], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = `innergames-test-${s.id}.json`
@@ -565,6 +650,12 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
         {/* the honeypot: hidden for people, a bot fills it in */}
         <input tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" onChange={(e) => (honey.current = e.target.value)} className="absolute -left-[9999px] h-px w-px opacity-0" />
         <button type="button" disabled={!consent} onClick={begin} className={`${primary} mt-6 w-full sm:w-auto`}>Beginnen</button>
+        {startOf()?.demo && (
+          <p className="mt-6 flex flex-wrap items-center gap-3 border-t border-ig-ink/10 pt-4 text-[15px]">
+            <button type="button" disabled={demo === 'sending'} onClick={sendDemo} className="rounded-box border border-ig-ink/30 px-3 py-1.5 font-semibold hover:bg-ig-cream">stuur testmail</button>
+            {demo === 'sending' ? 'bezig…' : demo === 'ok' ? 'verstuurd' : demo === 'failed' ? 'lukte niet, kijk in de Vercel logs' : ''}
+          </p>
+        )}
       </Card>
     )
 
