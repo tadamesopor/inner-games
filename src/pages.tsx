@@ -9,7 +9,7 @@ import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, 
 // the workshops in data.ts take 1,5 to 4 uur (energiek team is 3 sessions of 4 uur), not "2 tot 3 uur"
 const HERO = {
   title: 'workshops met spellen voor teams en klassen',
-  sub: 'Samen spelen, praten en ontdekken wat er in je groep speelt. Een workshop duurt 1,5 tot 4 uur, bij jullie op locatie of in Eindhoven.',
+  sub: 'Samen spelen, praten en ontdekken wat er in je groep speelt. De meeste workshops duren 1,5 tot 4 uur, bij jullie op locatie of in Eindhoven.',
 }
 
 // TODO Ariën: is this his own number and address, or the general InnerGames ones? (now the ones from innergames.nl)

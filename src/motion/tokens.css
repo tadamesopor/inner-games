@@ -48,7 +48,7 @@
   /* shapes: only these four. not everything is round */
   --r-section: 56px; /* bottom of big coloured sections */
   --r-box: 12px; /* cards, buttons, menu items, fields, image frames */
-  --r-tag: 999px; /* small tags like onderwijs or zorg */
+  --r-tag: 999px; /* small tags like onderwijs or organisaties */
   --r-media: 8px; /* a photo inside a card */
   /* full circles (50%) only for icon buttons */
 
