@@ -5,14 +5,17 @@
 
 export const TRACKING = true
 
-export type Sample = [number, number, number] // [ms since the task started, x %, y %]
+// [ms since the task started, x %, y %, scrollY px]. x and y are null on a phone (only the scroll is known).
+// sessions from before the replay have [t, x, y]: the viewer still opens those
+export type Sample = [number, number | null, number | null, number?]
 export type Mouse = Record<string, Sample[]>
-export type Extra = { x?: number; y?: number; sy?: number; ms?: number; page?: string }
+export type Extra = { x?: number; y?: number; sy?: number; ms?: number; page?: string; sel?: string; h?: number }
 export type TEv = { t: number; type: string; detail: string; task?: string } & Extra
 
 const MAX_SAMPLES = 6000
 const SAMPLE_MS = 250
 const MOVE_PX = 5
+const SCROLL_PX = 40
 const HOVER_MS = 500
 const RAGE = { clicks: 3, ms: 1000, px: 30 }
 
@@ -137,23 +140,42 @@ export function startTracking(h: Hooks) {
     if (!to || !over.el.contains(to)) endHover()
   })
 
-  // the mouse path: a sample every 250 ms, only during a task, only when it moved, not when the tab is hidden
+  // the mouse path, for the replay: a sample every 250 ms when the mouse moved, and one when the page
+  // scrolled more than 40 px (also with a still mouse, and on a phone without a mouse at all). only during
+  // a task, not when the tab is hidden
   let last: { x: number; y: number } | null = null
   let pos: { x: number; y: number } | null = null
+  let lastY = Math.round(scrollY)
+  let lastT = 0
   on('pointermove', (e) => {
     if (!touchOnly && (e.pointerType === 'mouse' || e.pointerType === 'pen')) pos = { x: e.clientX, y: e.clientY }
   })
-  const iv = setInterval(() => {
+  const add = () => {
     const task = h.task()
     const start = h.taskStart()
-    if (!task || !start || !pos || document.hidden) return
-    if (last && Math.hypot(pos.x - last.x, pos.y - last.y) <= MOVE_PX) return
-    last = pos
+    if (!task || !start || document.hidden) return
     const list = (h.mouse[task] ??= [])
     if (Object.values(h.mouse).reduce((n, l) => n + l.length, 0) >= MAX_SAMPLES) list.shift() // full: drop the oldest of this task
-    list.push([Date.now() - start, pct(pos.x, innerWidth), pct(pos.y, innerHeight)])
+    lastY = Math.round(scrollY)
+    lastT = performance.now()
+    list.push([Date.now() - start, pos ? pct(pos.x, innerWidth) : null, pos ? pct(pos.y, innerHeight) : null, lastY])
+  }
+  const iv = setInterval(() => {
+    if (!pos || (last && Math.hypot(pos.x - last.x, pos.y - last.y) <= MOVE_PX)) return
+    last = pos
+    add()
   }, SAMPLE_MS)
   off.push(() => clearInterval(iv))
+  // scrolling: at most every 250 ms, and once more when it stops, so the replay ends where they ended
+  let trail = 0
+  const onScroll = () => {
+    const moved = Math.abs(Math.round(scrollY) - lastY)
+    if (moved > SCROLL_PX && performance.now() - lastT >= SAMPLE_MS) add()
+    clearTimeout(trail)
+    trail = window.setTimeout(() => Math.round(scrollY) !== lastY && add(), SAMPLE_MS + 50)
+  }
+  addEventListener('scroll', onScroll, { passive: true })
+  off.push(() => (removeEventListener('scroll', onScroll), clearTimeout(trail)))
 
   return () => {
     endHover()
@@ -170,7 +192,8 @@ export function summarize(events: TEv[], path: Sample[] = [], viewport = '1440x9
   const [w, h] = viewport.split('x').map(Number)
   const ratio = w && h ? h / w : 0.6
   let dist = 0
-  for (let i = 1; i < path.length; i++) dist += Math.hypot((path[i][1] - path[i - 1][1]) / 100, ((path[i][2] - path[i - 1][2]) / 100) * ratio)
+  const pts = path.filter((p) => p[1] != null && p[2] != null) as [number, number, number][] // only the mouse, not the scroll-only samples
+  for (let i = 1; i < pts.length; i++) dist += Math.hypot((pts[i][1] - pts[i - 1][1]) / 100, ((pts[i][2] - pts[i - 1][2]) / 100) * ratio)
   return {
     hoverTop,
     rageClicks: labels('rage_click'),

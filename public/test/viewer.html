@@ -116,7 +116,8 @@
     const t = session.tasks.find((x) => x.id === id)
     const ev = (session.events ?? []).filter((e) => e.task === id)
     const t0 = ev.find((e) => e.type === 'task_start')?.t ?? ev[0]?.t ?? 0
-    const path = session.mouse?.[id] ?? []
+    // only the samples with a mouse position (a phone has scroll-only samples: [t, null, null, scrollY])
+    const path = (session.mouse?.[id] ?? []).filter((p) => p[1] != null && p[2] != null)
     const end = Math.max(path.at(-1)?.[0] ?? 0, ...(ev.map((e) => e.t - t0)), 1)
     return { t, ev, t0, path, end }
   }

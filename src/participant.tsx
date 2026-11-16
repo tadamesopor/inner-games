@@ -164,6 +164,12 @@ function buildSteps(group: Group, profile?: Profile): Step[] {
   return [...start, ...(group === 'klant' ? klant : nieuw), ...tasks, ...(group === 'nieuw' ? trust : []), ...closing, ...(group === 'klant' ? e5 : []), { kind: 'end' }]
 }
 
+// "workshop/samenwerken" → the page and the sel of go(page, sel), so the replay can open the same page
+const pageOf = (key: string) => {
+  const i = key.indexOf('/')
+  return i < 0 ? { page: key, sel: '' } : { page: key.slice(0, i), sel: key.slice(i + 1) }
+}
+
 const profileOf = (ans: Record<string, string>): Profile | undefined => WORK.find((w) => w[0] === ans.werk)?.[1]
 
 /* ---------- session: create, save, load ---------- */
@@ -290,6 +296,7 @@ const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: strin
         minutes: Math.round(((s.ended ?? Date.now()) - s.started) / 6000) / 10,
         step: s.step,
         device: s.device,
+        viewport: { w: +s.device.viewport.split('x')[0], h: +s.device.viewport.split('x')[1] },
         answers,
         tasks: eventsFrom === Infinity ? tasks.map((t) => ({ ...t, pages: (t.pages as string[]).slice(-20) })) : tasks,
         events: eventsFrom === Infinity ? [] : eventsFrom ? s.events.slice(eventsFrom) : s.events,
@@ -424,15 +431,31 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   const logRef = useRef(log)
   logRef.current = log
 
+  // the height of a page, half a second after it changed (then it has rendered), into its page event.
+  // the replay needs it to scroll the same way
+  const measure = (key: string) =>
+    setTimeout(() => {
+      const h = document.documentElement.scrollHeight
+      setS((d) => {
+        let i = d.events.length - 1
+        while (i >= 0 && !(d.events[i].type === 'page' && d.events[i].detail === key && d.events[i].h == null)) i--
+        return i < 0 ? d : { ...d, events: d.events.map((e, j) => (j === i ? { ...e, h } : e)) }
+      })
+    }, 500)
+
   // pages, and the scroll depth of the page you leave
   const depth = useRef(0)
   const lastPage = useRef<string | null>(null)
   useEffect(() => {
     if (!logging) return
     if (lastPage.current !== null && lastPage.current !== pageKey) logRef.current('scroll', `${lastPage.current} ${depth.current}%`)
-    if (lastPage.current !== pageKey) logRef.current('page', pageKey)
+    if (lastPage.current !== pageKey) {
+      logRef.current('page', pageKey, pageOf(pageKey))
+      measure(pageKey)
+    }
     lastPage.current = pageKey
     depth.current = 0
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageKey, logging])
   useEffect(() => {
     if (!logging) return
@@ -560,7 +583,8 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
       // the page you were on gets its scroll depth first, then the task starts on the homepage
       const before = lastPage.current && lastPage.current !== 'home' ? [at0('scroll', `${lastPage.current} ${depth.current}%`)] : []
       go('home')
-      n = { ...n, tasks: { ...n.tasks, [to.id]: { start: now } }, events: [...n.events, ...before, at0('task_start', to.id, to.id), at0('page', 'home', to.id)] }
+      n = { ...n, tasks: { ...n.tasks, [to.id]: { start: now } }, events: [...n.events, ...before, at0('task_start', to.id, to.id), { ...at0('page', 'home', to.id), ...pageOf('home') }] }
+      measure('home')
       runningRef.current = to.id
       lastPage.current = 'home'
       depth.current = 0
