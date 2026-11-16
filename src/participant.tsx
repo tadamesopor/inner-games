@@ -34,8 +34,8 @@ function readStart(): Start | null {
 const startOf = () => (start === undefined ? (start = readStart()) : start)
 export const testGroup = (): Group | null => startOf()?.group ?? null
 
-// TODO Damian: your email address, shown on the end screen when sending didn't work
-const MAIL_TO_DISPLAY = 'damian…'
+// shown on the end screen when sending didn't work
+const MAIL_TO_DISPLAY = '524795@student.fontys.nl'
 const KEY = 'ig-p6:' // ig-p6:<id> the session
 const MOUSE_KEY = 'ig-p6m:' // ig-p6m:<id> its mouse path (apart, it changes 4 times a second)
 const MAX_EVENTS = 3000
