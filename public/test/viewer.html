@@ -3,84 +3,189 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>muispad viewer</title>
+<title>sessie viewer</title>
 <!--
-  the mouse path from a test session (the .json from the email). plain html, no build, works offline.
+  a test session (the .json from the email), watched back. plain html, no build.
+  two tabs:
+  - "replay op de website": the real site in an iframe (/?replay=1, see src/replay.ts). the viewer tells it
+    which page to open and how far to scroll; the cursor, the clicks and the captions are drawn on top, here.
+    a reconstruction from the log, not a video. needs the site online.
+  - "muispad": the mouse path in an empty box. works offline.
   the file is only read in this browser tab, it is never sent anywhere.
 -->
 <style>
-  :root { --orange: #EA561F; --orange-text: #C84413; --yellow: #FAB512; --ink: #2A1810; --cream: #FFF6E6; --line: rgb(42 24 16 / 0.12); }
+  :root { --orange: #EA561F; --orange-text: #C84413; --yellow: #FAB512; --ink: #2A1810; --cream: #FFF6E6; --line: rgb(42 24 16 / 0.12); --red: #D7261E; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--cream); color: var(--ink); font: 16px/1.5 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; }
-  main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+  main { max-width: 1400px; margin: 0 auto; padding: 24px 16px 64px; }
   h1 { font-size: 28px; margin: 0 0 4px; }
   h2 { font-size: 18px; margin: 0 0 8px; }
   p { margin: 0; }
+  button { font: inherit; color: inherit; }
   .muted { color: rgb(42 24 16 / 0.65); }
-  #drop { display: block; margin-top: 20px; border: 2px dashed rgb(42 24 16 / 0.3); border-radius: 12px; padding: 28px; text-align: center; background: #fff; cursor: pointer; }
+  .small { font-size: 14px; }
+  #drop { display: block; margin-top: 16px; border: 2px dashed rgb(42 24 16 / 0.3); border-radius: 12px; padding: 22px; text-align: center; background: #fff; cursor: pointer; }
   #drop.over { border-color: var(--orange); background: #fff1e6; }
-  #app { display: none; margin-top: 24px; gap: 24px; grid-template-columns: 240px 1fr; }
+  #app { display: none; margin-top: 24px; gap: 24px; grid-template-columns: 240px minmax(0, 1fr); }
   #app.on { display: grid; }
-  @media (max-width: 760px) { #app.on { grid-template-columns: 1fr; } }
-  .tasks button { display: block; width: 100%; text-align: left; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font: inherit; color: inherit; cursor: pointer; }
+  @media (max-width: 900px) { #app.on { grid-template-columns: 1fr; } }
+  .tasks button { display: block; width: 100%; text-align: left; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; }
   .tasks button[aria-pressed='true'] { background: var(--ink); color: var(--cream); border-color: var(--ink); }
   .tasks small { display: block; opacity: 0.75; }
+  .btn { padding: 8px 16px; border-radius: 12px; border: 0; background: var(--ink); color: var(--cream); font-weight: 600; cursor: pointer; }
+  .btn.light { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .warn { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #fff1e6; border: 1px solid #f3c6a8; font-size: 14px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .tabs button { padding: 8px 14px; border: 0; border-bottom: 3px solid transparent; background: none; cursor: pointer; font-weight: 600; }
+  .tabs button[aria-selected='true'] { border-color: var(--orange); }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
+  .seg button { border: 0; background: none; padding: 7px 12px; cursor: pointer; }
+  .seg button[aria-pressed='true'] { background: var(--ink); color: var(--cream); }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+  /* replay */
+  .player { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start; }
+  @media (max-width: 1100px) { .player { grid-template-columns: 1fr; } }
+  .stage { position: relative; overflow: hidden; border-radius: 12px; background: #fff; box-shadow: 0 2px 16px rgb(42 24 16 / 0.12); margin: 0 auto; }
+  .stage iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #fff; }
+  .layer { position: absolute; inset: 0; overflow: hidden; } /* on top of the iframe: you can't click the site */
+  .cursor { position: absolute; z-index: 3; width: 22px; height: 22px; margin: -2px 0 0 -3px; pointer-events: none; transition: opacity 0.2s; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35)); }
+  .ring { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgb(234 86 31 / 0.35); border: 3px solid var(--orange); pointer-events: none; animation: ring 1s ease-out forwards; }
+  .ring.rage { background: rgb(215 38 30 / 0.4); border-color: var(--red); }
+  .ring.dead { background: none; border-color: var(--orange-text); border-style: dashed; }
+  .ring.tap { background: rgb(42 24 16 / 0.18); border-color: rgb(42 24 16 / 0.5); }
+  @keyframes ring { from { transform: scale(0.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+  .tapdot { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; background: rgb(42 24 16 / 0.28); pointer-events: none; animation: fade 1.5s ease-out forwards; }
+  @keyframes fade { from { opacity: 1; } to { opacity: 0; } }
+  .caption { position: absolute; z-index: 4; left: 50%; bottom: 14px; transform: translateX(-50%); max-width: 90%; padding: 6px 12px; border-radius: 10px; background: var(--ink); color: var(--cream); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+  .caption.top { top: 14px; bottom: auto; background: var(--yellow); color: var(--ink); font-weight: 600; }
+  .card { position: absolute; z-index: 5; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgb(42 24 16 / 0.55); }
+  .card > div { width: min(520px, 100%); max-height: 100%; overflow: auto; padding: 20px; border-radius: 12px; background: #fff; }
+  .card dt { font-weight: 600; margin-top: 10px; }
+  .card dd { margin: 2px 0 0; }
+  .track { position: relative; height: 34px; margin-top: 10px; cursor: pointer; touch-action: none; }
+  .track .rail { position: absolute; left: 0; right: 0; top: 15px; height: 4px; border-radius: 2px; background: var(--line); }
+  .track .fill { position: absolute; left: 0; top: 15px; height: 4px; border-radius: 2px; background: var(--ink); }
+  .track .knob { position: absolute; top: 9px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--ink); }
+  .track .mark { position: absolute; width: 4px; margin-left: -2px; border-radius: 2px; }
+  .track .mark.page { top: 4px; height: 26px; background: var(--orange); }
+  .track .mark.click { top: 11px; height: 12px; background: rgb(42 24 16 / 0.55); }
+  .track .mark.rage { top: 8px; height: 18px; background: var(--red); }
+  .facts { font-size: 15px; }
+  .facts dt { font-weight: 600; margin-top: 10px; }
+  .facts dd { margin: 0; }
+  .facts ol { margin: 0; padding-left: 20px; }
+  .note { margin-top: 20px; font-size: 14px; }
+  .note ul { margin: 6px 0 0; padding-left: 20px; }
+
+  /* muispad */
   .box { position: relative; aspect-ratio: 16 / 9; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-  svg { display: block; width: 100%; height: 100%; }
-  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
-  .btn { padding: 8px 16px; border-radius: 12px; border: 0; background: var(--ink); color: var(--cream); font: inherit; font-weight: 600; cursor: pointer; }
+  .box svg { display: block; width: 100%; height: 100%; }
   .timeline { position: relative; height: 64px; margin-top: 8px; border-top: 2px solid var(--line); }
   .timeline span { position: absolute; top: 6px; transform: translateX(-1px); padding-left: 6px; border-left: 2px solid var(--orange); font-size: 13px; white-space: nowrap; }
   .timeline span:nth-child(even) { top: 30px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
-  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-  ol { margin: 0; padding-left: 20px; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
   @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-  <h1>muispad viewer</h1>
-  <p class="muted">Sleep het .json-bestand uit de mail hierin. Het bestand blijft op deze computer.</p>
+  <h1>sessie viewer</h1>
+  <p class="muted">Sleep het .json-bestand uit de mail hierin. Het bestand blijft op deze computer en wordt nergens heen gestuurd.</p>
+  <p class="muted small">De replay op de website heeft de website online nodig. Het tabblad muispad werkt ook offline.</p>
   <label id="drop">Sleep het bestand hier, of klik om het te kiezen<input id="file" type="file" accept=".json,application/json" hidden /></label>
   <p id="err" style="color: var(--orange-text); margin-top: 8px"></p>
 
   <div id="app">
     <div>
-      <p id="who" class="muted" style="margin-bottom: 12px"></p>
-      <div class="tasks" id="tasks"></div>
+      <p id="who" class="small"></p>
+      <p id="when" class="small muted" style="margin-bottom: 4px"></p>
+      <div id="deploy" class="warn" hidden></div>
+      <div class="tasks" id="tasks" style="margin-top: 14px"></div>
+      <button class="btn light" id="whole" style="width: 100%">hele sessie afspelen</button>
     </div>
     <div>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-replay" aria-selected="true">replay op de website</button>
+        <button role="tab" id="tab-path" aria-selected="false">muispad</button>
+      </div>
       <h2 id="title"></h2>
       <p id="text" class="muted"></p>
-      <div class="bar">
-        <button class="btn" id="play">afspelen (4x)</button>
-        <span id="clock" class="muted"></span>
-        <span class="legend">
-          <span><span class="dot" style="background: var(--ink)"></span>klik</span>
-          <span><span class="dot" style="background: #D7261E"></span>boze klik</span>
-          <span><span class="dot" style="border: 2px solid var(--orange-text)"></span>dode klik</span>
-        </span>
-      </div>
-      <div class="box"><svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg></div>
-      <div class="timeline" id="timeline"></div>
-      <div class="cols">
-        <div><h2>langst bekeken (hover)</h2><ol id="hover"></ol></div>
-        <div><h2>in deze taak</h2><p id="stats"></p></div>
-      </div>
+
+      <!-- replay op de website -->
+      <section id="replay">
+        <div id="rmsg" class="warn" hidden></div>
+        <div class="bar">
+          <button class="btn" id="rplay">afspelen</button>
+          <span class="seg" id="speed"><button data-s="1" aria-pressed="true">1x</button><button data-s="2" aria-pressed="false">2x</button><button data-s="4" aria-pressed="false">4x</button></span>
+          <label class="small"><input type="checkbox" id="skip" checked /> wachten overslaan</label>
+          <span id="rclock" class="muted small"></span>
+          <span id="rsize" class="muted small"></span>
+        </div>
+        <div class="player">
+          <div>
+            <div class="stage" id="stage">
+              <iframe id="frame" title="de website" tabindex="-1"></iframe>
+              <div class="layer" id="layer">
+                <svg class="cursor" id="cursor" viewBox="0 0 22 22" hidden><path d="M3 2 L3 18 L7.5 13.8 L10.6 20.5 L13.4 19.2 L10.4 12.6 L16.5 12.4 Z" fill="#2A1810" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                <div class="caption top" id="game" hidden></div>
+                <div class="caption" id="caption" hidden></div>
+                <div class="card" id="card" hidden><div id="cardbody"></div></div>
+              </div>
+            </div>
+            <div class="track" id="track"><div class="rail"></div><div class="fill" id="fill"></div><div id="marks"></div><div class="knob" id="knob"></div></div>
+            <div class="legend" style="margin-top: 4px">
+              <span><span class="dot" style="background: var(--orange)"></span>pagina</span>
+              <span><span class="dot" style="background: rgb(42 24 16 / 0.55)"></span>klik</span>
+              <span><span class="dot" style="background: var(--red)"></span>boze klik</span>
+              <span><span class="dot" style="border: 2px dashed var(--orange-text)"></span>dode klik</span>
+            </div>
+          </div>
+          <dl class="facts" id="facts"></dl>
+        </div>
+        <div class="note muted">
+          <strong>Wat de replay niet precies laat zien</strong>
+          <ul>
+            <li>Wat mensen typten wordt nooit opgeslagen, dus formulieren blijven leeg.</li>
+            <li>Hover-effecten op de site zie je niet: de cursor is een tekening erbovenop.</li>
+            <li>Het spel zelf wordt niet nagespeeld: je ziet de spelpagina met hoe lang ze speelden.</li>
+            <li>De replay laat de website van nu zien met de bewegingen van toen. Is de site sinds de sessie veranderd, dan kan iets op een andere plek staan.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- muispad -->
+      <section id="path" hidden>
+        <div class="bar">
+          <button class="btn" id="play">afspelen (4x)</button>
+          <span id="clock" class="muted"></span>
+          <span class="legend">
+            <span><span class="dot" style="background: var(--ink)"></span>klik</span>
+            <span><span class="dot" style="background: var(--red)"></span>boze klik</span>
+            <span><span class="dot" style="border: 2px solid var(--orange-text)"></span>dode klik</span>
+          </span>
+        </div>
+        <div class="box"><svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg></div>
+        <div class="timeline" id="timeline"></div>
+        <div class="cols">
+          <div><h2>langst bekeken (hover)</h2><ol id="hover"></ol></div>
+          <div><h2>in deze taak</h2><p id="stats"></p></div>
+        </div>
+      </section>
     </div>
   </div>
 </main>
 <script>
-  // light to dark over time: cream-yellow at the start, ink at the end
-  const from = [250, 181, 18], to = [42, 24, 16]
-  const mix = (k) => `rgb(${from.map((f, i) => Math.round(f + (to[i] - f) * k)).join(',')})`
-  const clamp = (n) => Math.max(0, Math.min(100, n))
-  const X = (x) => clamp(x) * 16, Y = (y) => clamp(y) * 9
   const $ = (id) => document.getElementById(id)
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
-  let session = null, current = null, timer = null
+  const secs = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s` }
+  const CLICKS = ['click', 'tap', 'rage_click', 'dead_click']
+  let session = null, current = null
+
+  /* ---------- the file ---------- */
 
   function open(file) {
     const r = new FileReader()
@@ -98,92 +203,472 @@
     r.readAsText(file)
   }
 
+  const viewport = () => {
+    if (session.viewport?.w) return session.viewport
+    const [w, h] = String(session.device?.viewport ?? '1440x900').split('x').map(Number)
+    return { w: w || 1440, h: h || 900 }
+  }
+  const phone = () => viewport().w < 640 || session.device?.type === 'telefoon'
+  const samplesOf = (id) => session.mouse?.[id] ?? []
+  // scroll data: samples with 4 numbers (sessions from before the replay have [t, x, y])
+  const hasScroll = () => Object.values(session.mouse ?? {}).some((l) => l.some((s) => s.length >= 4 && s[3] != null))
+  const hasMouse = () => Object.values(session.mouse ?? {}).some((l) => l.length)
+
   function show() {
     $('app').classList.add('on')
-    $('who').textContent = `${session.id}, ${session.group}, ${session.profile}. ${session.device?.type ?? ''} ${session.device?.viewport ?? ''}`
+    const v = viewport()
+    $('who').textContent = `${session.id}, ${session.group}, ${session.profile}, ${session.status}`
+    const started = session.started ? new Date(session.started) : null
+    $('when').textContent = started ? `sessie van ${started.toLocaleString('nl-NL', { dateStyle: 'long', timeStyle: 'short' })}` : ''
     $('tasks').innerHTML = ''
     for (const t of session.tasks) {
       const b = document.createElement('button')
-      b.innerHTML = `Taak ${esc(t.id.slice(1))}: ${esc(t.title)}<small>${t.seconds == null ? 'niet gedaan' : t.seconds + ' s'}, ${(session.mouse?.[t.id] ?? []).length} punten</small>`
+      b.innerHTML = `Taak ${esc(t.id.slice(1))}: ${esc(t.title)}<small>${t.seconds == null ? 'niet gedaan' : secs(t.seconds * 1000)}${t.stuck ? ', vastgelopen' : ''}</small>`
       b.onclick = () => pick(t.id)
       b.dataset.id = t.id
       $('tasks').append(b)
     }
+    tab(hasScroll() && location.protocol !== 'file:' ? 'replay' : 'path')
+    R.setup(v)
     pick(session.tasks[0].id)
   }
 
+  function pick(id, whole = false) {
+    current = id
+    for (const b of $('tasks').children) b.setAttribute('aria-pressed', b.dataset.id === id)
+    const t = session.tasks.find((x) => x.id === id)
+    $('title').textContent = `Taak ${id.slice(1)}: ${t.title}`
+    $('text').textContent = t.text ?? ''
+    P.pick(id)
+    R.load(id, whole)
+  }
+
+  function tab(name) {
+    $('tab-replay').setAttribute('aria-selected', name === 'replay')
+    $('tab-path').setAttribute('aria-selected', name === 'path')
+    $('replay').hidden = name !== 'replay'
+    $('path').hidden = name !== 'path'
+    if (name === 'path') R.pause()
+    else R.fit()
+  }
+  $('tab-replay').onclick = () => tab('replay')
+  $('tab-path').onclick = () => tab('path')
+
+  // the events of one task, with t in ms since the task started
   function taskData(id) {
     const t = session.tasks.find((x) => x.id === id)
     const ev = (session.events ?? []).filter((e) => e.task === id)
     const t0 = ev.find((e) => e.type === 'task_start')?.t ?? ev[0]?.t ?? 0
+    const samples = samplesOf(id)
+    const endEv = ev.find((e) => e.type === 'task_done' || e.type === 'task_stuck')
+    const end = Math.max(endEv ? endEv.t - t0 : 0, samples.at(-1)?.[0] ?? 0, ...ev.map((e) => e.t - t0), 1)
+    return { t, ev, t0, samples, end }
+  }
+
+  /* ---------- replay op de website ---------- */
+
+  const R = (() => {
+    const frame = $('frame'), layer = $('layer'), stage = $('stage')
+    let v = { w: 1440, h: 900 }, scale = 1
+    let loaded = false, waiting = false, waitTimer = 0
+    let id = null, acts = [], pages = [], mouse = [], scrolls = [], end = 1, data = null, moments = []
+    let now = 0, playing = false, speed = 1, last = 0, raf = 0, whole = false, shownPage = null, sentY = null, skipUntil = 0, captionTimer = 0, cardTimer = 0
+
+    const send = (msg) => frame.contentWindow?.postMessage(msg, location.origin)
+
+    // the answers from the site: the page has rendered
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || e.source !== frame.contentWindow || e.data?.type !== 'ready') return
+      if (e.data.first) {
+        loaded = true
+        if (e.data.build && session?.started && new Date(e.data.build) > new Date(session.started)) {
+          $('deploy').hidden = false
+          $('deploy').textContent = `Let op: de website is na deze sessie nog veranderd (versie van ${new Date(e.data.build).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}). De replay laat de site van nu zien met de bewegingen van toen.`
+        }
+        if (id) start(id)
+      }
+      if (waiting) {
+        waiting = false
+        clearTimeout(waitTimer)
+        sentY = null
+        last = performance.now()
+        if (!playing && data) draw(false) // paused or dragging: put the scroll and cursor right on the new page
+      }
+    })
+
+    function setup(vp) {
+      v = vp
+      $('rsize').textContent = `${v.w} × ${v.h}, ${phone() ? 'telefoon' : 'desktop'}`
+      frame.style.width = v.w + 'px'
+      frame.style.height = v.h + 'px'
+      loaded = false
+      shownPage = null
+      if (location.protocol === 'file:') {
+        msg('De replay werkt alleen als je deze viewer via de website opent (/test/viewer.html). Het muispad werkt wel.')
+        return
+      }
+      frame.src = '/?replay=1'
+      fit()
+    }
+
+    // the iframe is as big as the participant's screen, scaled down to fit
+    function fit() {
+      const room = stage.parentElement.clientWidth || 900
+      scale = Math.min(1, room / v.w, (innerHeight * 0.72) / v.h)
+      stage.style.width = v.w * scale + 'px'
+      stage.style.height = v.h * scale + 'px'
+      frame.style.transform = `scale(${scale})`
+    }
+    addEventListener('resize', fit)
+
+    function msg(text) {
+      $('rmsg').hidden = !text
+      $('rmsg').textContent = text || ''
+    }
+
+    function load(taskId, wholeSession) {
+      pause()
+      id = taskId
+      whole = wholeSession
+      data = taskData(taskId)
+      end = data.end
+      const scroll = hasScroll()
+      // what happens, in order: pages, clicks, the game, and the samples (cursor + scroll)
+      acts = []
+      for (const e of data.ev) {
+        const t = Math.max(0, e.t - data.t0)
+        if (e.type === 'page') {
+          const key = e.detail ?? ''
+          const i = key.indexOf('/')
+          acts.push({ t, k: 'page', page: e.page ?? (i < 0 ? key : key.slice(0, i)), sel: e.sel ?? (i < 0 ? '' : key.slice(i + 1)), label: key })
+        }
+        if (CLICKS.includes(e.type) && e.x != null) acts.push({ t, k: 'click', type: e.type, x: e.x, y: e.y, sy: e.sy, label: e.detail })
+        if (e.type === 'e5:open') acts.push({ t, k: 'game' })
+      }
+      pages = acts.filter((a) => a.k === 'page')
+      if (!pages.length || pages[0].t > 0) pages.unshift({ t: 0, k: 'page', page: 'home', sel: '', label: 'home' }) // every task starts on the homepage
+      // the cursor only with scroll data: without it the page would lie wrong under it
+      // the clicks are points of the path too: there the position is exact (samples are 250 ms apart)
+      mouse = scroll && !phone() ? [...data.samples.filter((s) => s[1] != null && s[2] != null).map((s) => ({ t: s[0], x: s[1], y: s[2] })), ...acts.filter((a) => a.k === 'click').map((a) => ({ t: a.t, x: a.x, y: Math.min(100, a.y) }))].sort((a, b) => a.t - b.t) : []
+      // the scroll position over time: samples and clicks, and 0 at every new page
+      scrolls = [
+        ...(scroll ? data.samples.filter((s) => s[3] != null).map((s) => ({ t: s[0], y: s[3], s: true })) : []),
+        ...acts.filter((a) => a.k === 'click' && a.sy != null).map((a) => ({ t: a.t, y: a.sy })),
+        ...pages.map((p) => ({ t: p.t, y: 0, page: true })),
+      ].sort((a, b) => a.t - b.t || (a.page ? -1 : 1))
+      // a page change comes first at the same time, the samples after
+      const ord = (a) => (a.k === 'page' ? 0 : 1)
+      acts.sort((a, b) => a.t - b.t || ord(a) - ord(b))
+      // every moment something happens (also a mouse move or a scroll): for "wachten overslaan"
+      moments = [...acts.map((a) => a.t), ...data.samples.map((s) => s[0])].sort((a, b) => a - b)
+
+      msg(
+        !hasScroll() && !hasMouse() && session.status === 'onvolledig'
+          ? 'Een onvolledige sessie zonder muispad: de replay laat alleen de pagina’s en klikken zien.'
+          : !hasScroll()
+            ? 'Deze sessie is opgenomen voordat de scrollpositie werd bewaard. De replay laat alleen de pagina’s en klikken zien.'
+            : data.t.seconds == null ? 'Deze taak is niet gedaan.' : '',
+      )
+      $('cursor').toggleAttribute('hidden', true)
+      $('game').hidden = true
+      $('caption').hidden = true
+      $('card').hidden = true
+      now = 0
+      shownPage = null
+      marks()
+      facts()
+      if (loaded) start(taskId)
+    }
+
+    // the task bar like the participant saw it, then the homepage
+    function start(taskId) {
+      const t = session.tasks.find((x) => x.id === taskId)
+      send({ type: 'reset' })
+      send({ type: 'task', title: `Taak ${taskId.slice(1)} van 4`, text: t?.text ?? '' })
+      waitFor()
+      shownPage = 'home/'
+      draw(false)
+      if (whole) play()
+    }
+
+    function waitFor() {
+      waiting = true
+      clearTimeout(waitTimer)
+      waitTimer = setTimeout(() => (waiting = false), 4000) // never stuck when the site doesn't answer
+    }
+
+    const before = (list, t) => { let r = null; for (const x of list) { if (x.t <= t) r = x; else break } return r }
+    const after = (list, t) => list.find((x) => x.t > t)
+
+    // everything on screen for time `now`. `animate`: clicks between the last frame and now get a ring
+    function draw(animate, from = now) {
+      // the page
+      const p = before(pages, now) ?? pages[0]
+      const key = p.page + '/' + p.sel
+      if (key !== shownPage) {
+        shownPage = key
+        send({ type: 'go', page: p.page, sel: p.sel })
+        waitFor()
+        return
+      }
+      // the scroll: between two samples close together it glides, otherwise it jumps
+      const a = before(scrolls, now), b = after(scrolls, now)
+      let y = a ? a.y : 0
+      if (a && b && a.s && b.s && b.t - a.t <= 600) y = a.y + (b.y - a.y) * ((now - a.t) / (b.t - a.t))
+      y = Math.round(y)
+      if (y !== sentY) {
+        sentY = y
+        send({ type: 'scroll', y })
+      }
+      // the cursor, smooth between the samples (not on a phone)
+      const c = $('cursor')
+      const m1 = before(mouse, now), m2 = after(mouse, now)
+      if (m1 && !phone()) {
+        let x = m1.x, yy = m1.y
+        if (m2 && m2.t - m1.t <= 2000) {
+          const k = (now - m1.t) / (m2.t - m1.t)
+          x += (m2.x - x) * k
+          yy += (m2.y - yy) * k
+        }
+        c.toggleAttribute('hidden', false)
+        c.style.left = x + '%'
+        c.style.top = yy + '%'
+      } else c.toggleAttribute('hidden', true)
+      // clicks: a ring, and the label for 1.5 s
+      if (animate) for (const e of acts) if (e.k === 'click' && e.t > from && e.t <= now) ring(e)
+      // the game: only that they opened it, and how long
+      const g = acts.filter((e) => e.k === 'game' && e.t <= now && e.t >= p.t)
+      const tt = data.t
+      $('game').hidden = !g.length
+      if (g.length) $('game').textContent = `speelde het spel${tt.previewSeconds ? ', ' + secs(tt.previewSeconds * 1000) : ''}`
+      // the timeline
+      const f = Math.min(1, now / end)
+      $('fill').style.width = f * 100 + '%'
+      $('knob').style.left = f * 100 + '%'
+      $('rclock').textContent = `${secs(now)} / ${secs(end)}`
+    }
+
+    function ring(e) {
+      const r = document.createElement('div')
+      r.className = 'ring ' + ({ rage_click: 'rage', dead_click: 'dead', tap: 'tap' }[e.type] ?? '')
+      r.style.left = e.x + '%'
+      r.style.top = Math.min(100, e.y) + '%'
+      layer.append(r)
+      setTimeout(() => r.remove(), 1000)
+      if (e.type === 'tap') {
+        const d = document.createElement('div')
+        d.className = 'tapdot'
+        d.style.left = r.style.left
+        d.style.top = r.style.top
+        layer.append(d)
+        setTimeout(() => d.remove(), 1500)
+      }
+      const word = { click: 'klik', tap: 'tik', rage_click: 'boze klik', dead_click: 'dode klik' }[e.type]
+      caption(`${word}: ${e.label || '(zonder tekst)'}`)
+    }
+
+    function caption(text, ms = 1500) {
+      $('caption').hidden = false
+      $('caption').textContent = text
+      clearTimeout(captionTimer)
+      captionTimer = setTimeout(() => ($('caption').hidden = true), ms)
+    }
+
+    function frameLoop(ts) {
+      raf = requestAnimationFrame(frameLoop)
+      if (!playing || waiting) {
+        last = ts
+        return
+      }
+      const from = now
+      now = Math.min(end, now + (ts - last) * speed)
+      last = ts
+      // nothing happens for more than 3 s: jump ahead
+      if ($('skip').checked) {
+        const next = moments.find((t) => t > now) ?? end
+        if (next - now > 3000) {
+          caption(`… ${Math.round((next - now) / 1000)} s niets`, 1200)
+          now = next - 300
+        }
+      }
+      draw(true, from)
+      if (now >= end) done()
+    }
+
+    // the end of a task: the questions and answers that came after it
+    function done() {
+      pause()
+      const n = id.slice(1)
+      const answers = (session.answers ?? []).filter((a) => a.id.startsWith(n) && /^\d/.test(a.id))
+      const i = session.tasks.findIndex((t) => t.id === id)
+      const nextTask = session.tasks[i + 1]
+      $('cardbody').innerHTML = `<h2>na taak ${esc(n)}: ${esc(data.t.title)}</h2>
+        <p class="muted small">${data.t.result === 'vast' ? 'kwam er niet uit' : data.t.result === 'klaar' ? 'drukte op klaar' : esc(data.t.result)}, na ${data.t.seconds == null ? '-' : secs(data.t.seconds * 1000)}</p>
+        <dl>${answers.map((a) => `<dt>${esc(a.q)}</dt><dd>${esc(a.a) || '<span class="muted">leeg</span>'}</dd>`).join('') || '<dd class="muted">geen vragen</dd>'}</dl>
+        <div class="bar" style="margin-bottom: 0">${nextTask ? `<button class="btn" id="cardnext">volgende taak${whole ? ' (over 8 s)' : ''}</button>` : ''}<button class="btn light" id="cardagain">opnieuw</button></div>`
+      $('card').hidden = false
+      $('cardagain').onclick = () => pick(id, whole)
+      if (nextTask) {
+        $('cardnext').onclick = () => (clearTimeout(cardTimer), pick(nextTask.id, whole))
+        clearTimeout(cardTimer)
+        if (whole) cardTimer = setTimeout(() => pick(nextTask.id, true), 8000)
+      }
+    }
+
+    function play() {
+      if (now >= end) {
+        now = 0
+        shownPage = null
+      }
+      $('card').hidden = true
+      playing = true
+      last = performance.now()
+      $('rplay').textContent = 'pauze'
+    }
+    function pause() {
+      playing = false
+      clearTimeout(cardTimer)
+      $('rplay').textContent = 'afspelen'
+    }
+    $('rplay').onclick = () => (playing ? pause() : play())
+    for (const b of $('speed').children)
+      b.onclick = () => {
+        speed = +b.dataset.s
+        for (const o of $('speed').children) o.setAttribute('aria-pressed', o === b)
+      }
+
+    // the timeline: marks for pages, clicks and rage clicks, and you can drag through it
+    function marks() {
+      $('marks').innerHTML = [
+        ...pages.map((p) => `<div class="mark page" style="left:${(p.t / end) * 100}%" title="${secs(p.t)}: pagina ${esc(p.label)}"></div>`),
+        ...acts
+          .filter((a) => a.k === 'click')
+          .map((a) => `<div class="mark ${a.type === 'rage_click' ? 'rage' : 'click'}" style="left:${(a.t / end) * 100}%" title="${secs(a.t)}: ${{ click: 'klik', tap: 'tik', rage_click: 'boze klik', dead_click: 'dode klik' }[a.type]}: ${esc(a.label)}"></div>`),
+      ].join('')
+    }
+    const track = $('track')
+    let dragging = false
+    const seek = (e) => {
+      const r = track.getBoundingClientRect()
+      now = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * end
+      $('card').hidden = true
+      draw(false)
+    }
+    track.onpointerdown = (e) => {
+      dragging = true
+      track.setPointerCapture(e.pointerId)
+      seek(e)
+    }
+    track.onpointermove = (e) => dragging && seek(e)
+    track.onpointerup = () => (dragging = false)
+
+    function facts() {
+      const t = data.t
+      const list = (l) => (l?.length ? l.map(esc).join(', ') : 'geen')
+      $('facts').innerHTML = `
+        <dt>tijd</dt><dd>${t.seconds == null ? 'niet gedaan' : secs(t.seconds * 1000)}</dd>
+        <dt>vastgelopen</dt><dd>${t.stuck ? 'ja' : 'nee'}</dd>
+        <dt>pagina’s</dt><dd>${(t.pages ?? []).map(esc).join(' → ') || '-'}</dd>
+        <dt>klikken</dt><dd>${t.clicks ?? 0}</dd>
+        <dt>langst bekeken (hover)</dt><dd>${(t.hoverTop ?? []).length ? `<ol>${t.hoverTop.map((h) => `<li>${esc(h.label)} <span class="muted">${h.seconds} s</span></li>`).join('')}</ol>` : 'geen'}</dd>
+        <dt>boze klikken</dt><dd>${list(t.rageClicks)}</dd>
+        <dt>dode klikken</dt><dd>${list(t.deadClicks)}</dd>
+        ${t.id === 't4' ? `<dt>spel</dt><dd>${t.previewOpened ? 'geopend, ' + secs((t.previewSeconds ?? 0) * 1000) : 'niet geopend'}</dd>` : ''}`
+    }
+
+    // to a moment in the task (also used by the test script: igReplay.seekTo(ms), igReplay.state())
+    function seekTo(ms) {
+      pause()
+      now = Math.max(0, Math.min(end, ms))
+      $('card').hidden = true
+      draw(false)
+    }
+    const state = () => ({ now, end, waiting, playing, page: shownPage, scrollY: sentY, acts })
+
+    raf = requestAnimationFrame(frameLoop)
+    return { setup, fit, load, pause, play, seekTo, state }
+  })()
+  window.igReplay = R
+
+  $('whole').onclick = () => {
+    tab('replay')
+    pick(session.tasks[0].id, true)
+  }
+
+  /* ---------- muispad ---------- */
+
+  const P = (() => {
+    // light to dark over time: cream-yellow at the start, ink at the end
+    const from = [250, 181, 18], to = [42, 24, 16]
+    const mix = (k) => `rgb(${from.map((f, i) => Math.round(f + (to[i] - f) * k)).join(',')})`
+    const clamp = (n) => Math.max(0, Math.min(100, n))
+    const X = (x) => clamp(x) * 16, Y = (y) => clamp(y) * 9
+    let timer = null
+
     // only the samples with a mouse position (a phone has scroll-only samples: [t, null, null, scrollY])
-    const path = (session.mouse?.[id] ?? []).filter((p) => p[1] != null && p[2] != null)
-    const end = Math.max(path.at(-1)?.[0] ?? 0, ...(ev.map((e) => e.t - t0)), 1)
-    return { t, ev, t0, path, end }
-  }
+    const pathOf = (id) => samplesOf(id).filter((p) => p[1] != null && p[2] != null)
 
-  function pick(id) {
-    stop()
-    current = id
-    for (const b of $('tasks').children) b.setAttribute('aria-pressed', b.dataset.id === id)
-    const { t, ev, t0, end } = taskData(id)
-    $('title').textContent = `Taak ${id.slice(1)}: ${t.title}`
-    $('text').textContent = t.text ?? ''
-    $('hover').innerHTML = (t.hoverTop ?? []).map((h) => `<li>${esc(h.label)} <span class="muted">${h.seconds} s</span></li>`).join('') || '<li class="muted">geen</li>'
-    $('stats').innerHTML = [
-      `${t.clicks ?? 0} klikken, ${t.result === 'vast' ? 'kwam er niet uit' : t.result}`,
-      `boze klikken: ${(t.rageClicks ?? []).map(esc).join(', ') || 'geen'}`,
-      `dode klikken: ${(t.deadClicks ?? []).map(esc).join(', ') || 'geen'}`,
-      `muis: ${t.mouseScreens ?? 0} schermbreedtes`,
-      t.id === 't4' ? `spel geopend: ${t.previewOpened ? 'ja, ' + t.previewSeconds + ' s' : 'nee'}` : '',
-    ].filter(Boolean).join('<br>')
-    $('timeline').innerHTML = ev
-      .filter((e) => e.type === 'page')
-      .map((e) => `<span style="left:${Math.min(96, ((e.t - t0) / end) * 100)}%">${esc(e.detail)}</span>`)
-      .join('')
-    draw(Infinity)
-  }
+    function pick(id) {
+      stop()
+      const { t, ev, t0, end } = taskData(id)
+      $('hover').innerHTML = (t.hoverTop ?? []).map((h) => `<li>${esc(h.label)} <span class="muted">${h.seconds} s</span></li>`).join('') || '<li class="muted">geen</li>'
+      $('stats').innerHTML = [
+        `${t.clicks ?? 0} klikken, ${t.result === 'vast' ? 'kwam er niet uit' : t.result}`,
+        `boze klikken: ${(t.rageClicks ?? []).map(esc).join(', ') || 'geen'}`,
+        `dode klikken: ${(t.deadClicks ?? []).map(esc).join(', ') || 'geen'}`,
+        `muis: ${t.mouseScreens ?? 0} schermbreedtes`,
+        t.id === 't4' ? `spel geopend: ${t.previewOpened ? 'ja, ' + t.previewSeconds + ' s' : 'nee'}` : '',
+      ].filter(Boolean).join('<br>')
+      $('timeline').innerHTML = ev
+        .filter((e) => e.type === 'page')
+        .map((e) => `<span style="left:${Math.min(96, ((e.t - t0) / end) * 100)}%">${esc(e.detail)}</span>`)
+        .join('')
+      draw(Infinity)
+    }
 
-  // the path up to time `until` (ms since the task started)
-  function draw(until) {
-    const { ev, t0, path, end } = taskData(current)
-    let out = ''
-    for (let i = 1; i < path.length && path[i][0] <= until; i++) {
-      const [, x1, y1] = path[i - 1], [t, x2, y2] = path[i]
-      out += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" stroke="${mix(t / end)}" stroke-width="4" stroke-linecap="round"/>`
+    // the path up to time `until` (ms since the task started)
+    function draw(until) {
+      const { ev, t0, end } = taskData(current)
+      const path = pathOf(current)
+      let out = ''
+      for (let i = 1; i < path.length && path[i][0] <= until; i++) {
+        const [, x1, y1] = path[i - 1], [t, x2, y2] = path[i]
+        out += `<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" stroke="${mix(t / end)}" stroke-width="4" stroke-linecap="round"/>`
+      }
+      for (const e of ev) {
+        if (e.x == null || e.t - t0 > until) continue
+        const label = esc(e.detail)
+        if (e.type === 'click' || e.type === 'tap') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="10" fill="#2A1810"><title>${label}</title></circle>`
+        if (e.type === 'rage_click') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="16" fill="#D7261E"><title>boze klik: ${label}</title></circle>`
+        if (e.type === 'dead_click') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="12" fill="none" stroke="#C84413" stroke-width="4"><title>dode klik: ${label}</title></circle>`
+      }
+      const last = [...path].reverse().find((p) => p[0] <= until)
+      if (last && until !== Infinity) out += `<circle cx="${X(last[1])}" cy="${Y(last[2])}" r="12" fill="#EA561F"/>`
+      if (!path.length) out += `<text x="800" y="450" text-anchor="middle" font-size="36" fill="#2A1810" opacity="0.5">geen muispad (telefoon, of niet gedaan)</text>`
+      $('svg').innerHTML = out
+      $('clock').textContent = until === Infinity ? `${Math.round(end / 1000)} s` : `${Math.round(until / 1000)} / ${Math.round(end / 1000)} s`
     }
-    for (const e of ev) {
-      if (e.x == null || e.t - t0 > until) continue
-      const label = esc(e.detail)
-      if (e.type === 'click' || e.type === 'tap') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="10" fill="#2A1810"><title>${label}</title></circle>`
-      if (e.type === 'rage_click') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="16" fill="#D7261E"><title>boze klik: ${label}</title></circle>`
-      if (e.type === 'dead_click') out += `<circle cx="${X(e.x)}" cy="${Y(e.y)}" r="12" fill="none" stroke="#C84413" stroke-width="4"><title>dode klik: ${label}</title></circle>`
-    }
-    const last = [...path].reverse().find((p) => p[0] <= until)
-    if (last && until !== Infinity) out += `<circle cx="${X(last[1])}" cy="${Y(last[2])}" r="12" fill="#EA561F"/>`
-    if (!path.length) out += `<text x="800" y="450" text-anchor="middle" font-size="36" fill="#2A1810" opacity="0.5">geen muispad (telefoon, of niet gedaan)</text>`
-    $('svg').innerHTML = out
-    $('clock').textContent = until === Infinity ? `${Math.round(end / 1000)} s` : `${Math.round(until / 1000)} / ${Math.round(end / 1000)} s`
-  }
 
-  function stop() {
-    cancelAnimationFrame(timer)
-    timer = null
-    $('play').textContent = 'afspelen (4x)'
-  }
-  $('play').onclick = () => {
-    if (timer) return (stop(), draw(Infinity))
-    const { end } = taskData(current)
-    const t0 = performance.now()
-    $('play').textContent = 'stop'
-    const frame = (now) => {
-      const until = (now - t0) * 4
-      draw(until)
-      if (until < end) timer = requestAnimationFrame(frame)
-      else (stop(), draw(Infinity))
+    function stop() {
+      cancelAnimationFrame(timer)
+      timer = null
+      $('play').textContent = 'afspelen (4x)'
     }
-    timer = requestAnimationFrame(frame)
-  }
+    $('play').onclick = () => {
+      if (timer) return (stop(), draw(Infinity))
+      const { end } = taskData(current)
+      const t0 = performance.now()
+      $('play').textContent = 'stop'
+      const frame = (now) => {
+        const until = (now - t0) * 4
+        draw(until)
+        if (until < end) timer = requestAnimationFrame(frame)
+        else (stop(), draw(Infinity))
+      }
+      timer = requestAnimationFrame(frame)
+    }
+    return { pick }
+  })()
 
   $('file').onchange = (e) => e.target.files[0] && open(e.target.files[0])
   const drop = $('drop')

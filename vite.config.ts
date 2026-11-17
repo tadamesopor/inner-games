@@ -42,4 +42,6 @@ function devApi(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), devApi()],
+  // when this version of the site was built: the replay viewer compares it with the date of a session
+  define: { __BUILD__: JSON.stringify(new Date().toISOString()) },
 })

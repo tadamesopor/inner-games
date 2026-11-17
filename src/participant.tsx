@@ -20,6 +20,7 @@ type Start = { group: Group; id?: string; demo: boolean }
 let start: Start | null | undefined
 function readStart(): Start | null {
   const q = new URLSearchParams(location.search)
+  if (q.get('replay') === '1') return null // the replay never touches a real test session (ig:participant)
   const t = q.get('test')
   let saved: { id?: string; group?: string } | null = null
   try {
@@ -733,37 +734,13 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     const title = step.kind === 'task' ? `Taak ${step.id.slice(1)} van 4` : `Stap ${nr} van ${numbered.length}`
     const buttons =
       step.kind === 'task' ? (
-        <>
-          <button type="button" onClick={() => finishTask('klaar')} className={`${big} bg-ig-yellow text-ig-ink hover:bg-ig-yellow-light`}>Klaar</button>
-          <button type="button" onClick={() => finishTask('vast')} className={`${big} border-[1.5px] border-ig-cream/70 text-ig-cream hover:bg-ig-cream/15`}>Ik kom er niet uit</button>
-        </>
+        <TaskButtons onDone={() => finishTask('klaar')} onStuck={() => finishTask('vast')} />
       ) : (
         <button type="button" onClick={next} className={`${big} bg-ig-yellow text-ig-ink hover:bg-ig-yellow-light`}>Verder</button>
       )
-    // desktop: a slim bar at the top, the menu moves down under it. phone: a bar at the bottom, at most
-    // 30% of the screen, that folds to one line
     return (
       <>
-        <BarSpace phone={phone} />
-        <div data-participant role="region" aria-label="De taak" className={`ig-ptask fixed inset-x-0 z-[95] bg-ig-ink text-ig-cream shadow-lift ${phone ? 'bottom-0 max-h-[30vh] overflow-y-auto rounded-t-box' : 'top-0'}`}>
-          {phone && folded ? (
-            <div className="flex items-center justify-between gap-3 px-4 py-2">
-              <span className="text-[16px] font-semibold">{title}</span>
-              <button type="button" onClick={() => setFolded(false)} className={`${big} border-[1.5px] border-ig-cream/70 py-2!`}>toon taak</button>
-            </div>
-          ) : (
-            <div className={`mx-auto flex max-w-[1200px] gap-3 px-4 ${phone ? 'flex-col py-3' : 'items-center py-2.5'}`}>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[15px] font-semibold uppercase tracking-wide text-ig-yellow">{title}</p>
-                  {phone && <button type="button" onClick={() => setFolded(true)} className="min-h-10 px-2 text-[16px] underline">verberg</button>}
-                </div>
-                <p className="text-[18px] leading-snug">{step.text}</p>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-2">{buttons}</div>
-            </div>
-          )}
-        </div>
+        <TaskBar title={title} text={step.text} phone={phone} folded={folded} onFold={setFolded} buttons={buttons} />
         {toastEl}
       </>
     )
@@ -785,6 +762,45 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
       )}
       <p className="mt-8 text-[15px] text-ig-ink/70">Uw code: {s.id}. Noem deze code als u uw antwoorden wilt laten verwijderen.</p>
     </Card>
+  )
+}
+
+// the task bar. desktop: a slim bar at the top, the menu moves down under it. phone: a bar at the bottom,
+// at most 30% of the screen, that folds to one line. the replay (replay.ts) shows the same bar, so the
+// page lies exactly where it lay for the participant
+export function TaskBar({ title, text, phone, folded, onFold, buttons }: { title: string; text: string; phone: boolean; folded: boolean; onFold: (f: boolean) => void; buttons: ReactNode }) {
+  return (
+    <>
+      <BarSpace phone={phone} />
+      <div data-participant role="region" aria-label="De taak" className={`ig-ptask fixed inset-x-0 z-[95] bg-ig-ink text-ig-cream shadow-lift ${phone ? 'bottom-0 max-h-[30vh] overflow-y-auto rounded-t-box' : 'top-0'}`}>
+        {phone && folded ? (
+          <div className="flex items-center justify-between gap-3 px-4 py-2">
+            <span className="text-[16px] font-semibold">{title}</span>
+            <button type="button" onClick={() => onFold(false)} className={`${big} border-[1.5px] border-ig-cream/70 py-2!`}>toon taak</button>
+          </div>
+        ) : (
+          <div className={`mx-auto flex max-w-[1200px] gap-3 px-4 ${phone ? 'flex-col py-3' : 'items-center py-2.5'}`}>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[15px] font-semibold uppercase tracking-wide text-ig-yellow">{title}</p>
+                {phone && <button type="button" onClick={() => onFold(true)} className="min-h-10 px-2 text-[16px] underline">verberg</button>}
+              </div>
+              <p className="text-[18px] leading-snug">{text}</p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">{buttons}</div>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+export function TaskButtons({ onDone, onStuck }: { onDone?: () => void; onStuck?: () => void }) {
+  return (
+    <>
+      <button type="button" onClick={onDone} className={`${big} bg-ig-yellow text-ig-ink hover:bg-ig-yellow-light`}>Klaar</button>
+      <button type="button" onClick={onStuck} className={`${big} border-[1.5px] border-ig-cream/70 text-ig-cream hover:bg-ig-cream/15`}>Ik kom er niet uit</button>
+    </>
   )
 }
 

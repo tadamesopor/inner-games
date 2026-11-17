@@ -2,7 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Ctx, Footer, logEvent, type Cart, type PageId } from './wf'
 import TestMode from './test'
-import Participant, { testGroup } from './participant'
+import Participant, { TaskBar, TaskButtons, testGroup } from './participant'
+import { isReplay, startReplay, type ReplayBar } from './replay'
 import { applyMeta, fromUrl, metaFor, toUrl } from './seo'
 // the motion effects from the lab (plain css + js in src/motion/, the same files that go into Enfold)
 import { igNavigate, initCards } from './motion'
@@ -69,7 +70,7 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName
-      if (testGroup() || e.key.toLowerCase() !== 'g' || tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (testGroup() || isReplay() || e.key.toLowerCase() !== 'g' || tag === 'INPUT' || tag === 'TEXTAREA') return
       const now = Date.now()
       taps.current = [...taps.current.filter((t) => now - t < 1200), now]
       if (taps.current.length >= 3) {
@@ -85,6 +86,24 @@ export default function App() {
   // the remote test (?test=klant or ?test=nieuw): no prototype tools at all. the test itself remembers
   // that it is running (participant.tsx), so the urls stay clean and a reload continues the test
   const [group] = useState(testGroup)
+  // the replay of a session (?replay=1, inside public/test/viewer.html): see replay.ts
+  const [replay] = useState(isReplay)
+  const [bar, setBar] = useState<ReplayBar>(null)
+  const goRef = useRef<(p: PageId, id?: string, push?: boolean) => void>(() => {})
+  const here = useRef({ page: page as string, sel })
+  here.current = { page, sel }
+  useEffect(() => {
+    if (!replay) return
+    return startReplay({
+      go: (p, s) => {
+        if (!(p in PAGES)) return false
+        goRef.current(p as PageId, s, false)
+        return true
+      },
+      page: () => here.current,
+      bar: setBar,
+    })
+  }, [replay])
 
   const view = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -126,18 +145,20 @@ export default function App() {
   // every page change goes through the pencil transition (src/motion/transition.js). the page itself
   // changes while the screen is orange. in test mode the short version (460ms, no wave), so it doesn't
   // slow the tasks down. reduced motion: a short fade. the first page load has no transition
-  const go = (p: PageId, id = '') => {
+  // push: false in the replay, it must not fill the browser history
+  const go = (p: PageId, id = '', push = true) => {
     setCartOpen(false)
     const update = () => {
       const url = toUrl(p, id)
-      if (url !== location.pathname + location.search) history.pushState(null, '', url)
+      if (push && url !== location.pathname + location.search) history.pushState(null, '', url)
       flushSync(() => {
         setPage(p)
         setSel(id)
       })
     }
-    igNavigate(update, { mode: tasks || group ? 'short' : 'full', fadeTarget: view.current ?? undefined })
+    igNavigate(update, { mode: replay ? 'off' : tasks || group ? 'short' : 'full', fadeTarget: view.current ?? undefined })
   }
+  goRef.current = go
   const addToCart = (slug: string, n: number) => {
     setCart((c) => ({ ...c, [slug]: Math.min(99, (c[slug] ?? 0) + n) }))
     logEvent('cart:add', `${n}× ${slug}`)
@@ -172,9 +193,10 @@ export default function App() {
       <CartDrawer open={cartOpen} onClose={closeCart} />
       {tasks && !group && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
       {group && <Participant group={group} pageKey={sel ? `${page}/${sel}` : page} go={go} />}
+      {replay && bar && <TaskBar title={bar.title} text={bar.text} phone={innerWidth < 640} folded={false} onFold={() => {}} buttons={<TaskButtons />} />}
       {/* the prototype options: a small ⚙ bottom left, opened on click. completely hidden in test mode,
           so it can't cover anything; the test leader brings it back by pressing G three times */}
-      {!group && !(tasks && !tools) && (
+      {!group && !replay && !(tasks && !tools) && (
         <div className="fixed bottom-4 left-4 z-[70] flex items-end gap-2">
           <button
             type="button"
