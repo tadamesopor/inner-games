@@ -37,7 +37,9 @@ const PALETTES = {
   warm: ['#DD4C17', '#E35E25', '#F07436', '#EF6A2C', '#FAB512'],
 }
 
-/** svg: an empty <svg viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" data-waves="orange|yellow|warm"> */
+/** svg: an empty <svg viewBox="0 0 1600 800" preserveAspectRatio="xMidYMid slice" data-waves="orange|yellow|warm">.
+    data-still: the same shapes, drawn once, never moving (a background further down the page, like the
+    client logos: nothing there may animate while scrolling) */
 export function initHeroWaves(svg) {
   const colors = PALETTES[svg.dataset.waves] || PALETTES.orange
   const WAVES = SHAPES.map((s, i) => ({ ...s, c: colors[i] }))
@@ -55,6 +57,7 @@ export function initHeroWaves(svg) {
     })
   }
   frame(0)
+  if (svg.hasAttribute('data-still')) return () => paths.forEach((p) => p.remove())
   // only breathe while the hero is on screen, and never with reduced motion
   let raf = 0
   let visible = true

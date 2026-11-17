@@ -29,6 +29,11 @@
   height: 100%;
   pointer-events: none;
 }
+/* the still shapes (data-still, the client logos section): their own layer, drawn once. without it the gpu
+   draws the five big shapes again every time something near them is repainted while scrolling */
+.ig-hero__waves[data-still] {
+  will-change: transform;
+}
 .ig-hero__body {
   position: relative; /* the text and the table above the waves */
 }

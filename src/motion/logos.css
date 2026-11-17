@@ -1,4 +1,4 @@
-/* .ig-logos: the logo wall of clients and partners, all in one calm grey.
+/* .ig-logos: the logo wall of clients and partners, all in one calm grey (or white on orange, .ig-logos--light).
    hover or keyboard focus on a logo: it turns from grey to full ink with a short fade.
    (the logo files are black on transparent, cut from the grey logo images on innergames.nl. a colour
    version doesn't exist yet; with colour files, drop brightness(0) on hover here.)
@@ -38,6 +38,24 @@
   color: #000;
   font: 600 13px/1.15 var(--ig-font);
   text-align: center;
+}
+
+/* .ig-logos--light: the logos on the hero's orange background (the client section). white instead of grey,
+   a little see-through at rest, fully white on hover or keyboard focus. no colour change, no movement */
+.ig-logos--light .ig-logo__img {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+/* the names are small text: fully white already, white on orange is as far as the contrast goes */
+.ig-logos--light .ig-logo__name {
+  color: #fff;
+  opacity: 1;
+}
+.ig-logos--light .ig-logo:is(:hover, :focus-visible) :is(.ig-logo__img, .ig-logo__name) {
+  opacity: 1;
+}
+.ig-logos--light .ig-logo:focus-visible {
+  outline-color: var(--ig-cream);
 }
 
 /* the one-time fade in: on the list item, so it never fights the grey/hover opacity of the image */
