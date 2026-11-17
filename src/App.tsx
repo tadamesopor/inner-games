@@ -180,7 +180,8 @@ export default function App() {
 
   return (
     <Ctx.Provider value={{ ann, footer, hero, sel, cart, go, addToCart, setQty, openCart: () => setCartOpen(true) }}>
-      <div className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
+      {/* data-site: the participant mode hides the whole site for the old homepage screenshot (B3) */}
+      <div data-site className={mobile ? 'flex justify-center bg-neutral-800 py-6' : ''}>
         <div ref={view} className="@container w-full overflow-x-clip bg-white text-ig-ink" style={mobile ? { width: 390 } : undefined} onClickCapture={() => bus.current?.()}>
           {/* the page lies on top of the footer: when you reach the end, it slides up with a rounded
               bottom and the footer appears underneath (src/motion/footer.css) */}

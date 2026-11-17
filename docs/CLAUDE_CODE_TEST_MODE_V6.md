@@ -124,9 +124,23 @@ Then the tasks.
 
 - **B1.** Kent u InnerGames? ○ nee ○ alleen van naam ○ ja, ik heb er al mee gewerkt
 - **B2.** Screen with the text "U ziet dit bericht van Ariën op LinkedIn en klikt op de link." and the image `public/test/linkedin-post.png` (I will add it; show a grey placeholder box with "LinkedIn-bericht" if the file is missing). Button "Klik op de link" opens the homepage.
-- **B3.** The homepage is shown for 10 seconds with a small countdown ("nog 10 seconden"), then hidden behind the question card:
-  - "Wat doet dit bedrijf, in uw eigen woorden?" ... (required)
-  - "Voor wie is het?" ...
+- **B3 (changed in v8, see `docs/CLAUDE_CODE_TEST_FIXES_V8.md`).** Two looks of 20 seconds: the old homepage
+  (a screenshot of innergames.nl, `public/test/old-homepage-desktop.png` from 640px wide, otherwise
+  `old-homepage-mobile.png`) and the new live homepage. The order is picked at random per session and saved as
+  `b3Order` (`old_first` or `new_first`). On screen they are only called "website 1" and "website 2".
+  - Per look: a card "U ziet nu website 1. Kijk rustig rond, u heeft 20 seconden." with the button "Bekijken",
+    then 20 seconds with the countdown "nog 20 seconden". Scrolling works, clicks do nothing but are logged.
+    The old look is the screenshot at full width, without the site's header.
+  - After each look: "Wat doet dit bedrijf, in uw eigen woorden?" (required), saved as `B3_old` or `B3_new`.
+  - After both: "Welke van de twee websites maakt duidelijker wat dit bedrijf doet?" (website 1 / website 2 /
+    even duidelijk, saved as `old`, `new` or `equal` in `B3_compare`), "Waarom?" (`B3_why`) and "Voor wie is
+    dit bedrijf, denkt u?" (`B3_who`), both optional.
+  - No vorige button on any B3 screen.
+  - Each look is recorded as its own segment, `b3_old` and `b3_new`, like a task (mouse, scroll and clicks).
+    For the old look the scroll is the position inside the screenshot.
+  - If both screenshots are missing: `old_missing` in the log, and B3 is one look at the new homepage with
+    `B3_new` and `B3_who` on one screen.
+  - For testing only: `&demo=1&order=old` or `&demo=1&order=new` fixes the order (and starts a new session).
 
 Then the tasks. Start every task from the homepage.
 

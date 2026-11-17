@@ -50,6 +50,8 @@
   @media (max-width: 1100px) { .player { grid-template-columns: 1fr; } }
   .stage { position: relative; overflow: hidden; border-radius: 12px; background: #fff; box-shadow: 0 2px 16px rgb(42 24 16 / 0.12); margin: 0 auto; }
   .stage iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #fff; }
+  .shot { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; background: #fff; } /* b3_old: the screenshot instead of the site */
+  .shot img { display: block; width: 100%; height: auto; }
   .layer { position: absolute; inset: 0; overflow: hidden; } /* on top of the iframe: you can't click the site */
   .cursor { position: absolute; z-index: 3; width: 22px; height: 22px; margin: -2px 0 0 -3px; pointer-events: none; transition: opacity 0.2s; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35)); }
   .ring { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgb(234 86 31 / 0.35); border: 3px solid var(--orange); pointer-events: none; animation: ring 1s ease-out forwards; }
@@ -129,6 +131,7 @@
           <div>
             <div class="stage" id="stage">
               <iframe id="frame" title="de website" tabindex="-1"></iframe>
+              <div class="shot" id="shot" hidden><img id="shotimg" alt="de oude homepage" /></div>
               <div class="layer" id="layer">
                 <svg class="cursor" id="cursor" viewBox="0 0 22 22" hidden><path d="M3 2 L3 18 L7.5 13.8 L10.6 20.5 L13.4 19.2 L10.4 12.6 L16.5 12.4 Z" fill="#2A1810" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
                 <div class="caption top" id="game" hidden></div>
@@ -152,6 +155,7 @@
             <li>Wat mensen typten wordt nooit opgeslagen, dus formulieren blijven leeg.</li>
             <li>Hover-effecten op de site zie je niet: de cursor is een tekening erbovenop.</li>
             <li>Het spel zelf wordt niet nagespeeld: je ziet de spelpagina met hoe lang ze speelden.</li>
+            <li>Eerste indruk, oude site: je ziet de schermafbeelding die de deelnemer zag, met hun scroll en klikken. Op het scherm heette die "website 1" of "website 2".</li>
             <li>De replay laat de website van nu zien met de bewegingen van toen. Is de site sinds de sessie veranderd, dan kan iets op een andere plek staan.</li>
           </ul>
         </div>
@@ -183,6 +187,10 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
   const secs = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s` }
   const CLICKS = ['click', 'tap', 'rage_click', 'dead_click']
+  // b3_old and b3_new: the two looks of 20 s at the old and the new homepage (nieuw, before the tasks)
+  const isLook = (id) => String(id).startsWith('b3_')
+  const nameOf = (t) => (isLook(t.id) ? `${t.title} (20 s)` : `Taak ${t.id.slice(1)}: ${t.title}`)
+  const SITE = { old: 'oude site', new: 'nieuwe site', equal: 'even duidelijk' }
   let session = null, current = null
 
   /* ---------- the file ---------- */
@@ -223,7 +231,7 @@
     $('tasks').innerHTML = ''
     for (const t of session.tasks) {
       const b = document.createElement('button')
-      b.innerHTML = `Taak ${esc(t.id.slice(1))}: ${esc(t.title)}<small>${t.seconds == null ? 'niet gedaan' : secs(t.seconds * 1000)}${t.stuck ? ', vastgelopen' : ''}</small>`
+      b.innerHTML = `${esc(nameOf(t))}<small>${t.seconds == null ? 'niet gedaan' : secs(t.seconds * 1000)}${t.stuck ? ', vastgelopen' : ''}</small>`
       b.onclick = () => pick(t.id)
       b.dataset.id = t.id
       $('tasks').append(b)
@@ -237,7 +245,7 @@
     current = id
     for (const b of $('tasks').children) b.setAttribute('aria-pressed', b.dataset.id === id)
     const t = session.tasks.find((x) => x.id === id)
-    $('title').textContent = `Taak ${id.slice(1)}: ${t.title}`
+    $('title').textContent = nameOf(t)
     $('text').textContent = t.text ?? ''
     P.pick(id)
     R.load(id, whole)
@@ -271,7 +279,7 @@
     const frame = $('frame'), layer = $('layer'), stage = $('stage')
     let v = { w: 1440, h: 900 }, scale = 1
     let loaded = false, waiting = false, waitTimer = 0
-    let id = null, acts = [], pages = [], mouse = [], scrolls = [], end = 1, data = null, moments = []
+    let id = null, acts = [], pages = [], mouse = [], scrolls = [], end = 1, data = null, moments = [], old = false
     let now = 0, playing = false, speed = 1, last = 0, raf = 0, whole = false, shownPage = null, sentY = null, skipUntil = 0, captionTimer = 0, cardTimer = 0
 
     const send = (msg) => frame.contentWindow?.postMessage(msg, location.origin)
@@ -285,14 +293,14 @@
           $('deploy').hidden = false
           $('deploy').textContent = `Let op: de website is na deze sessie nog veranderd (versie van ${new Date(e.data.build).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' })}). De replay laat de site van nu zien met de bewegingen van toen.`
         }
-        if (id) start(id)
+        if (id && !old) start(id)
       }
       if (waiting) {
         waiting = false
         clearTimeout(waitTimer)
         sentY = null
         last = performance.now()
-        if (!playing && data) draw(false) // paused or dragging: put the scroll and cursor right on the new page
+        if (!playing && data && !old) draw(false) // paused or dragging: put the scroll and cursor right on the new page
       }
     })
 
@@ -318,6 +326,7 @@
       stage.style.width = v.w * scale + 'px'
       stage.style.height = v.h * scale + 'px'
       frame.style.transform = `scale(${scale})`
+      $('shot').style.transform = `scale(${scale})`
     }
     addEventListener('resize', fit)
 
@@ -346,7 +355,9 @@
         if (e.type === 'e5:open') acts.push({ t, k: 'game' })
       }
       pages = acts.filter((a) => a.k === 'page')
-      if (!pages.length || pages[0].t > 0) pages.unshift({ t: 0, k: 'page', page: 'home', sel: '', label: 'home' }) // every task starts on the homepage
+      old = taskId === 'b3_old'
+      if (old) pages = [] // the screenshot, no page of the site
+      else if (!pages.length || pages[0].t > 0) pages.unshift({ t: 0, k: 'page', page: 'home', sel: '', label: 'home' }) // every task starts on the homepage
       // the cursor only with scroll data: without it the page would lie wrong under it
       // the clicks are points of the path too: there the position is exact (samples are 250 ms apart)
       mouse = scroll && !phone() ? [...data.samples.filter((s) => s[1] != null && s[2] != null).map((s) => ({ t: s[0], x: s[1], y: s[2] })), ...acts.filter((a) => a.k === 'click').map((a) => ({ t: a.t, x: a.x, y: Math.min(100, a.y) }))].sort((a, b) => a.t - b.t) : []
@@ -375,18 +386,40 @@
       $('card').hidden = true
       now = 0
       shownPage = null
+      shot(old)
       marks()
       facts()
-      if (loaded) start(taskId)
+      if (old) startOld()
+      else if (loaded) start(taskId)
     }
 
     // the task bar like the participant saw it, then the homepage
     function start(taskId) {
       const t = session.tasks.find((x) => x.id === taskId)
       send({ type: 'reset' })
-      send({ type: 'task', title: `Taak ${taskId.slice(1)} van 4`, text: t?.text ?? '' })
+      send({ type: 'task', title: `Taak ${taskId.slice(1)} van 4`, text: isLook(taskId) ? '' : t?.text ?? '' }) // a look had no task bar
       waitFor()
       shownPage = 'home/'
+      draw(false)
+      if (whole) play()
+    }
+
+    // the old look: the screenshot that was shown (desktop or mobile), as wide as the participant's screen
+    function shot(on) {
+      $('shot').hidden = !on
+      frame.style.visibility = on ? 'hidden' : ''
+      if (!on) return
+      const which = session.b3Old === 'mobile' || session.b3Old === 'desktop' ? session.b3Old : phone() ? 'mobile' : 'desktop'
+      const img = $('shotimg')
+      img.onerror = () => msg('De afbeelding van de oude homepage staat niet (meer) op de site.')
+      if (!img.src.endsWith(`/test/old-homepage-${which}.png`)) img.src = `/test/old-homepage-${which}.png`
+      $('shot').style.width = v.w + 'px'
+      $('shot').style.height = v.h + 'px'
+      $('shot').style.transform = `scale(${scale})`
+    }
+    function startOld() {
+      waiting = false
+      sentY = null
       draw(false)
       if (whole) play()
     }
@@ -403,9 +436,9 @@
     // everything on screen for time `now`. `animate`: clicks between the last frame and now get a ring
     function draw(animate, from = now) {
       // the page
-      const p = before(pages, now) ?? pages[0]
-      const key = p.page + '/' + p.sel
-      if (key !== shownPage) {
+      const p = before(pages, now) ?? pages[0] ?? { t: 0, page: '', sel: '' }
+      const key = old ? 'b3_old' : p.page + '/' + p.sel
+      if (key !== shownPage && !old) {
         shownPage = key
         send({ type: 'go', page: p.page, sel: p.sel })
         waitFor()
@@ -418,7 +451,8 @@
       y = Math.round(y)
       if (y !== sentY) {
         sentY = y
-        send({ type: 'scroll', y })
+        if (old) $('shotimg').style.transform = `translateY(${-y}px)`
+        else send({ type: 'scroll', y })
       }
       // the cursor, smooth between the samples (not on a phone)
       const c = $('cursor')
@@ -499,13 +533,19 @@
     function done() {
       pause()
       const n = id.slice(1)
-      const answers = (session.answers ?? []).filter((a) => a.id.startsWith(n) && /^\d/.test(a.id))
+      const looks = session.tasks.filter((t) => isLook(t.id))
+      const lastLook = looks.at(-1)?.id === id
+      const answers = isLook(id)
+        ? (session.answers ?? [])
+            .filter((a) => a.id === 'B3_' + id.slice(3) || (lastLook && ['B3_compare', 'B3_why', 'B3_who'].includes(a.id)))
+            .map((a) => (a.id === 'B3_compare' ? { ...a, a: SITE[a.a] ?? a.a } : a))
+        : (session.answers ?? []).filter((a) => a.id.startsWith(n) && /^\d/.test(a.id))
       const i = session.tasks.findIndex((t) => t.id === id)
       const nextTask = session.tasks[i + 1]
-      $('cardbody').innerHTML = `<h2>na taak ${esc(n)}: ${esc(data.t.title)}</h2>
-        <p class="muted small">${data.t.result === 'vast' ? 'kwam er niet uit' : data.t.result === 'klaar' ? 'drukte op klaar' : esc(data.t.result)}, na ${data.t.seconds == null ? '-' : secs(data.t.seconds * 1000)}</p>
+      $('cardbody').innerHTML = `<h2>na ${isLook(id) ? esc(data.t.title) : `taak ${esc(n)}: ${esc(data.t.title)}`}</h2>
+        <p class="muted small">${isLook(id) ? `gekeken (${session.b3Order === 'old_first' ? 'oud' : 'nieuw'} eerst)` : data.t.result === 'vast' ? 'kwam er niet uit' : data.t.result === 'klaar' ? 'drukte op klaar' : esc(data.t.result)}, na ${data.t.seconds == null ? '-' : secs(data.t.seconds * 1000)}</p>
         <dl>${answers.map((a) => `<dt>${esc(a.q)}</dt><dd>${esc(a.a) || '<span class="muted">leeg</span>'}</dd>`).join('') || '<dd class="muted">geen vragen</dd>'}</dl>
-        <div class="bar" style="margin-bottom: 0">${nextTask ? `<button class="btn" id="cardnext">volgende taak${whole ? ' (over 8 s)' : ''}</button>` : ''}<button class="btn light" id="cardagain">opnieuw</button></div>`
+        <div class="bar" style="margin-bottom: 0">${nextTask ? `<button class="btn" id="cardnext">${isLook(nextTask.id) ? 'volgende blik' : 'volgende taak'}${whole ? ' (over 8 s)' : ''}</button>` : ''}<button class="btn light" id="cardagain">opnieuw</button></div>`
       $('card').hidden = false
       $('cardagain').onclick = () => pick(id, whole)
       if (nextTask) {
@@ -519,6 +559,7 @@
       if (now >= end) {
         now = 0
         shownPage = null
+        sentY = null
       }
       $('card').hidden = true
       playing = true

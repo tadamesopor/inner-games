@@ -40,6 +40,8 @@ type Body = {
     ended: string | null
     minutes: number
     step: number
+    b3Order?: 'old_first' | 'new_first'
+    b3Old?: 'desktop' | 'mobile' | 'none' | null
     back?: number
     device: { type: string; viewport: string; browser: string }
     answers: Answer[]
@@ -84,6 +86,21 @@ export function buildMail(b: Body) {
   const subject = b.status === 'test' ? 'IG test DEMO' : `IG test ${b.group} ${id} ${profile} ${b.status}`
   const line = (k: string, v: unknown) => `${k}: ${v === '' || v == null ? '-' : v}`
   const list = (l: string[] = []) => (l.length ? `${l.length} (${l.join(', ')})` : '0')
+  // B3 (nieuw): the first impression of the old and the new homepage as one block, above the other answers
+  const ans = (id: string) => s.answers.find((a) => a.id === id)?.a ?? ''
+  const isB3 = (id: string) => id.startsWith('B3_')
+  const noOld = s.b3Old === 'none'
+  const SITE: Record<string, string> = { old: 'oude site', new: 'nieuwe site', equal: 'even duidelijk' }
+  const first = s.answers.some((a) => isB3(a.id))
+    ? [
+        `EERSTE INDRUK (${noOld ? 'alleen de nieuwe site, de afbeelding van de oude ontbrak' : `volgorde: ${s.b3Order === 'old_first' ? 'oud' : 'nieuw'} eerst`})`,
+        ...(noOld ? [] : [line('Oude site', ans('B3_old'))]),
+        line('Nieuwe site', ans('B3_new')),
+        ...(noOld ? [] : [line('Duidelijker', SITE[ans('B3_compare')] ?? ans('B3_compare')), line('Waarom', ans('B3_why'))]),
+        line('Voor wie', ans('B3_who')),
+        '',
+      ]
+    : []
   const text = [
     line('Apparaat', `${s.device?.type}, ${s.device?.viewport}, ${s.device?.browser}`),
     '',
@@ -96,11 +113,17 @@ export function buildMail(b: Body) {
     line('Laatste stap', s.step),
     line('Vorige gebruikt', `${s.back ?? 0}x`),
     '',
+    ...first,
     'ANTWOORDEN',
-    ...s.answers.flatMap((a) => [`${a.id}. ${a.q}`, `   ${a.a || '-'}`]),
+    ...s.answers.filter((a) => !isB3(a.id)).flatMap((a) => [`${a.id}. ${a.q}`, `   ${a.a || '-'}`]),
     '',
     'TAKEN',
-    ...s.tasks.flatMap((t) => [
+    ...s.tasks.flatMap((t) => t.id.startsWith('b3_') ? [
+      `${t.title[0].toUpperCase()}${t.title.slice(1)}`,
+      `   ${line('Tijd', t.seconds == null ? 'niet gedaan' : `${t.seconds} seconden`)}`,
+      `   ${line('Klikken', t.clicks)}`,
+      `   ${line('Muisafstand', t.mouseScreens ? `${t.mouseScreens} schermbreedtes` : t.taps ? `geen muis, ${t.taps} tikken` : '-')}`,
+    ] : [
       `Taak ${t.id.slice(1)}: ${t.title}`,
       `   ${line('Tijd', t.seconds == null ? 'niet gedaan' : `${t.seconds} seconden`)}`,
       `   ${line('Afgerond', t.result === 'klaar' ? 'ja, klaar' : t.result === 'vast' ? 'nee, kwam er niet uit' : t.result)}`,

@@ -16,7 +16,8 @@ export type Group = 'klant' | 'nieuw'
 // the running session is kept under one key. a reload on /workshops continues the test. the key goes
 // away on the end screen, so after that the site is normal again and a new ?test= link starts over
 const POINTER = 'ig:participant'
-type Start = { group: Group; id?: string; demo: boolean }
+type Order = 'old_first' | 'new_first'
+type Start = { group: Group; id?: string; demo: boolean; order?: Order }
 let start: Start | null | undefined
 function readStart(): Start | null {
   const q = new URLSearchParams(location.search)
@@ -28,8 +29,12 @@ function readStart(): Start | null {
   } catch {
     /* no access */
   }
+  // only for testing, with &demo=1: &order=old or &order=new fixes the order of the two looks (B3),
+  // and always starts a new session, so the order really is the one asked for
+  const demo = q.get('demo') === '1'
+  const order: Order | undefined = !demo ? undefined : q.get('order') === 'old' ? 'old_first' : q.get('order') === 'new' ? 'new_first' : undefined
   // the link again: an unfinished session of the same group continues, otherwise a new one
-  if (t === 'klant' || t === 'nieuw') return { group: t, id: saved?.group === t ? saved.id : undefined, demo: q.get('demo') === '1' }
+  if (t === 'klant' || t === 'nieuw') return { group: t, id: saved?.group === t && !order ? saved.id : undefined, demo, order }
   return saved?.id && (saved.group === 'klant' || saved.group === 'nieuw') ? { group: saved.group, id: saved.id, demo: false } : null
 }
 const startOf = () => (start === undefined ? (start = readStart()) : start)
@@ -42,14 +47,19 @@ const MOUSE_KEY = 'ig-p6m:' // ig-p6m:<id> its mouse path (apart, it changes 4 t
 const MAX_EVENTS = 3000
 const MAX_BODY = 1_000_000 // the mail body, 1 MB
 const MAX_BEACON = 60_000 // sendBeacon stops at 64 KB
-const LOOK_SECONDS = 10
+const LOOK_SECONDS = 20
 const ID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no 0/O/1/I
 const RETRY = [1000, 3000, 9000]
 
 type Profile = 'school' | 'organisatie' | 'trainer' | 'anders'
 type TaskId = 't1' | 't2' | 't3' | 't4'
+// the first impression (B3, nieuw): the old homepage (a screenshot) and the new one, each a look of 20 s.
+// each look is recorded like a task, as segment b3_old or b3_new
+type Look = 'old' | 'new'
+type Seg = TaskId | 'b3_old' | 'b3_new'
+type Shot = 'desktop' | 'mobile' | 'none' // which screenshot of the old site, 'none' when both are missing
 type Status = 'bezig' | 'compleet' | 'onvolledig'
-type Ev = TEv & { task?: TaskId; from?: string; to?: string } // from/to: the screens of a "vorige"
+type Ev = TEv & { task?: Seg; from?: string; to?: string } // from/to: the screens of a "vorige"
 type TaskRes = { start?: number; end?: number; result?: 'klaar' | 'vast' }
 
 type Session = {
@@ -63,9 +73,11 @@ type Session = {
   consentAt?: number
   device: { type: 'telefoon' | 'tablet' | 'desktop'; viewport: string; browser: string }
   ans: Record<string, string>
-  tasks: Partial<Record<TaskId, TaskRes>>
+  tasks: Partial<Record<Seg, TaskRes>>
   events: Ev[]
   sent: { compleet?: boolean; onvolledig?: boolean }
+  b3Order?: Order // nieuw only: which look comes first, picked at random
+  b3Old?: Shot // nieuw only: the screenshot that is shown (checked at the start)
 }
 
 type Q = {
@@ -79,12 +91,14 @@ type Q = {
   low?: string
   high?: string
   sum?: string // the question as it appears in the email, when the screen text is different
+  values?: string[] // what is saved per option, when that's not the option text (B3_compare: old/new/equal)
 }
 type Step =
   | { kind: 'welkom' }
-  | { kind: 'ask'; id: string; intro?: string; qs: Q[]; solid?: boolean }
+  | { kind: 'ask'; id: string; intro?: string; qs: Q[]; solid?: boolean; noBack?: boolean }
   | { kind: 'linkedin' }
-  | { kind: 'look' }
+  | { kind: 'intro'; n: number; single: boolean }
+  | { kind: 'look'; which: Look }
   | { kind: 'task'; id: TaskId; text: string }
   | { kind: 'view'; text: string; page: PageId }
   | { kind: 'end' }
@@ -105,7 +119,9 @@ const AGREE = ['helemaal mee oneens', 'oneens', 'neutraal', 'eens', 'helemaal me
 const text = (id: string, q: string, required = false): Q => ({ id, q, kind: 'text', required })
 const choice = (id: string, q: string, options: string[], other?: string): Q => ({ id, q, kind: 'choice', options, other })
 
-const TASK_TITLE: Record<TaskId, string> = { t1: 'een workshop vinden', t2: 'de prijs', t3: 'een datum vragen', t4: 'het spel' }
+const TASK_TITLE: Record<Seg, string> = { b3_old: 'eerste indruk: oude site', b3_new: 'eerste indruk: nieuwe site', t1: 'een workshop vinden', t2: 'de prijs', t3: 'een datum vragen', t4: 'het spel' }
+const shotSrc = (k: Shot) => `/test/old-homepage-${k}.png`
+const segOf = (which: Look): Seg => `b3_${which}`
 const task1 = (p?: Profile) =>
   p === 'school'
     ? 'U wilt met uw studenten iets doen tijdens een projectweek. Zoek op de website een workshop die daarbij past.'
@@ -113,7 +129,10 @@ const task1 = (p?: Profile) =>
       ? 'U wilt zelf leren werken met de spellen van InnerGames. Zoek op wat daarvoor nodig is.'
       : 'U zoekt een workshop over samenwerken voor uw team van 12 mensen. Zoek er een die past.'
 
-function buildSteps(group: Group, profile?: Profile): Step[] {
+// the looks in the order they are shown. the old one only when its screenshot exists
+const looksOf = (b3?: { b3Order?: Order; b3Old?: Shot }): Look[] => (b3?.b3Old === 'none' ? ['new'] : b3?.b3Order === 'old_first' ? ['old', 'new'] : ['new', 'old'])
+
+function buildSteps(group: Group, profile?: Profile, b3?: { b3Order?: Order; b3Old?: Shot }): Step[] {
   const trainer = profile === 'trainer'
   const start: Step[] = [
     { kind: 'welkom' },
@@ -129,8 +148,7 @@ function buildSteps(group: Group, profile?: Profile): Step[] {
   const nieuw: Step[] = [
     { kind: 'ask', id: 'B1', qs: [choice('B1', 'Kent u InnerGames?', ['nee', 'alleen van naam', 'ja, ik heb er al mee gewerkt'])] },
     { kind: 'linkedin' },
-    { kind: 'look' },
-    { kind: 'ask', id: 'B3', solid: true, qs: [text('B3_wat', 'Wat doet dit bedrijf, in uw eigen woorden?', true), text('B3_wie', 'Voor wie is het?')] },
+    ...firstImpression(looksOf(b3)),
   ]
   const tasks: Step[] = [
     { kind: 'task', id: 't1', text: task1(profile) },
@@ -165,6 +183,29 @@ function buildSteps(group: Group, profile?: Profile): Step[] {
   return [...start, ...(group === 'klant' ? klant : nieuw), ...tasks, ...(group === 'nieuw' ? trust : []), ...closing, ...(group === 'klant' ? e5 : []), { kind: 'end' }]
 }
 
+// B3: per look an intro card, 20 s looking, and the question. on screen only "website 1" and "website 2",
+// never old or new. the answers are saved per site (B3_old, B3_new), whatever the order.
+// without the old screenshot: one look at the new homepage, "voor wie" on the same screen
+function firstImpression(looks: Look[]): Step[] {
+  const single = looks.length === 1
+  const what = 'Wat doet dit bedrijf, in uw eigen woorden?'
+  const who = text('B3_who', 'Voor wie is dit bedrijf, denkt u?')
+  const steps: Step[] = looks.flatMap((which, i): Step[] => [
+    { kind: 'intro', n: i + 1, single },
+    { kind: 'look', which },
+    { kind: 'ask', id: `B3_${which}`, solid: true, qs: [text(`B3_${which}`, what, true), ...(single ? [who] : [])] },
+  ])
+  if (!single)
+    steps.push({
+      kind: 'ask',
+      id: 'B3_compare',
+      solid: true,
+      noBack: true, // back would be the question of a look, that one stays as it was
+      qs: [{ ...choice('B3_compare', 'Welke van de twee websites maakt duidelijker wat dit bedrijf doet?', ['website 1', 'website 2', 'even duidelijk']), values: [looks[0], looks[1], 'equal'] }, text('B3_why', 'Waarom?'), who],
+    })
+  return steps
+}
+
 // "workshop/samenwerken" → the page and the sel of go(page, sel), so the replay can open the same page
 const pageOf = (key: string) => {
   const i = key.indexOf('/')
@@ -183,7 +224,9 @@ function device(): Session['device'] {
   const os = /iPhone/.test(ua) ? 'iPhone' : /iPad|Macintosh.*Mobile/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : 'anders'
   return { type: w < 640 ? 'telefoon' : w < 1024 ? 'tablet' : 'desktop', viewport: `${w}x${window.innerHeight}`, browser: `${browser} op ${os}` }
 }
-const fresh = (group: Group): Session => ({ v: 6, id: newId(), group, status: 'bezig', step: 0, started: Date.now(), device: device(), ans: {}, tasks: {}, events: [], sent: {} })
+// the order of the looks: 50/50, otherwise the second one always seems clearer (they already know a bit)
+const pickOrder = (): Order => startOf()?.order ?? (Math.random() < 0.5 ? 'old_first' : 'new_first')
+const fresh = (group: Group): Session => ({ v: 6, id: newId(), group, status: 'bezig', step: 0, started: Date.now(), device: device(), ans: {}, tasks: {}, events: [], sent: {}, ...(group === 'nieuw' ? { b3Order: pickOrder() } : {}) })
 // saved only after the consent box: someone who never starts leaves nothing behind
 const save = (s: Session) => {
   if (!s.consentAt) return
@@ -213,7 +256,8 @@ function load(group: Group): Session {
   try {
     const id = startOf()?.id
     const s = id && (JSON.parse(localStorage.getItem(KEY + id) || 'null') as Session | null)
-    if (s && s.v === 6 && s.group === group && s.status === 'bezig') return s
+    // a session from before v8 gets its order now
+    if (s && s.v === 6 && s.group === group && s.status === 'bezig') return group === 'nieuw' && !s.b3Order ? { ...s, b3Order: pickOrder() } : s
   } catch {
     /* nothing saved, or no access */
   }
@@ -225,7 +269,7 @@ function load(group: Group): Session {
 function answersOf(s: Session) {
   const profile = profileOf(s.ans)
   const out: { id: string; q: string; a: string }[] = []
-  for (const st of buildSteps(s.group, profile)) {
+  for (const st of buildSteps(s.group, profile, s)) {
     if (st.kind !== 'ask') continue
     for (const q of st.qs) {
       if (q.showIf && !q.showIf.is.includes(s.ans[q.showIf.id] ?? '')) continue
@@ -239,8 +283,10 @@ function answersOf(s: Session) {
 
 function taskStats(s: Session, mouse: Mouse) {
   const profile = profileOf(s.ans)
-  const steps = buildSteps(s.group, profile)
-  return (['t1', 't2', 't3', 't4'] as TaskId[]).map((id) => {
+  const steps = buildSteps(s.group, profile, s)
+  // the looks first, in the order they were shown, then the tasks
+  const segs: Seg[] = [...(s.group === 'nieuw' ? looksOf(s).map(segOf) : []), 't1', 't2', 't3', 't4']
+  return segs.map((id) => {
     const r = s.tasks[id] ?? {}
     const ev = s.events.filter((e) => e.task === id)
     const pages = ev.filter((e) => e.type === 'page').map((e) => e.detail)
@@ -296,7 +342,8 @@ const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: strin
         ended: s.ended ? new Date(s.ended).toISOString() : null,
         minutes: Math.round(((s.ended ?? Date.now()) - s.started) / 6000) / 10,
         step: s.step,
-        back: s.events.filter((e) => e.type === 'back').length, // apart, the beacon drops the events
+        ...(s.group === 'nieuw' ? { b3Order: s.b3Order, b3Old: s.b3Old ?? null } : {}),
+        back:s.events.filter((e) => e.type === 'back').length, // apart, the beacon drops the events
         device: s.device,
         viewport: { w: +s.device.viewport.split('x')[0], h: +s.device.viewport.split('x')[1] },
         answers,
@@ -364,11 +411,14 @@ function Choice({ q, value, other, onPick, onOther }: { q: Q; value?: string; ot
     <fieldset className="mt-6 first:mt-0">
       <legend className="text-[20px] font-semibold leading-snug">{q.q}{q.required && <span className="sr-only"> (verplicht)</span>}</legend>
       <div className="mt-3 grid gap-2">
-        {q.options!.map((o) => (
-          <button key={o} type="button" aria-pressed={value === o} onClick={() => onPick(o)} className={`${big} border-[1.5px] text-left ${value === o ? 'border-ig-ink bg-ig-ink text-ig-cream' : 'border-ig-ink/25 bg-white hover:border-ig-ink/60'}`}>
-            {o}
-          </button>
-        ))}
+        {q.options!.map((o, i) => {
+          const v = q.values?.[i] ?? o
+          return (
+            <button key={o} type="button" aria-pressed={value === v} onClick={() => onPick(v)} className={`${big} border-[1.5px] text-left ${value === v ? 'border-ig-ink bg-ig-ink text-ig-cream' : 'border-ig-ink/25 bg-white hover:border-ig-ink/60'}`}>
+              {o}
+            </button>
+          )
+        })}
       </div>
       {q.other && value === q.other && <input aria-label={q.other} value={other ?? ''} onChange={(e) => onOther(e.target.value)} className={field} autoFocus />}
     </fieldset>
@@ -410,11 +460,11 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   const [mouse] = useState<Mouse>(() => loadMouse(s.id)) // filled in place by tracking.ts
 
   const profile = profileOf(s.ans)
-  const steps = buildSteps(group, profile)
+  const steps = buildSteps(group, profile, s)
   const step = steps[Math.min(s.step, steps.length - 1)]
   const numbered: Step[] = steps.filter((st) => st.kind !== 'welkom' && st.kind !== 'end')
   const nr = numbered.indexOf(step) + 1
-  const runningTask = step.kind === 'task' ? step.id : undefined
+  const runningTask: Seg | undefined = step.kind === 'task' ? step.id : step.kind === 'look' ? segOf(step.which) : undefined
   const logging = !!s.consentAt && s.status === 'bezig'
 
   useEffect(() => save(s), [s])
@@ -426,7 +476,7 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   }, [])
 
   // one event into the log, with the time since the start and the running task
-  const runningRef = useRef<TaskId | undefined>(runningTask)
+  const runningRef = useRef<Seg | undefined>(runningTask)
   runningRef.current = runningTask
   const log = (type: string, detail = '', extra?: Extra) =>
     setS((d) => (d.events.length >= MAX_EVENTS ? d : { ...d, events: [...d.events, { t: Date.now() - d.started, type, detail, ...extra, ...(runningRef.current ? { task: runningRef.current } : {}) }] }))
@@ -560,7 +610,45 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // the first impression: 10 seconds, then the card covers the site
+  // B3: which screenshot of the old site there is. the one for this screen width, otherwise the other one,
+  // otherwise none: then B3 is one look at the new homepage (and old_missing goes into the log)
+  useEffect(() => {
+    if (group !== 'nieuw' || s.b3Old) return
+    const has = (k: Shot) =>
+      new Promise<boolean>((res) => {
+        const img = new Image()
+        img.onload = () => res(true)
+        img.onerror = () => res(false)
+        img.src = shotSrc(k)
+      })
+    const pref: Shot = window.innerWidth >= 640 ? 'desktop' : 'mobile'
+    const other: Shot = pref === 'desktop' ? 'mobile' : 'desktop'
+    let live = true
+    ;(async () => {
+      const found: Shot = (await has(pref)) ? pref : (await has(other)) ? other : 'none'
+      if (!live) return
+      setS((d) => ({ ...d, b3Old: found, events: found === 'none' && d.consentAt ? [...d.events, { t: Date.now() - d.started, type: 'old_missing', detail: '' }] : d.events }))
+    })()
+    return () => {
+      live = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // during a look a click does nothing (no page change, no message). tracking.ts sits on the same
+  // document and was there first, so it still logs the click; this one only stops it before the site
+  useEffect(() => {
+    if (step.kind !== 'look') return
+    const stop = (e: Event) => {
+      if (e.target instanceof Element && e.target.closest('[data-participant]')) return
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    document.addEventListener('click', stop, true)
+    return () => document.removeEventListener('click', stop, true)
+  }, [step.kind])
+
+  // a look: 20 seconds, then the question card covers the site
   useEffect(() => {
     if (step.kind !== 'look') return
     setLeft(LOOK_SECONDS)
@@ -576,11 +664,32 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   // to the next step. a task starts on the homepage, the contact question on the contact page
   const advance = (d: Session) => {
     const now = Date.now()
-    const all = buildSteps(group, profileOf(d.ans))
+    const all = buildSteps(group, profileOf(d.ans), d)
     const at = Math.min(d.step + 1, all.length - 1)
+    const from = all[Math.min(d.step, all.length - 1)]
     const to = all[at]
     let n: Session = { ...d, step: at }
-    const at0 = (type: string, detail: string, task?: TaskId): Ev => ({ t: now - d.started, type, detail, ...(task ? { task } : {}) })
+    const at0 = (type: string, detail: string, task?: Seg): Ev => ({ t: now - d.started, type, detail, ...(task ? { task } : {}) })
+    // a look ends like a task, and starts like one: its own segment for the clicks, the mouse and the scroll
+    if (from.kind === 'look') {
+      const id = segOf(from.which)
+      n = { ...n, tasks: { ...n.tasks, [id]: { ...n.tasks[id], end: now, result: 'klaar' } }, events: [...n.events, at0('task_done', id, id)] }
+      runningRef.current = undefined
+      depth.current = 0 // the scroll in the screenshot is not the scroll of the homepage
+    }
+    if (to.kind === 'look') {
+      const id = segOf(to.which)
+      // the new one is the live homepage (they are there already after the LinkedIn link)
+      const home = to.which === 'new' ? [{ ...at0('page', 'home', id), ...pageOf('home') }] : []
+      if (to.which === 'new' && lastPage.current !== 'home') go('home')
+      n = { ...n, tasks: { ...n.tasks, [id]: { start: now } }, events: [...n.events, at0('task_start', id, id), ...home] }
+      if (to.which === 'new') {
+        measure('home')
+        lastPage.current = 'home'
+      }
+      runningRef.current = id
+      depth.current = 0
+    }
     if (to.kind === 'task') {
       // the page you were on gets its scroll depth first, then the task starts on the homepage
       const before = lastPage.current && lastPage.current !== 'home' ? [at0('scroll', `${lastPage.current} ${depth.current}%`)] : []
@@ -615,10 +724,10 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   const setAns = (id: string, v: string) => setS((d) => ({ ...d, ans: { ...d.ans, [id]: v } }))
 
   // "vorige": one question screen back, answers stay. only from a question screen to a question screen
-  // (or from "Waar werkt u?" to the welcome screen). never into a task, the 10 seconds or the contact
+  // (or from "Waar werkt u?" to the welcome screen). never into a task, a look (B3) or the contact
   // page step, so the first screen after each of those has no vorige
   const prev = s.step > 0 ? steps[s.step - 1] : undefined
-  const canBack = step.kind === 'ask' && (prev?.kind === 'ask' || prev?.kind === 'welkom')
+  const canBack = step.kind === 'ask' && !step.noBack && (prev?.kind === 'ask' || prev?.kind === 'welkom')
   const back = () => {
     if (!canBack || !prev) return
     const d = sRef.current
@@ -637,7 +746,8 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     const now = Date.now()
     const dev = device()
     lastPage.current = null
-    advance({ ...d, consentAt: now, device: dev, events: [{ t: now - d.started, type: 'device', detail: `${dev.type} ${dev.viewport} ${dev.browser}` }] })
+    const missing: Ev[] = d.b3Old === 'none' ? [{ t: now - d.started, type: 'old_missing', detail: '' }] : []
+    advance({ ...d, consentAt: now, device: dev, events: [{ t: now - d.started, type: 'device', detail: `${dev.type} ${dev.viewport} ${dev.browser}` }, ...missing] })
   }
 
   // &demo=1: a short fake session as a mail (status test), to check Resend and the env vars in Vercel
@@ -749,12 +859,38 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
       </Card>
     )
 
-  if (step.kind === 'look')
+  // solid: before the first look nothing of the site may shine through
+  if (step.kind === 'intro')
     return (
+      <Card label={`Stap ${nr}`} solid>
+        {counter}
+        <p className="text-[20px] font-semibold leading-snug">{step.single ? 'U ziet nu de website.' : `U ziet nu website ${step.n}.`} Kijk rustig rond, u heeft {LOOK_SECONDS} seconden.</p>
+        <button type="button" onClick={next} className={`${primary} mt-6 w-full sm:w-auto`}>Bekijken</button>
+      </Card>
+    )
+
+  if (step.kind === 'look') {
+    const countdown = (
       <div data-participant role="status" className="fixed left-1/2 top-4 z-[95] -translate-x-1/2 rounded-box bg-ig-ink px-5 py-3 text-[18px] font-semibold text-ig-cream shadow-lift">
         nog {Math.max(0, left)} seconden
       </div>
     )
+    if (step.which === 'new') return countdown
+    // the old site: the screenshot as the page itself (the real site is hidden), full width. so the normal
+    // tracking records the scroll inside the screenshot as scrollY, and the clicks on it. not in
+    // [data-participant] on purpose: tracking.ts skips that. the label is what a click is logged as
+    const n = looksOf(s).indexOf('old') + 1
+    const shot: Shot = s.b3Old && s.b3Old !== 'none' ? s.b3Old : window.innerWidth >= 640 ? 'desktop' : 'mobile'
+    return (
+      <>
+        <style>{'[data-site]{display:none!important}'}</style>
+        <div aria-label={`website ${n}`} tabIndex={-1} className="bg-white outline-none">
+          <img src={shotSrc(shot)} alt="" draggable={false} className="block h-auto w-full select-none" />
+        </div>
+        {countdown}
+      </>
+    )
+  }
 
   if (step.kind === 'task' || step.kind === 'view') {
     const title = step.kind === 'task' ? `Taak ${step.id.slice(1)} van 4` : `Stap ${nr} van ${numbered.length}`
