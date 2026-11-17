@@ -40,7 +40,12 @@ function readStart(): Start | null {
 const startOf = () => (start === undefined ? (start = readStart()) : start)
 export const testGroup = (): Group | null => startOf()?.group ?? null
 
-// shown on the end screen when sending didn't work
+// TODO Ariën: pick the gift and fill in the texts. GIFT = null hides everything about the gift.
+const GIFT: null | { short: string; long: string } = null
+// read GIFT through this: TypeScript would otherwise treat it as always null and refuse GIFT.short
+const gift = (): null | { short: string; long: string } => GIFT
+
+// shown on the end screen when sending didn't work, and for "uw gegevens laten verwijderen"
 const MAIL_TO_DISPLAY = '524795@student.fontys.nl'
 const KEY = 'ig-p6:' // ig-p6:<id> the session
 const MOUSE_KEY = 'ig-p6m:' // ig-p6m:<id> its mouse path (apart, it changes 4 times a second)
@@ -78,6 +83,31 @@ type Session = {
   sent: { compleet?: boolean; onvolledig?: boolean }
   b3Order?: Order // nieuw only: which look comes first, picked at random
   b3Old?: Shot // nieuw only: the screenshot that is shown (checked at the start)
+  // "Bijna klaar": only what they filled in themselves. never in the event log, the mouse data, the json or
+  // csv attachments or the onvolledig beacon. only in the mail body. gone from localStorage once sent
+  contact?: Contact
+  // what the end screen says about it (not personal, so it stays after the contact data is gone)
+  endNote?: { opDeHoogte?: true; cadeau?: true }
+}
+type Contact = { naam?: string; organisatie?: string; email?: string; mailVraag?: true; opDeHoogte?: true; citaat?: true; cadeau?: true; nieuwsbrief?: true }
+type Form = { naam: string; organisatie: string; email: string; mailVraag: boolean; opDeHoogte: boolean; citaat: boolean; cadeau: boolean; nieuwsbrief: boolean }
+const EMPTY_FORM: Form = { naam: '', organisatie: '', email: '', mailVraag: false, opDeHoogte: false, citaat: false, cadeau: false, nieuwsbrief: false }
+// a light check: one @, and a dot somewhere after it
+const emailOk = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)
+// only the keys that are filled in; the boxes only count with an email
+function contactOf(f: Form): Contact | undefined {
+  const c: Contact = {}
+  if (f.naam.trim()) c.naam = f.naam.trim()
+  if (f.organisatie.trim()) c.organisatie = f.organisatie.trim()
+  if (f.email.trim()) {
+    c.email = f.email.trim()
+    if (f.mailVraag) c.mailVraag = true
+    if (f.opDeHoogte) c.opDeHoogte = true
+    if (f.citaat) c.citaat = true
+    if (gift() && f.cadeau) c.cadeau = true
+    if (f.nieuwsbrief) c.nieuwsbrief = true
+  }
+  return Object.keys(c).length ? c : undefined
 }
 
 type Q = {
@@ -101,12 +131,13 @@ type Step =
   | { kind: 'look'; which: Look }
   | { kind: 'task'; id: TaskId; text: string }
   | { kind: 'view'; text: string; page: PageId }
+  | { kind: 'bijna' }
   | { kind: 'end' }
 
 /* ---------- the texts (docs/CLAUDE_CODE_TEST_MODE_V6.md, section 3) ---------- */
 
 const WELKOM = 'Fijn dat u meedoet. U helpt InnerGames om hun nieuwe website beter te maken. Dit duurt ongeveer 20 minuten. U test de website, niet uzelf. Er zijn geen foute antwoorden. Er wordt niets verkocht en niets echt verstuurd.'
-const CONSENT = "Uw antwoorden worden zonder naam bewaard. Ze worden alleen gebruikt om de website te verbeteren en voor het stageverslag van Damian bij Fontys. We slaan ook op welke pagina's u bekijkt, waar u klikt en hoe u de muis beweegt. Er wordt geen video of beeld van uw scherm opgenomen. Wat u typt in de website zelf slaan we niet op. Alles wordt uiterlijk 31 januari 2027 verwijderd. U kunt altijd stoppen."
+const CONSENT = "Uw antwoorden worden zonder naam bewaard, tenzij u aan het eind zelf uw naam of e-mailadres invult. Dat is niet verplicht. Ze worden alleen gebruikt om de website te verbeteren en voor het stageverslag van Damian bij Fontys. We slaan ook op welke pagina's u bekijkt, waar u klikt en hoe u de muis beweegt. Er wordt geen video of beeld van uw scherm opgenomen. Wat u typt in de website zelf slaan we niet op. Alles wordt uiterlijk 31 januari 2027 verwijderd. U kunt altijd stoppen."
 
 const WORK: [string, Profile][] = [
   ['op een school of opleiding (mbo of hbo)', 'school'],
@@ -180,7 +211,7 @@ function buildSteps(group: Group, profile?: Profile, b3?: { b3Order?: Order; b3O
     { kind: 'ask', id: 'E4', qs: [text('E4', 'Wat mist u nog op de website?')] },
   ]
   const e5: Step[] = [{ kind: 'ask', id: 'E5', qs: [choice('E5', 'Vergeleken met wat u eerder van InnerGames zag, vindt u deze website', ['beter', 'even goed', 'slechter', 'weet ik niet']), text('E5_waarom', 'Waarom?')] }]
-  return [...start, ...(group === 'klant' ? klant : nieuw), ...tasks, ...(group === 'nieuw' ? trust : []), ...closing, ...(group === 'klant' ? e5 : []), { kind: 'end' }]
+  return [...start, ...(group === 'klant' ? klant : nieuw), ...tasks, ...(group === 'nieuw' ? trust : []), ...closing, ...(group === 'klant' ? e5 : []), { kind: 'bijna' }, { kind: 'end' }]
 }
 
 // B3: per look an intro card, 20 s looking, and the question. on screen only "website 1" and "website 2",
@@ -281,6 +312,27 @@ function answersOf(s: Session) {
   return out
 }
 
+// "Bewaar uw antwoorden": the questions and their own answers as plain Dutch text, the way they saw them
+// (so "website 1", never old/new). no event log, no mouse data
+function readableAnswers(s: Session) {
+  const lines = ['InnerGames websitetest: uw antwoorden', `Uw code: ${s.id}`, s.ended ? `Ingevuld op ${new Date(s.ended).toLocaleString('nl-NL', { dateStyle: 'long', timeStyle: 'short' })}` : '', '']
+  for (const st of buildSteps(s.group, profileOf(s.ans), s)) {
+    if (st.kind !== 'ask') continue
+    if (st.intro) lines.push(st.intro)
+    for (const q of st.qs) {
+      if (q.showIf && !q.showIf.is.includes(s.ans[q.showIf.id] ?? '')) continue
+      const v = s.ans[q.id] ?? ''
+      const shown = q.values && v ? (q.options?.[q.values.indexOf(v)] ?? v) : v
+      const extra = q.other && v === q.other ? s.ans[q.id + '_tekst'] : ''
+      const a = q.kind === 'scale' && v ? `${v} van 5 (1 ${q.low}, 5 ${q.high})` : [shown, extra].filter(Boolean).join(' ')
+      if (q.q) lines.push(q.q)
+      lines.push(`  ${a.trim() || '-'}`, '')
+    }
+  }
+  lines.push(`Wilt u uw gegevens laten verwijderen? Mail naar ${MAIL_TO_DISPLAY} en noem uw code.`)
+  return lines.join('\r\n')
+}
+
 function taskStats(s: Session, mouse: Mouse) {
   const profile = profileOf(s.ans)
   const steps = buildSteps(s.group, profile, s)
@@ -324,7 +376,10 @@ function taskStats(s: Session, mouse: Mouse) {
 
 // the body for /api/submit. under 1 MB (the beacon under 64 KB): mouse samples go first, never answers.
 // the task summaries are made from the whole path, before anything is dropped
-const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: string, max = MAX_BODY) => {
+// contact: what they filled in on "Bijna klaar". next to the session, never inside it: api/submit.ts puts it
+// in the mail body only, the attachments (the session) stay anonymous. only the compleet mail and the
+// download fallback pass it; the onvolledig beacon never does
+const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: string, max = MAX_BODY, contact?: Contact) => {
   const answers = answersOf(s)
   const tasks = taskStats(s, mouse)
   const build = (m: Mouse, eventsFrom: number) =>
@@ -332,6 +387,7 @@ const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: strin
       group: s.group,
       website: honey, // the honeypot: a person never fills this in
       status,
+      ...(contact ? { contact } : {}),
       session: {
         v: 6,
         id: s.id,
@@ -382,7 +438,7 @@ async function retryOld(skip: string) {
       const s = JSON.parse(localStorage.getItem(k) || 'null') as Session | null
       if (!s || s.v !== 6 || s.status !== 'compleet' || s.sent.compleet || sending.has(s.id)) continue
       sending.add(s.id)
-      if (await post(payload(s, loadMouse(s.id), 'compleet', ''))) save({ ...s, sent: { ...s.sent, compleet: true } })
+      if (await post(payload(s, loadMouse(s.id), 'compleet', '', MAX_BODY, s.contact))) save({ ...s, contact: undefined, sent: { ...s.sent, compleet: true } })
     } catch {
       /* broken entry: leave it */
     }
@@ -599,9 +655,10 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     sending.add(s.id)
     setSendState('sending')
     saveMouse(s.id, mouse)
-    post(payload(s, mouse, 'compleet', honey.current)).then((ok) => {
+    post(payload(s, mouse, 'compleet', honey.current, MAX_BODY, s.contact)).then((ok) => {
       setSendState(ok ? 'ok' : 'failed')
-      if (ok) setS((d) => ({ ...d, sent: { ...d.sent, compleet: true } }))
+      // sent: the contact data leaves localStorage. not sent: it stays until a later visit sends it (retryOld)
+      if (ok) setS((d) => ({ ...d, contact: undefined, sent: { ...d.sent, compleet: true } }))
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step.kind])
@@ -727,7 +784,7 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   // (or from "Waar werkt u?" to the welcome screen). never into a task, a look (B3) or the contact
   // page step, so the first screen after each of those has no vorige
   const prev = s.step > 0 ? steps[s.step - 1] : undefined
-  const canBack = step.kind === 'ask' && !step.noBack && (prev?.kind === 'ask' || prev?.kind === 'welkom')
+  const canBack = (step.kind === 'ask' && !step.noBack && (prev?.kind === 'ask' || prev?.kind === 'welkom')) || (step.kind === 'bijna' && prev?.kind === 'ask')
   const back = () => {
     if (!canBack || !prev) return
     const d = sRef.current
@@ -770,13 +827,37 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     setDemo((await post(payload(fake, path, 'test', honey.current))) ? 'ok' : 'failed')
   }
 
-  const download = () => {
-    const blob = new Blob([payload(s, mouse, 'compleet', '')], { type: 'application/json' })
+  const saveFile = (body: string, type: string, name: string) => {
     const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `innergames-test-${s.id}.json`
+    a.href = URL.createObjectURL(new Blob([body], { type }))
+    a.download = name
     a.click()
     setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+  }
+  // sending failed: the whole session as a file they mail to Damian themselves. with their contact data,
+  // because otherwise it would be lost
+  const download = () => saveFile(payload(s, mouse, 'compleet', '', MAX_BODY, s.contact), 'application/json', `innergames-test-${s.id}.json`)
+  // "Bewaar uw antwoorden": their own answers, readable, to keep
+  const keepAnswers = () => saveFile('﻿' + readableAnswers(s), 'text/plain;charset=utf-8', `innergames-test-${s.id}.txt`)
+
+  // "Bijna klaar": what they type stays on this screen (not in the session or localStorage) until Afronden
+  const [form, setForm] = useState<Form>(EMPTY_FORM)
+  const [emailError, setEmailError] = useState(false)
+  const setField = <K extends keyof Form>(k: K, v: Form[K]) => {
+    setForm((f) => ({ ...f, [k]: v }))
+    if (k === 'email') setEmailError(false)
+  }
+  const skip = () => {
+    setForm(EMPTY_FORM)
+    setEmailError(false)
+    advance({ ...sRef.current, contact: undefined, endNote: undefined })
+  }
+  const finish = () => {
+    const email = form.email.trim()
+    if (email && !emailOk(email)) return setEmailError(true)
+    const contact = contactOf(form)
+    const endNote = { ...(contact?.opDeHoogte ? { opDeHoogte: true as const } : {}), ...(contact?.cadeau ? { cadeau: true as const } : {}) }
+    advance({ ...sRef.current, contact, endNote: Object.keys(endNote).length ? endNote : undefined })
   }
 
   const counter = nr > 0 && <p className="mb-4 text-[16px] font-medium text-ig-ink/70">Stap {nr} van {numbered.length}</p>
@@ -793,6 +874,7 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
       <Card label="Welkom">
         <h1 className="text-[28px] font-bold normal-case leading-tight">Welkom</h1>
         <p className="mt-4">{WELKOM}</p>
+        {gift() && <p className="mt-3">Als dank voor uw tijd: {gift()!.short}</p>}
         <div className="mt-6 rounded-box bg-ig-cream p-5 text-[17px]">
           <p>{CONSENT}</p>
           <label className="mt-4 flex cursor-pointer items-start gap-3 text-[18px] font-semibold">
@@ -908,6 +990,58 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     )
   }
 
+  // "Bijna klaar": name, organisation and email, all optional. the boxes only work with an email.
+  // inside the card ([data-participant]), so tracking.ts never sees a click or a value here
+  if (step.kind === 'bijna') {
+    const g = gift()
+    const hasEmail = !!form.email.trim()
+    const box = (k: 'cadeau' | 'mailVraag' | 'opDeHoogte' | 'citaat' | 'nieuwsbrief', label: string) => (
+      <label key={k} className={`flex items-start gap-3 text-[18px] leading-snug ${hasEmail ? 'cursor-pointer' : 'cursor-not-allowed text-ig-ink/45'}`}>
+        <input type="checkbox" disabled={!hasEmail} checked={hasEmail && form[k]} onChange={(e) => setField(k, e.target.checked)} className="mt-0.5 h-6 w-6 shrink-0 accent-ig-ink disabled:opacity-40" />
+        <span>{label}</span>
+      </label>
+    )
+    const input = (k: 'naam' | 'organisatie' | 'email', label: string, type = 'text', auto = '') => (
+      <label className="mt-5 block text-[18px] font-semibold first:mt-0">
+        {label}
+        <input type={type} autoComplete={auto} value={form[k]} onChange={(e) => setField(k, e.target.value)} aria-invalid={k === 'email' && emailError} className={`${field} font-normal ${k === 'email' && emailError ? 'border-ig-orange-text!' : ''}`} />
+      </label>
+    )
+    return (
+      <Card label={`Stap ${nr}`} solid>
+        {counter}
+        <h1 className="text-[28px] font-bold normal-case leading-tight">Bijna klaar</h1>
+        <p className="mt-3">
+          {g ? `Wilt u uw naam achterlaten? Dat hoeft niet. Als dank sturen we u ${g.long} Laat dan uw e-mailadres achter.` : 'Wilt u uw naam achterlaten? Dat hoeft niet. U kunt dit ook overslaan.'}
+        </p>
+        <div className="mt-6">
+          {input('naam', 'Naam', 'text', 'name')}
+          {input('organisatie', 'Organisatie', 'text', 'organization')}
+          {input('email', 'E-mailadres', 'email', 'email')}
+          {emailError && <p role="alert" className="mt-2 text-[16px] font-semibold text-ig-orange-text">Dit e-mailadres lijkt niet te kloppen.</p>}
+        </div>
+        <fieldset className="mt-6 grid gap-4">
+          <legend className="sr-only">Wat mag InnerGames met uw e-mailadres?</legend>
+          {!hasEmail && <p className="text-[16px] text-ig-ink/60">vul eerst uw e-mailadres in</p>}
+          {g && box('cadeau', 'Ja, stuur mij het bedankje.')}
+          {box('mailVraag', 'U mag mij mailen als u nog een vraag heeft over mijn antwoorden.')}
+          {box('opDeHoogte', 'Hou mij op de hoogte: stuur mij de uitkomsten als de test klaar is.')}
+          {box('citaat', 'InnerGames mag contact met mij opnemen om een van mijn antwoorden als citaat op de website te gebruiken. Er wordt niets geplaatst zonder dat ik het eerst zie en goedkeur.')}
+          {/* never ticked by default and never needed for the gift. without a gift: only once there's an email */}
+          {(g || hasEmail) && box('nieuwsbrief', 'InnerGames mag mij af en toe mailen over nieuwe spellen en workshops.')}
+          {g && <p className="text-[16px] text-ig-ink/70">Het bedankje krijgt u ook als u de andere vakjes leeg laat. Uw antwoorden staan los van uw naam en tellen hetzelfde.</p>}
+        </fieldset>
+        <div className="mt-8 flex flex-wrap-reverse items-center justify-between gap-3">
+          <button type="button" onClick={back} className={secondary}>vorige</button>
+          <div className="flex flex-1 flex-wrap justify-end gap-3">
+            <button type="button" onClick={skip} className={`${secondary} flex-1 sm:flex-none`}>Overslaan</button>
+            <button type="button" onClick={finish} className={`${primary} flex-1 sm:flex-none`}>Afronden</button>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   // the end
   return (
     <Card label="Einde" solid>
@@ -922,7 +1056,12 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
       ) : (
         <p className="mt-4">Uw antwoorden zijn verstuurd. U kunt dit venster sluiten.</p>
       )}
-      <p className="mt-8 text-[15px] text-ig-ink/70">Uw code: {s.id}. Noem deze code als u uw antwoorden wilt laten verwijderen.</p>
+      {s.endNote?.opDeHoogte && <p className="mt-3">U hoort van ons als de uitkomsten klaar zijn.</p>}
+      {gift() && s.endNote?.cadeau && <p className="mt-3">We sturen u het bedankje zo snel mogelijk.</p>}
+      <button type="button" onClick={keepAnswers} className={`${secondary} mt-6`}>Bewaar uw antwoorden</button>
+      <p className="mt-8 text-[15px] text-ig-ink/70">
+        Uw code: {s.id}. Noem deze code als u uw antwoorden wilt laten verwijderen. Wilt u uw gegevens laten verwijderen? Mail naar {MAIL_TO_DISPLAY} en noem uw code.
+      </p>
     </Card>
   )
 }

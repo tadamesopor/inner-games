@@ -27,10 +27,13 @@ type TaskStat = {
   mouseScreens?: number
 }
 type Status = 'compleet' | 'onvolledig' | 'test'
+// what a participant filled in themselves on "Bijna klaar". only in the mail body, never in the attachments
+type Contact = { naam?: string; organisatie?: string; email?: string; mailVraag?: boolean; opDeHoogte?: boolean; citaat?: boolean; cadeau?: boolean; nieuwsbrief?: boolean }
 type Body = {
   group: 'klant' | 'nieuw'
   website?: string
   status: Status
+  contact?: Contact
   session: {
     id: string
     group: string
@@ -53,6 +56,8 @@ type Body = {
 
 const MAX_BYTES = 1024 * 1024
 const clean = (s: unknown, n = 40) => String(s ?? '').replace(/[^\w\- ]/g, '').slice(0, n)
+// a typed value for the mail: one line, not too long
+const oneLine = (s: unknown, n = 200) => String(s ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, n)
 
 /** checks the body. returns the reason it's wrong, or null when it's fine */
 export function check(raw: unknown, length: number): string | null {
@@ -83,7 +88,21 @@ export function buildMail(b: Body) {
   const s = b.session
   const id = clean(s.id, 6)
   const profile = clean(s.profile, 20)
-  const subject = b.status === 'test' ? 'IG test DEMO' : `IG test ${b.group} ${id} ${profile} ${b.status}`
+  // the contact block, at the very top. only what was filled in, no block when nothing was
+  const c: Contact = b.contact && typeof b.contact === 'object' ? b.contact : {}
+  const yes = (v: unknown) => v === true
+  const contact = [
+    ...(oneLine(c.naam) ? [`Naam: ${oneLine(c.naam)}`] : []),
+    ...(oneLine(c.organisatie) ? [`Organisatie: ${oneLine(c.organisatie)}`] : []),
+    ...(oneLine(c.email) ? [`E-mail: ${oneLine(c.email)}`] : []),
+    ...(yes(c.mailVraag) ? ['Mag mailen voor een vervolgvraag: ja'] : []),
+    ...(yes(c.opDeHoogte) ? ['Op de hoogte houden: ja'] : []),
+    ...(yes(c.citaat) ? ['Citaat mag gevraagd worden: ja'] : []),
+    ...(yes(c.cadeau) ? ['Cadeau: ja'] : []),
+    ...(yes(c.nieuwsbrief) ? ['Nieuws over spellen en workshops: ja'] : []),
+  ]
+  const named = !!(oneLine(c.naam) || oneLine(c.email))
+  const subject = b.status === 'test' ? 'IG test DEMO' : `IG test ${b.group} ${id} ${profile} ${b.status}${named ? ' met naam' : ''}`
   const line = (k: string, v: unknown) => `${k}: ${v === '' || v == null ? '-' : v}`
   const list = (l: string[] = []) => (l.length ? `${l.length} (${l.join(', ')})` : '0')
   // B3 (nieuw): the first impression of the old and the new homepage as one block, above the other answers
@@ -102,6 +121,7 @@ export function buildMail(b: Body) {
       ]
     : []
   const text = [
+    ...(contact.length ? ['CONTACT (zelf ingevuld)', ...contact, ''] : []),
     line('Apparaat', `${s.device?.type}, ${s.device?.viewport}, ${s.device?.browser}`),
     '',
     `Testsessie ${id} (${b.group === 'klant' ? 'klant' : 'nieuwe bezoeker'}), ${b.status}.`,
