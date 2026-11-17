@@ -3,7 +3,7 @@ import { initBoxscene, initHeroTable, initHeroWaves, initSpeelpad } from './moti
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { playE5 } from './shop'
-import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, Tag, btnLink, useMotion } from './wf'
+import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, SHOW_PLACEHOLDERS, Tag, btnLink, useMotion } from './wf'
 
 // TODO Ariën: check the hero title and subtitle (draft from the midterm: say what InnerGames does).
 // the workshops in data.ts take 1,5 to 4 uur (energiek team is 3 sessions of 4 uur), not "2 tot 3 uur"
@@ -306,9 +306,11 @@ export function Home() {
 
       {/* the quote that was here was an example, not a real one: never show that as real in a test.
           TODO Ariën: a real quote from a participant or client, with name and organisation (with permission) */}
-      <Section id="E" label="quote" className="bg-white" note="echte quote volgt">
-        <Todo className="mx-auto max-w-3xl text-center">Hier komt een echte quote van een deelnemer of opdrachtgever, met naam en organisatie.</Todo>
-      </Section>
+      {SHOW_PLACEHOLDERS && (
+        <Section id="E" label="quote" className="bg-white" note="echte quote volgt">
+          <Todo className="mx-auto max-w-3xl text-center">Hier komt een echte quote van een deelnemer of opdrachtgever, met naam en organisatie.</Todo>
+        </Section>
+      )}
 
       <ClientStrip />
       <PartnerStrip />
@@ -492,7 +494,8 @@ export function Workshop() {
 
       {/* TODO Ariën: check the three steps */}
       <Section id="C2" label="dit kun je verwachten" className="bg-ig-cream" note="kennismaking · sessie op maat · nagesprek">
-        <div className="grid gap-10 @4xl:grid-cols-[1fr_1.4fr]">
+        {/* the second column is the case placeholder: without it, one column */}
+        <div className={`grid gap-10 ${SHOW_PLACEHOLDERS ? '@4xl:grid-cols-[1fr_1.4fr]' : ''}`}>
           <div>
             <H2>dit kun je verwachten</H2>
             <ol className="mt-8 space-y-6">

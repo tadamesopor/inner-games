@@ -193,6 +193,8 @@ export default function App() {
       <CartDrawer open={cartOpen} onClose={closeCart} />
       {tasks && !group && <TestMode pageKey={sel ? `${page}/${sel}` : page} go={go} bus={bus} />}
       {group && <Participant group={group} pageKey={sel ? `${page}/${sel}` : page} go={go} />}
+      {/* in the test no prototype markers: the stop squares of the speelpad go (the line and pawn stay) */}
+      {group && <style>{'.ig-speelpad__stop{display:none}'}</style>}
       {replay && bar && <TaskBar title={bar.title} text={bar.text} phone={innerWidth < 640} folded={false} onFold={() => {}} buttons={<TaskButtons />} />}
       {/* the prototype options: a small ⚙ bottom left, opened on click. completely hidden in test mode,
           so it can't cover anything; the test leader brings it back by pressing G three times */}

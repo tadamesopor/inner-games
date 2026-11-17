@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import { ALT, AUD_LABEL, AUDS, BRIGHT, GAMES, PHOTOS, PREVIEW_SLUG, STEPS, WORKSHOPS, type Aud, type Game as G } from './data'
-import { Btn, btnLink, chip, ContactCta, Ctx, H1, H2, Header, logEvent, PageHero, Photo, Section, Tag, useMotion, type PageId } from './wf'
+import { Btn, btnLink, chip, ContactCta, Ctx, H1, H2, Header, logEvent, PageHero, Photo, Section, SHOW_PLACEHOLDERS, Tag, useMotion, type PageId } from './wf'
 import { initBoxscene } from './motion'
 
 /** the number in a price like "€ 152" or "€ 16,35 incl. verzending", for the subtotal */
@@ -646,7 +646,7 @@ export function Checkout() {
               </div>
               <p className="text-meta text-ig-ink/70">incl. btw</p>
               {/* TODO Ariën: shipping costs */}
-              <p className="mt-3 inline-block rounded-tag border border-dashed border-ig-ink/40 px-2.5 py-1 text-meta">verzendkosten: nog aan te leveren</p>
+              {SHOW_PLACEHOLDERS && <p className="mt-3 inline-block rounded-tag border border-dashed border-ig-ink/40 px-2.5 py-1 text-meta">verzendkosten: nog aan te leveren</p>}
             </aside>
           </div>
         )}

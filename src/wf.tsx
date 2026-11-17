@@ -91,7 +91,11 @@ export function Section({
 
 /** something we don't have yet. visibly temporary (dashed frame and a label), so nobody in a test reads it
     as real. the text says what goes here; the real content comes from Ariën (see docs/OPEN_QUESTIONS.md) */
+// off for the user test: no "nog aan te leveren" boxes anywhere. true brings them all back
+export const SHOW_PLACEHOLDERS = false
+
 export function Todo({ children, className = '' }: { children: ReactNode; className?: string }) {
+  if (!SHOW_PLACEHOLDERS) return null
   return (
     <div className={`rounded-box border-[1.5px] border-dashed border-current/35 p-5 ${className}`}>
       <p className="mb-2 inline-block rounded-tag bg-ig-yellow px-2.5 py-1 text-meta font-semibold leading-none text-ig-ink">nog aan te leveren</p>
@@ -619,7 +623,7 @@ export function Footer() {
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-2">
           <span>© 2026 InnerGames{ann ? ' · Enfold WordPress Theme' : ''}</span>
           {/* TODO Ariën: KvK-nummer and btw-nummer */}
-          <span className="rounded-tag border border-dashed border-current/40 px-2.5 py-1">KvK-nummer en btw-nummer: nog aan te leveren</span>
+          {SHOW_PLACEHOLDERS && <span className="rounded-tag border border-dashed border-current/40 px-2.5 py-1">KvK-nummer en btw-nummer: nog aan te leveren</span>}
         </div>
       </div>
     </footer>
