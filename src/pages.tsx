@@ -812,6 +812,9 @@ export function Contact() {
                 </select>
               </label>
               <label className="block text-meta font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
+              <label className="block text-meta font-semibold">Wanneer zou u het willen doen? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
+                <input name="wanneer" type="text" placeholder="bijvoorbeeld: begin maart, een dinsdag" className={`${input} mt-1`} />
+              </label>
               {/* optional: after launch this shows where inquiries come from */}
               <label className="block text-meta font-semibold">Hoe heeft u ons gevonden? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
                 <select name="gevonden" className={`${input} mt-1`} defaultValue="">
