@@ -49,7 +49,7 @@ const RETRY = [1000, 3000, 9000]
 type Profile = 'school' | 'organisatie' | 'trainer' | 'anders'
 type TaskId = 't1' | 't2' | 't3' | 't4'
 type Status = 'bezig' | 'compleet' | 'onvolledig'
-type Ev = TEv & { task?: TaskId }
+type Ev = TEv & { task?: TaskId; from?: string; to?: string } // from/to: the screens of a "vorige"
 type TaskRes = { start?: number; end?: number; result?: 'klaar' | 'vast' }
 
 type Session = {
@@ -91,7 +91,7 @@ type Step =
 
 /* ---------- the texts (docs/CLAUDE_CODE_TEST_MODE_V6.md, section 3) ---------- */
 
-const WELKOM = 'Fijn dat u meedoet. U helpt InnerGames om hun nieuwe website beter te maken. Dit duurt ongeveer 15 minuten. U test de website, niet uzelf. Er zijn geen foute antwoorden. Er wordt niets verkocht en niets echt verstuurd.'
+const WELKOM = 'Fijn dat u meedoet. U helpt InnerGames om hun nieuwe website beter te maken. Dit duurt ongeveer 20 minuten. U test de website, niet uzelf. Er zijn geen foute antwoorden. Er wordt niets verkocht en niets echt verstuurd.'
 const CONSENT = "Uw antwoorden worden zonder naam bewaard. Ze worden alleen gebruikt om de website te verbeteren en voor het stageverslag van Damian bij Fontys. We slaan ook op welke pagina's u bekijkt, waar u klikt en hoe u de muis beweegt. Er wordt geen video of beeld van uw scherm opgenomen. Wat u typt in de website zelf slaan we niet op. Alles wordt uiterlijk 31 januari 2027 verwijderd. U kunt altijd stoppen."
 
 const WORK: [string, Profile][] = [
@@ -140,7 +140,7 @@ function buildSteps(group: Group, profile?: Profile): Step[] {
     { kind: 'task', id: 't3', text: 'U wilt in maart een datum vastleggen. Ga zo ver als u zou gaan om dat te regelen. Er wordt niets echt verstuurd.' },
     { kind: 'ask', id: 't3', qs: [choice('3', 'Hoe ging dat?', ['gelukt', 'ik liep vast', 'ik zou liever bellen of mailen'])] },
     { kind: 'task', id: 't4', text: 'U hoort dat u een spel van InnerGames online kunt uitproberen. Zoek het en probeer het een paar minuten.' },
-    { kind: 'ask', id: 't4', qs: [choice('4a', 'Heeft u het spel gevonden?', ['ja, meteen', 'ja, na wat zoeken', 'nee']), choice('4b', 'Wat zou u hierna doen?', ['meer lezen over het spel', 'het spel kopen', 'een workshop aanvragen', 'niets', 'anders:'], 'anders:')] },
+    { kind: 'ask', id: 't4', qs: [choice('4a', 'Heeft u het spel gevonden?', ['ja, meteen', 'ja, na wat zoeken', 'nee']), { ...choice('4c', 'Hielp het spel u om te begrijpen wat InnerGames doet?', ['ja', 'een beetje', 'nee', 'ik heb het niet gespeeld']), required: true }, choice('4b', 'Wat zou u hierna doen?', ['meer lezen over het spel', 'het spel kopen', 'een workshop aanvragen', 'niets', 'anders:'], 'anders:')] },
     { kind: 'view', text: 'Bekijk het aanvraagformulier op deze pagina. Druk daarna op Verder.', page: 'contact' },
     { kind: 'ask', id: 'C1', qs: [choice('C1', 'Bekijk het aanvraagformulier. Zou u dit invullen, of neemt u liever direct contact op?', ['ik vul het formulier in', 'ik mail Ariën', 'ik bel of app', 'ik stuur een bericht op LinkedIn']), text('C1_waarom', 'Waarom?')] },
   ]
@@ -296,6 +296,7 @@ const payload = (s: Session, mouse: Mouse, status: Status | 'test', honey: strin
         ended: s.ended ? new Date(s.ended).toISOString() : null,
         minutes: Math.round(((s.ended ?? Date.now()) - s.started) / 6000) / 10,
         step: s.step,
+        back: s.events.filter((e) => e.type === 'back').length, // apart, the beacon drops the events
         device: s.device,
         viewport: { w: +s.device.viewport.split('x')[0], h: +s.device.viewport.split('x')[1] },
         answers,
@@ -397,7 +398,7 @@ function Scale({ q, value, onPick }: { q: Q; value?: string; onPick: (v: string)
 
 export default function Participant({ group, pageKey, go }: { group: Group; pageKey: string; go: (p: PageId, id?: string) => void }) {
   const [s, setS] = useState<Session>(() => load(group))
-  const [consent, setConsent] = useState(false)
+  const [consent, setConsent] = useState(() => !!s.consentAt) // back on the welcome screen it stays ticked
   const [folded, setFolded] = useState(false)
   const [left, setLeft] = useState(LOOK_SECONDS)
   const [toast, setToast] = useState(false)
@@ -613,11 +614,28 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
   }
   const setAns = (id: string, v: string) => setS((d) => ({ ...d, ans: { ...d.ans, [id]: v } }))
 
+  // "vorige": one question screen back, answers stay. only from a question screen to a question screen
+  // (or from "Waar werkt u?" to the welcome screen). never into a task, the 10 seconds or the contact
+  // page step, so the first screen after each of those has no vorige
+  const prev = s.step > 0 ? steps[s.step - 1] : undefined
+  const canBack = step.kind === 'ask' && (prev?.kind === 'ask' || prev?.kind === 'welkom')
+  const back = () => {
+    if (!canBack || !prev) return
+    const d = sRef.current
+    const id = (st: Step) => (st.kind === 'ask' || st.kind === 'task' ? st.id : st.kind)
+    const n: Session = { ...d, step: d.step - 1, events: d.events.length >= MAX_EVENTS ? d.events : [...d.events, { t: Date.now() - d.started, type: 'back', detail: `${id(step)} > ${id(prev)}`, from: id(step), to: id(prev) }] }
+    window.scrollTo(0, 0)
+    sRef.current = n
+    setS(n)
+  }
+
   const begin = () => {
+    const d = sRef.current
+    // back from "Waar werkt u?": the test already started, so just go on (the log and the cart stay)
+    if (d.consentAt) return advance(d)
     window.dispatchEvent(new Event('ig:cart-reset'))
     const now = Date.now()
     const dev = device()
-    const d = sRef.current
     lastPage.current = null
     advance({ ...d, consentAt: now, device: dev, events: [{ t: now - d.started, type: 'device', detail: `${dev.type} ${dev.viewport} ${dev.browser}` }] })
   }
@@ -708,7 +726,15 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
             </label>
           ),
         )}
-        <button type="button" disabled={missing} onClick={next} className={`${primary} mt-8 w-full sm:w-auto`}>Volgende</button>
+        {canBack ? (
+          // side by side when they fit, otherwise vorige wraps to under Volgende (wrap-reverse)
+          <div className="mt-8 flex flex-wrap-reverse items-center justify-between gap-3">
+            <button type="button" onClick={back} className={secondary}>vorige</button>
+            <button type="button" disabled={missing} onClick={next} className={`${primary} flex-1 sm:flex-none`}>Volgende</button>
+          </div>
+        ) : (
+          <button type="button" disabled={missing} onClick={next} className={`${primary} mt-8 w-full sm:w-auto`}>Volgende</button>
+        )}
       </Card>
     )
   }

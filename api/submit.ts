@@ -40,6 +40,7 @@ type Body = {
     ended: string | null
     minutes: number
     step: number
+    back?: number
     device: { type: string; viewport: string; browser: string }
     answers: Answer[]
     tasks: TaskStat[]
@@ -64,7 +65,16 @@ export function check(raw: unknown, length: number): string | null {
   return null
 }
 
-const csvCell = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
+// an iso time as Dutch time for the mail: "maandag 16 november 2026, 00:50". the json and csv keep the iso
+const DUTCH = new Intl.DateTimeFormat('nl-NL', { timeZone: 'Europe/Amsterdam', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
+export function dutchTime(iso: string | null | undefined) {
+  const d = iso ? new Date(iso) : null
+  if (!d || isNaN(+d)) return iso ?? ''
+  const p = Object.fromEntries(DUTCH.formatToParts(d).map((x) => [x.type, x.value]))
+  return `${p.weekday} ${p.day} ${p.month} ${p.year}, ${p.hour}:${p.minute}`
+}
+
+const csvCell =(v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
 
 /** the email: subject, a readable summary in Dutch, the session as json and the answers as csv */
 export function buildMail(b: Body) {
@@ -80,10 +90,11 @@ export function buildMail(b: Body) {
     `Testsessie ${id} (${b.group === 'klant' ? 'klant' : 'nieuwe bezoeker'}), ${b.status}.`,
     '',
     line('Profiel', profile),
-    line('Begonnen', s.started),
-    line('Klaar', s.ended),
+    line('Begonnen', dutchTime(s.started)),
+    line('Klaar', dutchTime(s.ended)),
     line('Duur', `${s.minutes} minuten`),
     line('Laatste stap', s.step),
+    line('Vorige gebruikt', `${s.back ?? 0}x`),
     '',
     'ANTWOORDEN',
     ...s.answers.flatMap((a) => [`${a.id}. ${a.q}`, `   ${a.a || '-'}`]),
