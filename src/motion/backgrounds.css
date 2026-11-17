@@ -1,19 +1,34 @@
 /* the InnerGames background: the speelpad (game path). one per page at most.
-   the svg sits behind the content (z-index 0). the cards above it need their own background,
-   so the line disappears behind them and peeks out in the gaps. */
+   the layers sit behind the content (z-index 0). the cards above them need their own background,
+   so the line disappears behind them and peeks out in the gaps.
+   speelpad.js makes three layers: the line (in a window that opens downwards while you scroll), the stops
+   and the pawn. all three only ever move with transform, so scrolling never repaints them. */
 
 .ig-bg-speelpad {
   position: relative;
 }
-.ig-bg-speelpad > :not(.ig-speelpad__svg) {
+.ig-bg-speelpad > :not(.ig-speelpad__layer) {
   position: relative;
   z-index: 1;
 }
-.ig-speelpad__svg {
+.ig-speelpad__layer {
   position: absolute;
-  inset: 0;
+  left: 0;
+  top: 0;
   z-index: 0;
   pointer-events: none;
+}
+/* the window over the line, and the line inside it moving the other way: together the line stands
+   still and only the bottom edge of the window moves */
+.ig-speelpad__reveal {
+  overflow: hidden;
+  will-change: transform;
+}
+.ig-speelpad__inner {
+  will-change: transform;
+}
+.ig-speelpad__svg {
+  display: block;
   overflow: visible;
 }
 
@@ -43,55 +58,45 @@
   --pencil-draw: 300ms;
 }
 
-/* the pawn (.ig-pawn, see pawn.js): a soft contact shadow that shrinks while it's in the air.
+/* the pawn (.ig-pawn, see pawn.js): html, its feet on (0, 0) of .ig-pawn, which speelpad.js moves with
+   transform. a soft contact shadow that shrinks while it's in the air (the hop is a web animation).
    .is-away: near the top or bottom of the screen it fades out, so it never sits on fixed buttons */
+.ig-speelpad__pawn {
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
 .ig-pawn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
   transition: opacity var(--dur-move) var(--ease-soft);
 }
 .ig-pawn.is-away {
   opacity: 0;
 }
-.ig-pawn__shadow {
-  fill: var(--ig-ink);
-  opacity: 0.2;
-  filter: blur(1.5px);
-}
-.ig-pawn__img {
-  /* a hint of shadow on the pawn itself, so it sits on the page instead of on top of it */
-  filter: drop-shadow(0 1px 1px rgb(42 24 16 / 0.25));
-}
-.ig-pawn__hop,
-.ig-pawn__shadow {
-  transform-box: view-box;
+.ig-pawn__tilt,
+.ig-pawn__hop {
+  position: absolute;
+  left: 0;
+  top: 0;
   transform-origin: 0 0;
 }
-.ig-pawn.is-hopping .ig-pawn__hop {
-  animation: ig-pawn-hop 460ms var(--ease-out);
+/* a soft gradient instead of a blur filter: the same look, nothing to recompute */
+.ig-pawn__shadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(42 24 16 / 0.22), rgb(42 24 16 / 0));
 }
-.ig-pawn.is-hopping .ig-pawn__shadow {
-  animation: ig-pawn-shadow 460ms var(--ease-out);
-}
-/* squash before the jump, stretch in the air, a small squash when it lands */
-@keyframes ig-pawn-hop {
-  0% {
-    transform: scale(1, 1);
-  }
-  14% {
-    transform: scale(1.1, 0.88);
-  }
-  45% {
-    transform: translateY(-8px) scale(0.94, 1.08);
-  }
-  78% {
-    transform: translateY(0) scale(1.07, 0.92);
-  }
-  100% {
-    transform: scale(1, 1);
-  }
-}
-@keyframes ig-pawn-shadow {
-  45% {
-    transform: scale(0.55);
-    opacity: 0.08;
-  }
+.ig-pawn__img {
+  position: absolute;
+  max-width: none;
+  /* the photo leans to the right; -14deg around its feet stands it up */
+  transform-origin: 50% 97%;
+  rotate: -14deg;
+  /* a hint of shadow on the pawn itself, so it sits on the page instead of on top of it */
+  filter: drop-shadow(0 1px 1px rgb(42 24 16 / 0.25));
 }

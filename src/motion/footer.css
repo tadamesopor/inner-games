@@ -54,6 +54,8 @@
   transform-origin: 78% 92%; /* the wrist */
   rotate: 20deg; /* 30deg stands the drawing up, -10deg tilts it */
   translate: 0 calc((1 - var(--p)) * 45%);
+  /* its own layer: rising while you scroll moves it, without painting the footer again every frame */
+  will-change: transform;
 }
 .ig-footer.is-waving .ig-footer-hand {
   animation: ig-footer-wave 700ms var(--ease-soft);
@@ -93,6 +95,7 @@
   transform-origin: 50% 100%;
   translate: -50% calc((1 - var(--p)) * 30%);
   rotate: -4deg;
+  will-change: transform; /* see .ig-footer-hand */
 }
 .ig-footer-photo--right {
   left: auto;

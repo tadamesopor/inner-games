@@ -1,6 +1,6 @@
 # Image sources
 
-Made by `scripts/fetch-images.mjs`. Each name has a `-1600.webp` and an `-800.webp` version (never upscaled).
+Made by `scripts/fetch-images.mjs`. Each name has a `-1600.webp`, an `-800.webp` and a `-400.webp` version (never upscaled).
 
 | Name | Original size | Original URL |
 |---|---|---|

@@ -1,4 +1,5 @@
-// downloads the real InnerGames photos once and makes web versions (webp, 1600 and 800 wide)
+// downloads the real InnerGames photos once and makes web versions (webp, 1600, 800 and 400 wide).
+// 400: for small places (the hero objects, cards on a normal screen), so a 250px photo isn't an 800px file
 // run: node scripts/fetch-images.mjs   (add --force to download again)
 // originals go to .cache/img-src (not in git), web versions to public/assets/img
 import { mkdir, writeFile, readFile, access } from 'node:fs/promises'
@@ -8,7 +9,7 @@ import sharp from 'sharp'
 const BASE = 'https://innergames.nl/wp-content/uploads/'
 const OUT = 'public/assets/img'
 const CACHE = '.cache/img-src'
-const WIDTHS = [1600, 800]
+const WIDTHS = [1600, 800, 400]
 const force = process.argv.includes('--force')
 
 // [folder/name, file after BASE]. the list comes from docs/Figma_Make_Prompt_v5 section 3
@@ -76,7 +77,10 @@ for (const [name, file] of IMAGES) {
   console.log('ok', name, `${meta.width}x${meta.height}`)
 }
 
+// the part of SOURCES.md after the table (the logos, made by hand) stays as it is
+const old = await readFile(join(OUT, 'SOURCES.md'), 'utf8').catch(() => '')
+const rest = old.includes('\n## ') ? old.slice(old.indexOf('\n## ')) : ''
 await writeFile(
   join(OUT, 'SOURCES.md'),
-  `# Image sources\n\nMade by \`scripts/fetch-images.mjs\`. Each name has a \`-1600.webp\` and an \`-800.webp\` version (never upscaled).\n\n| Name | Original size | Original URL |\n|---|---|---|\n${rows.join('\n')}\n`,
+  `# Image sources\n\nMade by \`scripts/fetch-images.mjs\`. Each name has a \`-1600.webp\`, an \`-800.webp\` and a \`-400.webp\` version (never upscaled).\n\n| Name | Original size | Original URL |\n|---|---|---|\n${rows.join('\n')}\n${rest}`,
 )

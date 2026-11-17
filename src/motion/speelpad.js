@@ -5,6 +5,12 @@
 // line slips behind the bottom corner of the card and comes out in the gap, so it feels part of the page.
 // on a phone it's a simple line along the left edge.
 //
+// smooth scrolling: the line is drawn once (with its grain) on its own layer, and "draws itself" by
+// moving a window over it with two opposite translateY's. the pawn moves with transform only. so while
+// scrolling nothing is repainted and nothing is measured: the points along the line are worked out once,
+// and where the path sits on the page is measured on build and resize, never in the scroll loop.
+// reduced motion: the whole line, the pawn standing at the last stop, nothing moves on scroll.
+//
 // TODO: replace with drawing. the wobble below fakes a hand-drawn line until Damian's own path exists.
 
 import { isReduced, onReducedChange } from './prefs.js'
@@ -14,6 +20,7 @@ import { createPawn } from './pawn.js'
 const NS = 'http://www.w3.org/2000/svg'
 const HOLD = 150 // px of scrolling the pawn waits at each stop
 const HEAD = 0.6 // the pawn walks at 60% of the screen height
+const STEP = 6 // px along the line between two points of the lookup table
 
 function seeded(seed) {
   let s = seed
@@ -43,27 +50,59 @@ function el(name, attrs, parent) {
   parent?.appendChild(n)
   return n
 }
+function div(cls) {
+  const n = document.createElement('div')
+  n.className = cls
+  n.setAttribute('aria-hidden', 'true')
+  return n
+}
 
 const viewBoxOf = (mark) => mark.viewBox.split(/[\s,]+/).map(Number)
 
 export function initSpeelpad(root) {
-  const svg = el('svg', { class: 'ig-speelpad__svg', 'aria-hidden': 'true', focusable: 'false' })
-  root.prepend(svg)
+  // three layers behind the content: the line (in a window that opens downwards), the stops, the pawn
+  const reveal = div('ig-speelpad__layer ig-speelpad__reveal')
+  const inner = div('ig-speelpad__inner')
+  reveal.appendChild(inner)
+  const svg = el('svg', { class: 'ig-speelpad__svg', focusable: 'false' }, inner)
+  const stopsSvg = el('svg', { class: 'ig-speelpad__layer ig-speelpad__svg', 'aria-hidden': 'true', focusable: 'false' })
+  const pawnLayer = div('ig-speelpad__layer ig-speelpad__pawn')
+  root.prepend(reveal, stopsSvg, pawnLayer)
 
   let marks = null
-  let path, pawn, stops = [], keys = [], zones = [], total = 0, lastStopLen = 0
-  let active = false, raf = 0, zone = -1, alive = true
+  let pawn = null, stops = [], keys = [], zones = [], total = 0, lastStopLen = 0
+  let xs = null, ys = null, reach = null // the lookup table: x and y every STEP px, and the lowest y so far
+  let W = 0, H = 0, rootTop = 0
+  let active = false, raf = 0, zone = -1, alive = true, buildRaf = 0
+  let cutNow = NaN, awayNow = null
+
+  // where the path sits on the page (document y). in a ResizeObserver callback or on build: layout is
+  // clean there, so this read costs nothing
+  const measure = () => {
+    rootTop = root.getBoundingClientRect().top + window.scrollY
+  }
 
   function build() {
+    buildRaf = 0
     if (!marks || !alive) return
     svg.textContent = ''
-    const W = root.clientWidth
-    const H = root.scrollHeight
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
-    svg.setAttribute('width', W)
-    svg.setAttribute('height', H)
+    stopsSvg.textContent = ''
+    pawnLayer.textContent = ''
+    xs = null
+    W = root.clientWidth
+    H = root.scrollHeight
+    for (const s of [svg, stopsSvg]) {
+      s.setAttribute('viewBox', `0 0 ${W} ${H}`)
+      s.setAttribute('width', W)
+      s.setAttribute('height', H)
+    }
+    reveal.style.width = inner.style.width = `${W}px`
+    reveal.style.height = inner.style.height = `${H}px`
+    cutNow = NaN
+    awayNow = null
 
     const box = root.getBoundingClientRect()
+    rootTop = box.top + window.scrollY
     const blocks = [...root.querySelectorAll('[data-speelpad-stop]')].map((s) => {
       const r = s.getBoundingClientRect()
       // the stop sits at the height of the block's title, not at a fixed distance from its top
@@ -71,7 +110,6 @@ export function initSpeelpad(root) {
       const head = h ? h.top + h.height / 2 - box.top : r.top - box.top + 52
       return { top: r.top - box.top, bottom: r.bottom - box.top, left: r.left - box.left, right: r.right - box.left, head }
     })
-    path = null
     if (!blocks.length) return
 
     const rnd = seeded(11)
@@ -83,7 +121,6 @@ export function initSpeelpad(root) {
     // the pawn shrinks a little on smaller margins (44px max), so it fits between the edge and the content
     const PAWN = Math.min(44, room - EDGE - 4)
     if (PAWN < 28) return
-    const narrow = false
     // the pawn leans (photo tilt + up to 8deg in the walking direction), so its head reaches further
     // than half its width: about 0.8 of its size from the line
     const minX = EDGE + PAWN * 0.8
@@ -102,10 +139,6 @@ export function initSpeelpad(root) {
       pts.push([x + wob(3), b.head])
       stopIdx.push(pts.length - 1)
       const next = blocks[i + 1]
-      if (narrow) {
-        if (next) pts.push([x + wob(3), (b.bottom + next.top) / 2])
-        return
-      }
       // slip behind the bottom corner of this card...
       const behindX = i % 2 === 0 ? b.left + 40 + wob(10) : b.right - 40 + wob(10)
       pts.push([behindX, b.bottom - 34 + wob(8)])
@@ -114,11 +147,25 @@ export function initSpeelpad(root) {
     })
     pts.push([margin(blocks.length - 1) + wob(8), H - 6])
 
+    // the whole line, drawn once. it never changes while scrolling, so its grain is rendered once too
     const d = curve(pts, minX, W - minX)
     const grain = el('g', { class: 'ig-pencil__grain' }, svg)
-    path = el('path', { d, class: 'ig-speelpad__line' }, grain)
+    const path = el('path', { d, class: 'ig-speelpad__line' }, grain)
     total = path.getTotalLength()
-    path.style.strokeDasharray = `${total} ${total}`
+
+    // the lookup table: a point every STEP px along the line, worked out once instead of every frame
+    const n = Math.ceil(total / STEP) + 1
+    xs = new Float32Array(n)
+    ys = new Float32Array(n)
+    reach = new Float32Array(n)
+    let low = -Infinity
+    for (let i = 0; i < n; i++) {
+      const p = path.getPointAtLength(Math.min(total, i * STEP))
+      xs[i] = p.x
+      ys[i] = p.y
+      low = Math.max(low, p.y)
+      reach[i] = low // the line is drawn down to here: the lowest point reached so far
+    }
 
     const lenAt = (k) => {
       const tmp = el('path', { d: curve(pts.slice(0, k + 1), minX, W - minX) }, svg)
@@ -129,20 +176,21 @@ export function initSpeelpad(root) {
     const stopLen = stopIdx.map(lenAt)
     lastStopLen = stopLen[stopLen.length - 1]
 
-    // the stops: a small boxy square, outline first, yellow with a drawn tick once the pawn gets there
-    const size = narrow ? 14 : 22
+    // the stops: a small boxy square, outline first, yellow with a drawn tick once the pawn gets there.
+    // on their own layer, so they show before the line reaches them
+    const size = 22
     const [, , tw, th] = viewBoxOf(marks.tick)
     stops = stopIdx.map((k, i) => {
       const [x, y] = pts[k]
-      const g = el('g', { class: 'ig-speelpad__stop', transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${wob(6).toFixed(1)})` }, svg)
-      el('rect', { x: -size / 2, y: -size / 2, width: size, height: size, rx: narrow ? 3 : 4, class: 'ig-speelpad__square' }, g)
+      const g = el('g', { class: 'ig-speelpad__stop', transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${wob(6).toFixed(1)})` }, stopsSvg)
+      el('rect', { x: -size / 2, y: -size / 2, width: size, height: size, rx: 4, class: 'ig-speelpad__square' }, g)
       const tick = el('svg', { class: 'ig-pencil ig-draw ig-speelpad__tick', x: -size * 0.38, y: -size * 0.38, width: size * 0.76, height: size * 0.76, viewBox: `0 0 ${tw} ${th}` }, g)
       tick.innerHTML = markMarkup(marks.tick)
-      return { g, tick, len: stopLen[i] }
+      return { g, tick, len: stopLen[i], on: false }
     })
 
     // the pawn: feet on the line, its own component (pawn.js) so it can become 3D later
-    pawn = createPawn(svg, { size: PAWN })
+    pawn = createPawn(pawnLayer, { size: PAWN })
 
     // scroll position (the walking "head", px from the top of root) -> length on the path.
     // between stops it walks, at a stop it waits HOLD px
@@ -168,28 +216,50 @@ export function initSpeelpad(root) {
     return total
   }
 
+  // a point on the line from the lookup table, in between two entries
+  const at = (arr, len) => {
+    const f = Math.max(0, Math.min(arr.length - 1, len / STEP))
+    const i = Math.floor(f)
+    const j = Math.min(arr.length - 1, i + 1)
+    return arr[i] + (arr[j] - arr[i]) * (f - i)
+  }
+
   function update() {
     raf = 0
-    if (!path) return
+    if (!xs) return
     const reduced = isReduced()
-    const head = window.innerHeight * HEAD - root.getBoundingClientRect().top
-    // reduced motion: the whole line drawn, the pawn standing at the last stop, no hopping
-    const drawn = reduced ? total : Math.max(0.001, Math.min(total, lengthAt(head)))
-    const at = reduced ? lastStopLen : drawn
-    path.style.strokeDashoffset = `${total - drawn}`
+    const scrollY = window.scrollY // read first, then only writes
+    const head = window.innerHeight * HEAD - (rootTop - scrollY)
+    const drawn = reduced ? total : Math.max(0, Math.min(total, lengthAt(head)))
+    const len = reduced ? lastStopLen : drawn
 
-    const p = path.getPointAtLength(at)
-    const q = path.getPointAtLength(Math.min(total, at + 6))
-    const dist = Math.hypot(q.x - p.x, q.y - p.y) || 1
-    pawn.pose(p.x, p.y, ((q.x - p.x) / dist) * 10)
-    const onScreen = root.getBoundingClientRect().top + p.y
-    pawn.node.classList.toggle('is-away', onScreen < window.innerHeight * 0.15 || onScreen > window.innerHeight * 0.85)
+    // the line: the window over it opens down to the lowest point drawn so far (+ the line's width)
+    const cut = reduced ? H : Math.min(H, Math.round(at(reach, drawn) + 4))
+    if (cut !== cutNow) {
+      reveal.style.transform = `translate3d(0, ${cut - H}px, 0)`
+      inner.style.transform = `translate3d(0, ${H - cut}px, 0)`
+      cutNow = cut
+    }
 
-    stops.forEach((s) => {
-      const reached = at >= s.len - 1
+    const x = at(xs, len), y = at(ys, len)
+    const qx = at(xs, Math.min(total, len + 6)), qy = at(ys, Math.min(total, len + 6))
+    const dist = Math.hypot(qx - x, qy - y) || 1
+    pawn.pose(x, y, ((qx - x) / dist) * 10)
+    // near the top or bottom of the screen it fades out, so it never sits on fixed buttons
+    const onScreen = rootTop - scrollY + y
+    const away = !reduced && (onScreen < window.innerHeight * 0.15 || onScreen > window.innerHeight * 0.85)
+    if (away !== awayNow) {
+      pawn.node.classList.toggle('is-away', away)
+      awayNow = away
+    }
+
+    for (const s of stops) {
+      const reached = len >= s.len - 1
+      if (reached === s.on) continue
+      s.on = reached
       s.g.classList.toggle('is-reached', reached)
       s.tick.classList.toggle('is-drawn', reached)
-    })
+    }
 
     const z = zones.findIndex(([a, b]) => head >= a && head <= b)
     if (z !== zone) {
@@ -198,20 +268,31 @@ export function initSpeelpad(root) {
     }
   }
 
+  // reduced motion: everything stands still, so scrolling does nothing
   const onScroll = () => {
-    if (active && !raf) raf = requestAnimationFrame(update)
+    if (active && !raf && !isReduced()) raf = requestAnimationFrame(update)
   }
   const io = new IntersectionObserver(([e]) => {
     active = e.isIntersecting
+    if (active && !raf) raf = requestAnimationFrame(update)
+  })
+  // the path itself changes size (images loading, a new width): build it again, once per frame at most
+  const ro = new ResizeObserver(() => {
+    if (!buildRaf) buildRaf = requestAnimationFrame(build)
+  })
+  // something above it changes height: only measure where it sits now
+  const roPage = new ResizeObserver(() => {
+    measure()
     onScroll()
   })
-  const ro = new ResizeObserver(() => build())
   window.addEventListener('scroll', onScroll, { passive: true })
   const offReduced = onReducedChange(() => update())
   loadMark('tick').then((tickMark) => {
+    if (!alive) return
     marks = { tick: tickMark }
     io.observe(root)
     ro.observe(root)
+    roPage.observe(document.body)
     build()
   })
 
@@ -219,9 +300,13 @@ export function initSpeelpad(root) {
     alive = false
     io.disconnect()
     ro.disconnect()
+    roPage.disconnect()
     window.removeEventListener('scroll', onScroll)
     offReduced()
     cancelAnimationFrame(raf)
-    svg.remove()
+    cancelAnimationFrame(buildRaf)
+    reveal.remove()
+    stopsSvg.remove()
+    pawnLayer.remove()
   }
 }

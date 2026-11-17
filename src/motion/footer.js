@@ -10,12 +10,20 @@ export function initFooterReveal(footer) {
   let raf = 0
   let active = false
   let waved = false
+  // measured when something changes size, not while scrolling: the footer height, and where the cover
+  // ends on the page (document y)
+  let h = 0
+  let coverEnd = 0
+  const measure = () => {
+    h = footer.offsetHeight
+    coverEnd = cover ? cover.getBoundingClientRect().bottom + window.scrollY : 0
+  }
+  measure()
 
   const update = () => {
     raf = 0
     const vh = window.innerHeight
-    const h = footer.offsetHeight
-    const coverBottom = cover ? cover.getBoundingClientRect().bottom : vh - h
+    const coverBottom = cover ? coverEnd - window.scrollY : vh - h
     const p = isReduced() ? 1 : Math.min(1, Math.max(0, (vh - coverBottom) / h))
     footer.style.setProperty('--p', p.toFixed(4))
     mark?.classList.toggle('is-drawn', p > 0.6)
@@ -33,12 +41,20 @@ export function initFooterReveal(footer) {
     onScroll()
   })
   io.observe(footer)
+  // the page (and so the cover) or the footer changes size: measure again
+  const ro = new ResizeObserver(() => {
+    measure()
+    onScroll()
+  })
+  ro.observe(document.body)
+  ro.observe(footer)
   window.addEventListener('scroll', onScroll, { passive: true })
   const off = onReducedChange(update)
   update()
 
   return () => {
     io.disconnect()
+    ro.disconnect()
     window.removeEventListener('scroll', onScroll)
     off()
     cancelAnimationFrame(raf)

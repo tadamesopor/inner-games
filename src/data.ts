@@ -393,7 +393,7 @@ export const GAMES: Game[] = [
       'Het spel is gemaakt door het lectoraat Versterken van Sociale Kwaliteit van de HAN (Robin Smits, Nicole Moorman, Lisbeth Verharen en Carinda Jansen), samen met Ariën Kingma.',
       'Er komen nog meer casussen bij, op micro-, meso- en macroniveau. In Nederland heb je het spel binnen 2 tot 3 werkdagen in huis.',
     ],
-    box: { src: '/assets/img/games/sociality-box.png', w: 398, h: 459 },
+    box: { src: '/assets/img/games/sociality-box.webp', w: 398, h: 459 },
     contents: ['Speeldoos', 'Speelbord', '2 kaartsets van 21 kaarten met verschillende casussen', '1 set van 10 kaarten over sociale kwaliteit', 'Boekje met handleiding en theorie', 'Pion'],
   },
   {

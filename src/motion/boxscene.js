@@ -9,10 +9,19 @@ export function initBoxscene(root) {
   let raf = 0
   let active = false
   const pointer = root.querySelector('.ig-boxscene__pointer')
+  // measured when something changes size, not while scrolling: where the section sits on the page
+  let top = 0
+  let height = 0
+  const measure = () => {
+    const r = root.getBoundingClientRect()
+    top = r.top + window.scrollY
+    height = r.height
+  }
+  measure()
 
   const update = () => {
     raf = 0
-    const r = root.getBoundingClientRect()
+    const r = { top: top - window.scrollY, height }
     const vh = window.innerHeight
     const start = vh - r.height * 0.25 // top of the section when 25% of it is in view
     const end = vh / 2 - r.height / 2 // top of the section when it's centred
@@ -30,12 +39,18 @@ export function initBoxscene(root) {
     onScroll()
   })
   io.observe(root)
+  const ro = new ResizeObserver(() => {
+    measure()
+    onScroll()
+  })
+  ro.observe(document.body)
   window.addEventListener('scroll', onScroll, { passive: true })
   const off = onReducedChange(update)
   update()
 
   return () => {
     io.disconnect()
+    ro.disconnect()
     window.removeEventListener('scroll', onScroll)
     off()
     cancelAnimationFrame(raf)

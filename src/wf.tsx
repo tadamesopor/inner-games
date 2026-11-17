@@ -138,7 +138,7 @@ export function Photo({
   return (
     <img
       src={`${src}-1600.webp`}
-      srcSet={`${src}-800.webp 800w, ${src}-1600.webp 1600w`}
+      srcSet={`${src}-400.webp 400w, ${src}-800.webp 800w, ${src}-1600.webp 1600w`}
       sizes={sizes}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
@@ -493,8 +493,8 @@ export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'whi
       <div className="ig-nav__inner">
         <div className="ig-nav__bar">
           <Link to="home" className="ig-nav__logo" aria-label="InnerGames home">
-            <img src="/assets/logo-clear.png" alt="" width={804} height={391} />
-            <img src="/assets/logo-cream.png" alt="" width={400} height={192} className="ig-nav__logo--cream" />
+            <img src="/assets/logo-clear-240.png" alt="" width={240} height={117} />
+            <img src="/assets/logo-cream-240.png" alt="" width={240} height={115} className="ig-nav__logo--cream" />
           </Link>
           <nav className="ig-nav__menu" aria-label="Hoofdmenu">
             {NAV.map((n) => (
@@ -535,7 +535,7 @@ export function Header({ active, tone = 'white' }: { active: PageId; tone?: 'whi
       <div id="ig-nav-sheet" className="ig-nav__sheet" role="dialog" aria-label="Menu">
         <div className="ig-nav__sheet-top">
           <Link to="home" aria-label="InnerGames home">
-            <img src="/assets/logo-clear.png" alt="" width={804} height={391} />
+            <img src="/assets/logo-clear-240.png" alt="" width={240} height={117} />
           </Link>
           <button type="button" className="ig-nav__icon" data-nav-close>
             sluit

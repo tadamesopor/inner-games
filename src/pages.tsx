@@ -38,7 +38,7 @@ function WorkshopCard({ w }: { w: WS }) {
     <article className="ig-card ig-card--hot cursor-pointer" onClick={() => go('workshop', w.slug)}>
       <div className="ig-card__body flex flex-col">
       <div className="ig-card__media">
-        <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 300px, 100vw" className="aspect-[4/3] w-full" />
+        <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} sizes="(min-width: 1024px) 360px, 100vw" className="aspect-[4/3] w-full" />
       </div>
       <div className="flex flex-1 flex-col gap-3 px-2 pb-2 pt-4">
         <AudTags aud={w.aud} />
@@ -100,7 +100,7 @@ function HeroNew() {
   const e5 = GAMES[0]
   const print = (key: 'ws' | 'tafel', src: string, caption: string) => (
     <figure className="ig-table__item ig-table__print" data-key={key} data-at={TABLE[key].at} data-pile={TABLE[key].pile} style={{ '--w': TABLE[key].w } as CSSProperties}>
-      <img src={`${src}-800.webp`} alt={ALT[src]} width={800} height={600} draggable={false} />
+      <img src={`${src}-800.webp`} srcSet={`${src}-400.webp 400w, ${src}-800.webp 800w`} sizes="260px" alt={ALT[src]} width={800} height={600} draggable={false} />
       <figcaption>{caption}</figcaption>
     </figure>
   )
@@ -120,9 +120,9 @@ function HeroNew() {
         </div>
         <div ref={table} className="ig-table">
           {print('ws', WORKSHOPS[0].photo, 'energiek team!')}
-          <img className="ig-table__item ig-table__cutout" data-key="box" data-at={TABLE.box.at} data-pile={TABLE.box.pile} style={{ '--w': TABLE.box.w } as CSSProperties} src="/assets/img/games/sociality-box.png" alt="De doos van het spel Sociality" width={398} height={459} draggable={false} />
+          <img className="ig-table__item ig-table__cutout" data-key="box" data-at={TABLE.box.at} data-pile={TABLE.box.pile} style={{ '--w': TABLE.box.w } as CSSProperties} src="/assets/img/games/sociality-box.webp" alt="De doos van het spel Sociality" width={398} height={459} draggable={false} />
           {print('tafel', PHOTOS.tafel, 'samen aan tafel')}
-          <img className="ig-table__item ig-table__cutout" data-key="e5" data-at={TABLE.e5.at} data-pile={TABLE.e5.pile} style={{ '--w': TABLE.e5.w } as CSSProperties} src={`${e5.photo}-800.webp`} alt={ALT[e5.photo]} width={800} height={800} draggable={false} />
+          <img className="ig-table__item ig-table__cutout" data-key="e5" data-at={TABLE.e5.at} data-pile={TABLE.e5.pile} style={{ '--w': TABLE.e5.w } as CSSProperties} src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-400.webp 400w, ${e5.photo}-800.webp 800w`} sizes="260px" alt={ALT[e5.photo]} width={800} height={800} draggable={false} />
           <div className="ig-table__labels">
             <button type="button" className="ig-table__label" data-for="ws" data-at="190,326" onClick={() => go('workshops')}>bekijk de workshops →</button>
             <button type="button" className="ig-table__label" data-for="box" data-at="396,284" onClick={() => go('games')}>bekijk de spellen →</button>
@@ -140,12 +140,12 @@ function HeroNew() {
               <span className="ig-swipe__stage" aria-hidden>
                 {t.key === 'ws' && (
                   <span className="ig-table__print ig-swipe__print">
-                    <img src={`${WORKSHOPS[0].photo}-800.webp`} alt="" width={800} height={600} />
+                    <img src={`${WORKSHOPS[0].photo}-800.webp`} srcSet={`${WORKSHOPS[0].photo}-400.webp 400w, ${WORKSHOPS[0].photo}-800.webp 800w`} sizes="260px" alt="" width={800} height={600} />
                     <span className="ig-swipe__caption">energiek team!</span>
                   </span>
                 )}
-                {t.key === 'box' && <img className="ig-swipe__cutout" src="/assets/img/games/sociality-box.png" alt="" width={398} height={459} />}
-                {t.key === 'e5' && <img className="ig-swipe__cutout" src={`${e5.photo}-800.webp`} alt="" width={800} height={800} />}
+                {t.key === 'box' && <img className="ig-swipe__cutout" src="/assets/img/games/sociality-box.webp" alt="" width={398} height={459} />}
+                {t.key === 'e5' && <img className="ig-swipe__cutout" src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-400.webp 400w, ${e5.photo}-800.webp 800w`} sizes="260px" alt="" width={800} height={800} />}
               </span>
               <svg className="ig-swipe__arrow" viewBox="0 0 48 64" aria-hidden>
                 <path d="M26 3C12 14 10 30 22 32c10 2 10-10 2-9-9 1-10 16 0 34" />
@@ -267,7 +267,7 @@ export function Home() {
             )}
           </div>
           <div className="ig-boxscene__stage aspect-square!">
-            <img className="ig-boxscene__box" src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-800.webp 800w, ${e5.photo}-1600.webp 1200w`} sizes="400px" alt={ALT[e5.photo]} width={1200} height={1200} loading="lazy" />
+            <img className="ig-boxscene__box" src={`${e5.photo}-800.webp`} srcSet={`${e5.photo}-400.webp 400w, ${e5.photo}-800.webp 800w, ${e5.photo}-1600.webp 1200w`} sizes="420px" alt={ALT[e5.photo]} width={1200} height={1200} loading="lazy" />
             <span className="ig-boxscene__shadow" aria-hidden />
           </div>
       </Section>
