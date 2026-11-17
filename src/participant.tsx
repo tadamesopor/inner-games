@@ -140,7 +140,7 @@ function buildSteps(group: Group, profile?: Profile): Step[] {
     { kind: 'task', id: 't3', text: 'U wilt in maart een datum vastleggen. Ga zo ver als u zou gaan om dat te regelen. Er wordt niets echt verstuurd.' },
     { kind: 'ask', id: 't3', qs: [choice('3', 'Hoe ging dat?', ['gelukt', 'ik liep vast', 'ik zou liever bellen of mailen'])] },
     { kind: 'task', id: 't4', text: 'U hoort dat u een spel van InnerGames online kunt uitproberen. Zoek het en probeer het een paar minuten.' },
-    { kind: 'ask', id: 't4', qs: [choice('4a', 'Heeft u het spel gevonden?', ['ja, meteen', 'ja, na wat zoeken', 'nee']), { ...choice('4c', 'Hielp het spel u om te begrijpen wat InnerGames doet?', ['ja', 'een beetje', 'nee', 'ik heb het niet gespeeld']), required: true }, choice('4b', 'Wat zou u hierna doen?', ['meer lezen over het spel', 'het spel kopen', 'een workshop aanvragen', 'niets', 'anders:'], 'anders:')] },
+    { kind: 'ask', id: 't4', qs: [choice('4a', 'Heeft u het spel gevonden?', ['ja, meteen', 'ja, na wat zoeken', 'nee']), choice('4c', 'Hielp het spel u om te begrijpen wat InnerGames doet?', ['ja', 'een beetje', 'nee', 'ik heb het niet gespeeld']), choice('4b', 'Wat zou u hierna doen?', ['meer lezen over het spel', 'het spel kopen', 'een workshop aanvragen', 'niets', 'anders:'], 'anders:')] },
     { kind: 'view', text: 'Bekijk het aanvraagformulier op deze pagina. Druk daarna op Verder.', page: 'contact' },
     { kind: 'ask', id: 'C1', qs: [choice('C1', 'Bekijk het aanvraagformulier. Zou u dit invullen, of neemt u liever direct contact op?', ['ik vul het formulier in', 'ik mail Ariën', 'ik bel of app', 'ik stuur een bericht op LinkedIn']), text('C1_waarom', 'Waarom?')] },
   ]
