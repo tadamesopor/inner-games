@@ -126,8 +126,11 @@
   --item-hover: var(--ig-cream);
   --nav-ink: var(--ig-cream);
 }
-.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__item:is(:hover, [aria-current]) {
+/* the label turns ink the moment the pill starts (ink reads on the orange and on the cream pill), and on
+   leave it stays ink until the pill is gone. so it's never cream text on a half cream pill */
+.ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__item:is(:hover, :focus-visible, [aria-current]) {
   color: var(--ig-ink);
+  transition: color 0ms;
 }
 .ig-nav:is(.ig-nav--orange, .ig-nav--hero):not(.is-compact) .ig-nav__logo img {
   display: none;
@@ -153,10 +156,14 @@
   gap: 4px;
 }
 
-/* one item. the box is ::after, the hand ::before further back, so the hand really sits behind the box.
-   (a negative z-index child paints above its own parent's background, so the box can't be the background) */
+/* one item. the box (the pill) is ::after, the hand ::before further back, so the hand really sits behind
+   the pill. (a negative z-index child paints above its own parent's background, so the pill can't be the
+   background.) on hover: first the pill fades in (--pill-in), then the hand pops up (--hand-after later)
+   from behind the top edge of the pill. on leave the hand is gone at once, so there's only ever one */
 .ig-nav__item {
   --item-bg: transparent;
+  --pill-in: 120ms;
+  --hand-after: 80ms;
   position: relative;
   isolation: isolate;
   display: inline-flex;
@@ -171,7 +178,8 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 200ms var(--ease-soft);
+  /* leaving: the colour waits until the pill has faded out (see the orange rule above) */
+  transition: color 0ms linear var(--pill-in);
 }
 .ig-nav__item::after {
   content: '';
@@ -180,14 +188,15 @@
   z-index: -1;
   border-radius: inherit;
   background: var(--item-bg);
-  transition: background-color var(--dur-ui) var(--ease-soft);
+  transition: background-color var(--pill-in) var(--ease-soft);
 }
-/* the mini hand, in the same light yellow as the box */
+/* the mini hand, in the same colour as the pill. its wrist sits 8px behind the top edge of the pill, so
+   it peeks out above it and never comes near the label. the part behind the pill is hidden by the pill */
 .ig-nav__item::before {
   content: '';
   position: absolute;
   z-index: -2;
-  top: 6px;
+  bottom: calc(100% - 8px);
   left: 50%;
   width: 26px; /* about 22px tall */
   aspect-ratio: 140 / 126;
@@ -197,27 +206,49 @@
   mask: url('/assets/brand/innergames-hand.svg') center / contain no-repeat;
   transform-origin: 78% 92%;
   rotate: 30deg;
-  translate: 0 0;
-  scale: 0.85;
-  opacity: 0; /* the items have no box, so the hand would show through: hidden until it pops up */
+  translate: 0 10px; /* waiting further behind the pill */
+  scale: 0.6;
+  opacity: 0;
+  /* leave: gone right away, and back to its waiting place after that */
   transition:
-    translate 200ms var(--ease-in),
-    scale 200ms var(--ease-in),
-    opacity 0ms linear 200ms;
+    opacity 60ms linear,
+    translate 0ms linear 60ms,
+    scale 0ms linear 60ms;
 }
-.ig-nav__item:hover,
+.ig-nav__item:is(:hover, :focus-visible),
 .ig-nav__item[aria-current] {
   --item-bg: var(--item-hover);
 }
-.ig-nav__item:hover::before,
+.ig-nav__item:is(:hover, :focus-visible)::before,
 .ig-nav__item[aria-current]::before {
-  translate: 0 -100%;
+  translate: 0 0;
   scale: 1;
   opacity: 1;
   transition:
-    translate 380ms var(--ease-spring),
-    scale 380ms var(--ease-spring),
-    opacity 0ms;
+    opacity 80ms linear calc(var(--pill-in) + var(--hand-after)),
+    translate 320ms var(--ease-spring) calc(var(--pill-in) + var(--hand-after)),
+    scale 320ms var(--ease-spring) calc(var(--pill-in) + var(--hand-after));
+}
+/* one hand at a time: the item under the mouse has it, otherwise the one with keyboard focus. the
+   current page keeps its pill meanwhile, but not its hand */
+.ig-nav__menu:has(.ig-nav__item:hover) .ig-nav__item:not(:hover)::before,
+.ig-nav__menu:has(.ig-nav__item:focus-visible):not(:has(.ig-nav__item:hover)) .ig-nav__item:not(:focus-visible)::before {
+  translate: 0 10px;
+  scale: 0.6;
+  opacity: 0;
+  transition:
+    opacity 60ms linear,
+    translate 0ms linear 60ms,
+    scale 0ms linear 60ms;
+}
+/* reduced motion: only the pill */
+.ig-reduced .ig-nav__item::before {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ig-nav__item::before {
+    display: none;
+  }
 }
 .ig-nav__item:focus-visible,
 .ig-nav__icon:focus-visible,
