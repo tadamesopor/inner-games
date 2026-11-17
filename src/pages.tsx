@@ -821,7 +821,7 @@ export function Contact() {
               <label className="block text-meta font-semibold">Hoe heeft u ons gevonden? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
                 <select name="gevonden" className={`${input} mt-1`} defaultValue="">
                   <option value="">kies een antwoord</option>
-                  <option>via Ariën op LinkedIn</option>
+                  <option>via LinkedIn</option>
                   <option>iemand raadde het aan</option>
                   <option>via Google</option>
                   <option>op een evenement</option>

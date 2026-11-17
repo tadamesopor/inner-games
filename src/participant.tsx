@@ -136,7 +136,7 @@ type Step =
 
 /* ---------- the texts (docs/CLAUDE_CODE_TEST_MODE_V6.md, section 3) ---------- */
 
-const WELKOM = 'Fijn dat u meedoet. U helpt InnerGames om hun nieuwe website beter te maken. Dit duurt ongeveer 20 minuten. U test de website, niet uzelf. Er zijn geen foute antwoorden. Er wordt niets verkocht en niets echt verstuurd.'
+const WELKOM = 'Fijn dat u meedoet! InnerGames werkt aan een nieuwe website, en uw mening helpt ons die beter te maken. U doet een paar korte opdrachten op de website en beantwoordt daarna een paar vragen. Dat duurt ongeveer 10 minuten. We testen de website, niet u: er zijn geen foute antwoorden. Er wordt niets verkocht en niets echt verstuurd.'
 const CONSENT = "Uw antwoorden worden zonder naam bewaard, tenzij u aan het eind zelf uw naam of e-mailadres invult. Dat is niet verplicht. Ze worden alleen gebruikt om de website te verbeteren en voor het stageverslag van Damian bij Fontys. We slaan ook op welke pagina's u bekijkt, waar u klikt en hoe u de muis beweegt. Er wordt geen video of beeld van uw scherm opgenomen. Wat u typt in de website zelf slaan we niet op. Alles wordt uiterlijk 31 januari 2027 verwijderd. U kunt altijd stoppen."
 
 const WORK: [string, Profile][] = [
@@ -170,7 +170,7 @@ function buildSteps(group: Group, profile?: Profile, b3?: { b3Order?: Order; b3O
     { kind: 'ask', id: 'werk', qs: [{ ...choice('werk', 'Waar werkt u?', WORK.map((w) => w[0]), 'iets anders, namelijk:'), required: true }] },
   ]
   const klant: Step[] = [
-    { kind: 'ask', id: 'A1', qs: [choice('A1', 'Hoe kwam u voor het eerst bij InnerGames terecht?', ['via Ariën op LinkedIn', 'iemand raadde het aan', 'via Google', 'op een evenement of beurs', 'anders, namelijk:'], 'anders, namelijk:')] },
+    { kind: 'ask', id: 'A1', qs: [choice('A1', 'Hoe kwam u voor het eerst bij InnerGames terecht?', ['via LinkedIn', 'iemand raadde het aan', 'via Google', 'op een evenement of beurs', 'anders, namelijk:'], 'anders, namelijk:')] },
     { kind: 'ask', id: 'A2', qs: [choice('A2', 'Heeft u de website van InnerGames bekeken voordat u contact opnam?', ['ja', 'nee', 'weet ik niet meer']), { ...text('A2_zocht', 'Wat zocht u daar?'), showIf: { id: 'A2', is: ['ja'] } }] },
     { kind: 'ask', id: 'A3', qs: [choice('A3', 'Hoe nam u contact op?', ['bericht op LinkedIn', 'e-mail', 'telefoon of WhatsApp', 'formulier op de website', 'anders'])] },
     { kind: 'ask', id: 'A4', qs: [text('A4', 'Wat gaf de doorslag om met InnerGames te werken?')] },
