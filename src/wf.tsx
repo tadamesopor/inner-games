@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react'
 import { PencilMark, SplitBtn } from './motionui'
-import { initFooterReveal, initNav } from './motion'
+import { initFooterReveal, initLogos, initNav } from './motion'
 import { CLIENTS, GAMES, PARTNERS, WORKSHOPS, type Aud } from './data'
 
 export type PageId =
@@ -326,47 +326,50 @@ export function PageHero({
 }
 
 export function ClientStrip() {
+  // the logos fade in one after the other the first time this is in view (src/motion/logos.js)
+  const logos = useMotion<HTMLDivElement>(initLogos)
   return (
     // one trust section: the clients, and under them the partners. a little less padding than a normal section
-    <Section id="LOGO" label="logo’s opdrachtgevers en partners" className="bg-white py-12! @3xl:py-16!" note="vertrouwen">
-      <p className="mb-8 text-center text-meta font-medium">zij speelden al met ons</p>
-      {/* every logo in one calm ink tone at the same height, instead of one big image */}
+    <Section id="LOGO" label="logo’s opdrachtgevers en partners" className="bg-white py-12! @3xl:py-16!" innerRef={logos} innerClassName="ig-logos" note="vertrouwen">
+      <div className="mb-10 text-center @3xl:mb-12">
+        <H2>zij speelden al met ons</H2>
+        <p className="mt-3 text-lead leading-snug text-ig-ink/80">Scholen, zorg en bedrijven uit de regio en daarbuiten.</p>
+      </div>
+      {/* every logo in one calm grey at the same height. hover or keyboard focus: full ink (src/motion/logos.css) */}
       <ul className="mx-auto grid max-w-6xl grid-cols-4 items-center justify-items-center gap-x-4 gap-y-6 @3xl:grid-cols-8 @3xl:gap-y-10" aria-label="opdrachtgevers">
         {CLIENTS.map((c) => (
-          <li key={c.file}>
+          <li key={c.file} className="ig-logo" tabIndex={0}>
             <img
               src={`/assets/img/clients/${c.file}.png`}
+              width={c.size[0]}
+              height={c.size[1]}
               alt={c.name}
               loading="lazy"
               style={{ '--h': c.h } as CSSProperties}
-              className="h-[calc(var(--h)*0.48px)] w-auto opacity-60 brightness-0 @3xl:h-[calc(var(--h)*0.75px)]"
+              className="ig-logo__img h-[calc(var(--h)*0.48px)] w-auto @3xl:h-[calc(var(--h)*0.75px)]"
             />
           </li>
         ))}
       </ul>
-      {/* the partners in the same section, a step smaller: the same grey logos, and the ones without a logo
-          on innergames.nl as plain text in that grey */}
+      {/* the partners in the same section, a step smaller. the ones without a logo on innergames.nl show
+          their name as a label, in the same grey and about as tall as a logo */}
       <p className="mb-6 mt-12 text-center text-[13px] font-medium text-ig-ink/70 @3xl:mt-14">we werken samen met</p>
-      <ul className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-5 @3xl:gap-x-12" aria-label="partners">
-        {PARTNERS.filter((p) => p.file).map((p) => (
-          <li key={p.name}>
-            <img
-              src={`/assets/img/partners/${p.file}.png`}
-              alt={p.name}
-              loading="lazy"
-              style={{ '--h': p.h } as CSSProperties}
-              className="h-[calc(var(--h)*0.72px)] w-auto opacity-60 brightness-0 @3xl:h-[calc(var(--h)*1px)]"
-            />
-          </li>
-        ))}
-      </ul>
-      {/* the ones without a logo: one quiet line of names, in the grey of the logos */}
-      <ul className="mx-auto mt-5 flex max-w-4xl flex-wrap justify-center gap-x-2 gap-y-1 text-center text-[13px] font-medium text-black opacity-60 @3xl:mt-6 @3xl:text-[14px]" aria-label="meer partners">
-        {PARTNERS.filter((p) => !p.file).map((p, i, all) => (
-          <li key={p.name}>
-            {p.name}
-            {/* the dot after the name: when the line wraps, a line never starts with a dot */}
-            {i < all.length - 1 && <span aria-hidden className="ml-2">·</span>}
+      <ul className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-6 @3xl:gap-x-12" aria-label="partners">
+        {PARTNERS.map((p) => (
+          <li key={p.name} className="ig-logo min-h-8" tabIndex={0}>
+            {p.file ? (
+              <img
+                src={`/assets/img/partners/${p.file}.png`}
+                width={p.size?.[0]}
+                height={p.size?.[1]}
+                alt={p.name}
+                loading="lazy"
+                style={{ '--h': p.h } as CSSProperties}
+                className="ig-logo__img h-[calc(var(--h)*0.72px)] w-auto @3xl:h-[calc(var(--h)*1px)]"
+              />
+            ) : (
+              <span className="ig-logo__name">{p.name}</span>
+            )}
           </li>
         ))}
       </ul>

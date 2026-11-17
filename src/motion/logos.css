@@ -1,0 +1,54 @@
+/* .ig-logos: the logo wall of clients and partners, all in one calm grey.
+   hover or keyboard focus on a logo: it turns from grey to full ink with a short fade.
+   (the logo files are black on transparent, cut from the grey logo images on innergames.nl. a colour
+   version doesn't exist yet; with colour files, drop brightness(0) on hover here.)
+   logos.js fades them in once, one after the other, the first time the section is in view.
+
+   markup:
+   <section class="ig-logos">
+     <ul><li class="ig-logo" tabindex="0"><img class="ig-logo__img" alt="ASML"></li> ...</ul>
+     <ul><li class="ig-logo" tabindex="0"><span class="ig-logo__name">Fontys ICT</span></li> ...</ul>
+   </section> */
+
+.ig-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  outline-offset: 6px;
+}
+.ig-logo:focus-visible {
+  outline: 2px solid var(--ig-ink);
+}
+.ig-logo__img,
+.ig-logo__name {
+  opacity: 0.6;
+  transition: opacity var(--dur-ui) var(--ease-soft);
+}
+.ig-logo__img {
+  filter: brightness(0);
+}
+.ig-logo:is(:hover, :focus-visible) :is(.ig-logo__img, .ig-logo__name) {
+  opacity: 1;
+}
+/* a partner without a logo: its name, in the grey of the logos and about as tall as one */
+.ig-logo__name {
+  display: block;
+  max-width: 10rem;
+  color: #000;
+  font: 600 13px/1.15 var(--ig-font);
+  text-align: center;
+}
+
+/* the one-time fade in: on the list item, so it never fights the grey/hover opacity of the image */
+.ig-logos.is-waiting .ig-logo {
+  opacity: 0;
+  translate: 0 8px;
+}
+.ig-logos.is-in .ig-logo {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 320ms var(--ease-out) var(--logo-delay, 0ms),
+    translate 320ms var(--ease-out) var(--logo-delay, 0ms);
+}

@@ -453,34 +453,35 @@ export const QUOTE = {
 // the client logos, cut one by one out of clients.png (same order). name is the alt text,
 // h is the height in the original image, so the logos keep the sizes the designer gave them
 // the v-logo has no name yet: we don't know which organisation it is, so it stays without alt text
-export const CLIENTS: { name: string; file: string; h: number }[] = [
-  { name: 'ASML', file: 'asml', h: 52 },
-  { name: 'Avans Hogeschool', file: 'avans', h: 52 },
-  { name: 'Curio', file: 'curio', h: 52 },
-  { name: 'Gemeente Eindhoven', file: 'gemeente-eindhoven', h: 52 },
-  { name: 'Fontys', file: 'fontys', h: 77 },
-  { name: 'GGzE', file: 'ggze', h: 77 },
-  { name: 'HAN', file: 'han', h: 77 },
-  { name: 'Met GGZ', file: 'metggz', h: 77 },
-  { name: 'Novadic-Kentron', file: 'novadic-kentron', h: 76 },
-  { name: 'Philips', file: 'philips', h: 76 },
-  { name: 'Summa College', file: 'summa', h: 76 },
-  { name: 'TU/e', file: 'tue', h: 76 },
-  { name: 'UWV', file: 'uwv', h: 63 },
-  { name: '', file: 'v-logo', h: 63 },
-  { name: 'WAVE', file: 'wave', h: 63 },
-  { name: 'WIJeindhoven', file: 'wijeindhoven', h: 63 },
+// size: the file in pixels, so the page knows its shape before it has loaded
+export const CLIENTS: { name: string; file: string; h: number; size: [number, number] }[] = [
+  { name: 'ASML', file: 'asml', h: 52, size: [108, 52] },
+  { name: 'Avans Hogeschool', file: 'avans', h: 52, size: [140, 52] },
+  { name: 'Curio', file: 'curio', h: 52, size: [102, 52] },
+  { name: 'Gemeente Eindhoven', file: 'gemeente-eindhoven', h: 52, size: [130, 52] },
+  { name: 'Fontys', file: 'fontys', h: 77, size: [122, 77] },
+  { name: 'GGzE', file: 'ggze', h: 77, size: [56, 77] },
+  { name: 'HAN', file: 'han', h: 77, size: [90, 77] },
+  { name: 'Met GGZ', file: 'metggz', h: 77, size: [102, 77] },
+  { name: 'Novadic-Kentron', file: 'novadic-kentron', h: 76, size: [74, 76] },
+  { name: 'Philips', file: 'philips', h: 76, size: [60, 76] },
+  { name: 'Summa College', file: 'summa', h: 76, size: [155, 76] },
+  { name: 'TU/e', file: 'tue', h: 76, size: [97, 76] },
+  { name: 'UWV', file: 'uwv', h: 63, size: [74, 63] },
+  { name: '', file: 'v-logo', h: 63, size: [78, 63] },
+  { name: 'WAVE', file: 'wave', h: 63, size: [117, 63] },
+  { name: 'WIJeindhoven', file: 'wijeindhoven', h: 63, size: [176, 63] },
 ]
 
 // the partners. file: a logo in public/assets/img/partners (cut from the partner logo image on innergames.nl).
 // h: its height on desktop in px, set per logo so they look equally big (a wide word mark needs less).
 // no file: no logo of its own on innergames.nl, so the name as text.
 // the Fontys and HAN logos in that image are the general ones, and those already sit in the client logos
-export const PARTNERS: { name: string; file?: string; h?: number }[] = [
-  { name: 'BreathCompany', file: 'breathcompany', h: 48 },
-  { name: 'buro KAN', file: 'buro-kan', h: 24 },
-  { name: 'De Stap naar Gezonder', file: 'de-stap-naar-gezonder', h: 17 },
-  { name: 'LOB 123', file: 'lob123', h: 28 },
+export const PARTNERS: { name: string; file?: string; h?: number; size?: [number, number] }[] = [
+  { name: 'BreathCompany', file: 'breathcompany', h: 48, size: [248, 90] },
+  { name: 'buro KAN', file: 'buro-kan', h: 24, size: [144, 31] },
+  { name: 'De Stap naar Gezonder', file: 'de-stap-naar-gezonder', h: 17, size: [151, 18] },
+  { name: 'LOB 123', file: 'lob123', h: 28, size: [114, 40] },
   { name: 'Duurzaamheid in de klas' },
   { name: 'Fontys Toegepaste Psychologie en HRM' },
   { name: 'Fontys ICT' },

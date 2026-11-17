@@ -5,6 +5,7 @@ export function forceReduced(value: boolean | null): void
 export function onReducedChange(f: (reduced: boolean) => void): () => void
 export function igNavigate(update: () => void, opts?: { mode?: 'full' | 'short' | 'off'; fadeTarget?: HTMLElement }): Promise<void>
 export function initPageLinks(opts?: { mode?: 'full' | 'short' | 'off' }): Stop
+export function initLogos(root: HTMLElement): Stop
 export function initSpeelpad(root: HTMLElement, opts?: { pawn?: string }): Stop
 export function initCards(root?: HTMLElement): Stop
 export function initFooterReveal(footer: HTMLElement): Stop

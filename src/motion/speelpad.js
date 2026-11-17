@@ -28,10 +28,11 @@ function seeded(seed) {
 }
 
 // smooth curve through points (catmull-rom as cubic beziers). the control points are kept between lo
-// and hi too: a curve never leaves its control points, so the line can't overshoot past the margin
-function curve(pts, lo = -Infinity, hi = Infinity) {
+// and hi too: a curve never leaves its control points, so the line can't overshoot past the margin.
+// one segment per pair of points: [start, control 1, control 2, end]
+function segments(pts, lo = -Infinity, hi = Infinity) {
   const cx = (x) => Math.max(lo, Math.min(hi, x))
-  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`
+  const out = []
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] ?? pts[i]
     const p1 = pts[i]
@@ -39,9 +40,44 @@ function curve(pts, lo = -Infinity, hi = Infinity) {
     const p3 = pts[i + 2] ?? p2
     const c1 = [cx(p1[0] + (p2[0] - p0[0]) / 6), p1[1] + (p2[1] - p0[1]) / 6]
     const c2 = [cx(p2[0] - (p3[0] - p1[0]) / 6), p2[1] - (p3[1] - p1[1]) / 6]
-    d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`
+    out.push([p1, c1, c2, p2])
   }
-  return d
+  return out
+}
+const f1 = (n) => n.toFixed(1)
+const pathOf = (segs) => `M${f1(segs[0][0][0])},${f1(segs[0][0][1])}` + segs.map(([, a, b, c]) => ` C${f1(a[0])},${f1(a[1])} ${f1(b[0])},${f1(b[1])} ${f1(c[0])},${f1(c[1])}`).join('')
+
+// walks the line in JS: the points every STEP px along it, its length, and the length at the end of each
+// segment. much faster than asking the browser (getPointAtLength walks the whole path on every call)
+function walk(segs) {
+  const SUB = 40 // straight bits per segment while measuring
+  const lx = [], ly = [], ll = [] // fine points with their length along the line
+  const ends = [] // length at the end of each segment
+  let len = 0, px = segs[0][0][0], py = segs[0][0][1]
+  lx.push(px), ly.push(py), ll.push(0)
+  for (const [p, a, b, c] of segs) {
+    for (let k = 1; k <= SUB; k++) {
+      const t = k / SUB, u = 1 - t
+      const x = u * u * u * p[0] + 3 * u * u * t * a[0] + 3 * u * t * t * b[0] + t * t * t * c[0]
+      const y = u * u * u * p[1] + 3 * u * u * t * a[1] + 3 * u * t * t * b[1] + t * t * t * c[1]
+      len += Math.hypot(x - px, y - py)
+      lx.push(x), ly.push(y), ll.push(len)
+      px = x
+      py = y
+    }
+    ends.push(len)
+  }
+  // the same points again, now every STEP px along the line
+  const n = Math.ceil(len / STEP) + 1
+  const xs = new Float32Array(n), ys = new Float32Array(n)
+  for (let i = 0, j = 0; i < n; i++) {
+    const at = Math.min(len, i * STEP)
+    while (j < ll.length - 2 && ll[j + 1] < at) j++
+    const f = ll[j + 1] > ll[j] ? (at - ll[j]) / (ll[j + 1] - ll[j]) : 0
+    xs[i] = lx[j] + (lx[j + 1] - lx[j]) * f
+    ys[i] = ly[j] + (ly[j + 1] - ly[j]) * f
+  }
+  return { xs, ys, total: len, ends }
 }
 
 function el(name, attrs, parent) {
@@ -148,32 +184,24 @@ export function initSpeelpad(root) {
     pts.push([margin(blocks.length - 1) + wob(8), H - 6])
 
     // the whole line, drawn once. it never changes while scrolling, so its grain is rendered once too
-    const d = curve(pts, minX, W - minX)
+    const segs = segments(pts, minX, W - minX)
     const grain = el('g', { class: 'ig-pencil__grain' }, svg)
-    const path = el('path', { d, class: 'ig-speelpad__line' }, grain)
-    total = path.getTotalLength()
+    el('path', { d: pathOf(segs), class: 'ig-speelpad__line' }, grain)
 
     // the lookup table: a point every STEP px along the line, worked out once instead of every frame
-    const n = Math.ceil(total / STEP) + 1
-    xs = new Float32Array(n)
-    ys = new Float32Array(n)
-    reach = new Float32Array(n)
+    const line = walk(segs)
+    xs = line.xs
+    ys = line.ys
+    total = line.total
+    reach = new Float32Array(xs.length)
     let low = -Infinity
-    for (let i = 0; i < n; i++) {
-      const p = path.getPointAtLength(Math.min(total, i * STEP))
-      xs[i] = p.x
-      ys[i] = p.y
-      low = Math.max(low, p.y)
+    for (let i = 0; i < ys.length; i++) {
+      low = Math.max(low, ys[i])
       reach[i] = low // the line is drawn down to here: the lowest point reached so far
     }
 
-    const lenAt = (k) => {
-      const tmp = el('path', { d: curve(pts.slice(0, k + 1), minX, W - minX) }, svg)
-      const len = tmp.getTotalLength()
-      tmp.remove()
-      return len
-    }
-    const stopLen = stopIdx.map(lenAt)
+    // the length along the line at each stop: stop point k is the end of segment k - 1
+    const stopLen = stopIdx.map((k) => line.ends[k - 1])
     lastStopLen = stopLen[stopLen.length - 1]
 
     // the stops: a small boxy square, outline first, yellow with a drawn tick once the pawn gets there.
