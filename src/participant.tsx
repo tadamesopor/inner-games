@@ -45,6 +45,10 @@ const GIFT: null | { short: string; long: string } = null
 // read GIFT through this: TypeScript would otherwise treat it as always null and refuse GIFT.short
 const gift = (): null | { short: string; long: string } => GIFT
 
+// B2 (nieuw): the image of a LinkedIn post (public/test/linkedin-post.png, or a grey box when it's missing).
+// off until there is a real post; true shows it again under the text
+const SHOW_LINKEDIN_IMAGE = false
+
 // shown on the end screen when sending didn't work, and for "uw gegevens laten verwijderen"
 const MAIL_TO_DISPLAY = '524795@student.fontys.nl'
 const KEY = 'ig-p6:' // ig-p6:<id> the session
@@ -935,8 +939,8 @@ export default function Participant({ group, pageKey, go }: { group: Group; page
     return (
       <Card label={`Stap ${nr}`}>
         {counter}
-        <p className="text-[20px] font-semibold leading-snug">U ziet dit bericht van Ariën op LinkedIn en klikt op de link.</p>
-        <LinkedInPost />
+        <p className="text-[20px] font-semibold leading-snug">Stel: u ziet op LinkedIn een bericht van InnerGames met een link naar hun website. U bent nieuwsgierig en klikt op de link.</p>
+        {SHOW_LINKEDIN_IMAGE && <LinkedInPost />}
         <button type="button" onClick={() => { go('home'); next() }} className={`${primary} mt-6 w-full sm:w-auto`}>Klik op de link</button>
       </Card>
     )
