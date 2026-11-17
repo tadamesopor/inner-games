@@ -3,7 +3,7 @@ import { initBoxscene, initHeroTable, initHeroWaves, initSpeelpad } from './moti
 import { ALT, AUD_LABEL, AUDS, BRIGHT, CLIENTS, GAMES, LOCATION, PHOTOS, PROJECTS, QUOTE, WORKSHOPS, type Aud, type Workshop as WS } from './data'
 import { MEMBERS } from './team'
 import { playE5 } from './shop'
-import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, PartnerStrip, Photo, Section, SHOW_PLACEHOLDERS, Tag, btnLink, useMotion } from './wf'
+import { AudIcon, chip, LEGAL, Todo, Btn, ClientStrip, ContactCta, Ctx, H1, H2, Header, PageHero, Photo, Section, SHOW_PLACEHOLDERS, Tag, btnLink, useMotion } from './wf'
 
 // TODO Ariën: check the hero title and subtitle (draft from the midterm: say what InnerGames does).
 // the workshops in data.ts take 1,5 to 4 uur (energiek team is 3 sessions of 4 uur), not "2 tot 3 uur"
@@ -313,7 +313,6 @@ export function Home() {
       )}
 
       <ClientStrip />
-      <PartnerStrip />
 
       <Section id="F" label="team-teaser" stop note="verwijst naar ons team">
         <div className="grid items-center gap-10 @3xl:grid-cols-[1fr_1.3fr]">

@@ -35,3 +35,28 @@ Made by `scripts/fetch-images.mjs`. Each name has a `-1600.webp` and an `-800.we
 | `team/aron` | 450×450 | https://innergames.nl/wp-content/uploads/2026/03/IMG_4968-450x450.jpg |
 | `team/carinda` | 450×450 | https://innergames.nl/wp-content/uploads/2026/02/carinda-portret-copy-450x450.jpg |
 | `team/wies` | 450×450 | https://innergames.nl/wp-content/uploads/2026/02/Wies-portret-oranje-450x450.jpg |
+
+## Logos
+
+Cut by hand (not by the script) from the two logo images on the innergames.nl homepage. Each logo is cropped
+tight and saved as a black PNG with transparency: the darker the grey in the original, the less see-through.
+The site shows them all in one tone (`brightness-0`, 60% opacity).
+
+| Folder | Original image |
+|---|---|
+| `clients/` (16 logos) | https://innergames.nl/wp-content/uploads/2026/03/klantenlogos-vierkant.png (672×467) |
+| `partners/` | https://innergames.nl/wp-content/uploads/2026/03/partnerlogos-vierkant.png (672×205) |
+
+The partner logos are lighter grey in the original, so each one is stretched until its darkest pixel is fully
+dark, to match the clients.
+
+| Name | Crop in the original (x, y, w, h) |
+|---|---|
+| `partners/breathcompany` | 32, 13, 248, 90 |
+| `partners/buro-kan` | 321, 44, 144, 31 |
+| `partners/de-stap-naar-gezonder` | 497, 52, 151, 18 |
+| `partners/lob123` | 497, 140, 114, 40 |
+
+Not cut: the Fontys and HAN logos in the partner image are the general ones, the same as in `clients/`. So
+Fontys Toegepaste Psychologie en HRM, Fontys ICT and HAN Lectoraat Sociale Kwaliteit are shown as text, like
+Duurzaamheid in de klas, which has no logo in the image.

@@ -472,15 +472,19 @@ export const CLIENTS: { name: string; file: string; h: number }[] = [
   { name: 'WIJeindhoven', file: 'wijeindhoven', h: 63 },
 ]
 
-export const PARTNERS = [
-  'BreathCompany',
-  'buro KAN',
-  'De Stap naar Gezonder',
-  'Duurzaamheid in de klas',
-  'Fontys Toegepaste Psychologie en HRM',
-  'Fontys ICT',
-  'LOB 123',
-  'HAN Lectoraat Sociale Kwaliteit',
+// the partners. file: a logo in public/assets/img/partners (cut from the partner logo image on innergames.nl).
+// h: its height on desktop in px, set per logo so they look equally big (a wide word mark needs less).
+// no file: no logo of its own on innergames.nl, so the name as text.
+// the Fontys and HAN logos in that image are the general ones, and those already sit in the client logos
+export const PARTNERS: { name: string; file?: string; h?: number }[] = [
+  { name: 'BreathCompany', file: 'breathcompany', h: 48 },
+  { name: 'buro KAN', file: 'buro-kan', h: 24 },
+  { name: 'De Stap naar Gezonder', file: 'de-stap-naar-gezonder', h: 17 },
+  { name: 'LOB 123', file: 'lob123', h: 28 },
+  { name: 'Duurzaamheid in de klas' },
+  { name: 'Fontys Toegepaste Psychologie en HRM' },
+  { name: 'Fontys ICT' },
+  { name: 'HAN Lectoraat Sociale Kwaliteit' },
 ]
 
 export const PROJECTS = [
