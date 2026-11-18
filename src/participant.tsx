@@ -16,6 +16,7 @@ export type Group = 'klant' | 'nieuw'
 // the running session is kept under one key. a reload on /workshops continues the test. the key goes
 // away on the end screen, so after that the site is normal again and a new ?test= link starts over
 const POINTER = 'ig:participant'
+const NO_TEST = 'ig:noTest' // set by ?test=uit: this browser doesn't continue a saved test by itself
 type Order = 'old_first' | 'new_first'
 type Start = { group: Group; id?: string; demo: boolean; order?: Order }
 let start: Start | null | undefined
@@ -23,9 +24,34 @@ function readStart(): Start | null {
   const q = new URLSearchParams(location.search)
   if (q.get('replay') === '1') return null // the replay never touches a real test session (ig:participant)
   const t = q.get('test')
+  // ?test=uit, for Damian only: out of the test in this browser. it deletes the saved participant sessions
+  // here (sending nothing: the test never starts, so there is no beacon either), shows the normal site, and
+  // remembers ig:noTest, so this browser never picks up a saved test by itself again. leader mode data
+  // (ig-test3:) stays. ?test=klant or ?test=nieuw starts a new test as always and forgets ig:noTest
+  if (t === 'uit') {
+    try {
+      const old = Object.keys(localStorage).filter((k) => k === POINTER || k.startsWith(KEY) || k.startsWith(MOUSE_KEY))
+      old.forEach((k) => localStorage.removeItem(k))
+      localStorage.setItem(NO_TEST, '1')
+    } catch {
+      /* no access */
+    }
+    q.delete('test')
+    const rest = q.toString()
+    history.replaceState(null, '', location.pathname + (rest ? `?${rest}` : '') + location.hash)
+    return null
+  }
+  if (t === 'klant' || t === 'nieuw') {
+    try {
+      localStorage.removeItem(NO_TEST)
+    } catch {
+      /* no access */
+    }
+  }
   let saved: { id?: string; group?: string } | null = null
   try {
-    saved = JSON.parse(localStorage.getItem(POINTER) || 'null')
+    // after ?test=uit: a saved session is never continued without a ?test= link
+    if (!localStorage.getItem(NO_TEST)) saved = JSON.parse(localStorage.getItem(POINTER) || 'null')
   } catch {
     /* no access */
   }
