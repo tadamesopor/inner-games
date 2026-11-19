@@ -15,13 +15,21 @@
   --ig-cream: #fff6e6;
   --ig-font: 'Gill Sans', 'Gill Sans MT', 'Cabin', Calibri, sans-serif;
 
-  /* type: six sizes, no more. h1 and h2 grow with the width of the page */
-  --fs-meta: 14px; /* tags, duration, price notes, small labels */
-  --fs-body: 16px; /* running text */
-  --fs-lead: 22px; /* intro text, card titles, h3 */
-  --fs-h2: clamp(32px, 5cqi, 56px); /* section titles */
-  --fs-h1: clamp(40px, 6.5cqi, 72px); /* page titles */
-  --fs-display: clamp(40px, 4.2cqi, 54px); /* only the homepage hero title, so it fits next to the table */
+  /* type: six sizes, no more. the big ones grow with the width of the page, and shrink on a short screen
+     too (vh): a laptop with a low browser window, like 1440 x 647, still shows title and buttons at once.
+     body text never goes under 16px, our testers are 50 to 65 */
+  --fs-meta: 14px; /* tags, eyebrows, small labels. not for text you have to read */
+  --fs-body: 16px; /* running text, card details, form labels */
+  --fs-lead: clamp(19px, 3.4vh, 22px); /* intro text, card titles, h3 */
+  --fs-h2: clamp(32px, min(5cqi, 7vh), 56px); /* section titles */
+  --fs-h1: clamp(40px, min(6.5cqi, 9vh), 72px); /* page titles */
+  --fs-display: clamp(40px, min(4.2cqi, 7.6vh), 54px); /* only the homepage hero title, so it fits next to the table */
+
+  /* the menu bar: 88px, a little lower on a short screen (72px on a phone, header.css) */
+  --nav-h: clamp(72px, 12vh, 88px);
+
+  /* side padding of every section and the menu: 20px on a phone, growing to 64px from about 1280px wide */
+  --side-pad: clamp(20px, 5cqi, 64px);
 
   /* spacing: everything on an 8px scale */
   --sp-1: 8px;
@@ -31,7 +39,7 @@
   --sp-6: 48px;
   --sp-8: 64px;
   --sp-12: 96px;
-  --section-pad: 96px; /* top and bottom of every section, 64px on a phone */
+  --section-pad: clamp(64px, min(12vh, 8cqi), 96px); /* top and bottom of every section: 64px on a phone or a short screen, up to 96px */
 
   /* shadows: soft and warm, never a hard black offset */
   --ig-shadow-soft: 0 10px 30px rgb(42 24 16 / 0.12); /* floating bars, menus, search results */
@@ -60,7 +68,6 @@
 @media (max-width: 767px) {
   :root {
     --r-section: 28px;
-    --section-pad: 64px;
   }
 }
 

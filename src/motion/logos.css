@@ -36,7 +36,7 @@
   display: block;
   max-width: 10rem;
   color: #000;
-  font: 600 13px/1.15 var(--ig-font);
+  font: 600 var(--fs-meta)/1.15 var(--ig-font);
   text-align: center;
 }
 

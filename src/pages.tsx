@@ -50,7 +50,7 @@ function WorkshopCard({ w }: { w: WS }) {
             <p className="mt-0.5 text-body font-semibold text-ig-ink">{w.price}</p>
           </div>
           <button
-            className="shrink-0 border-b-2 border-ig-orange pb-0.5 text-meta font-semibold text-ig-ink"
+            className="inline-flex min-h-11 shrink-0 items-end border-b-2 border-ig-orange pb-0.5 text-body font-semibold text-ig-ink"
             onClick={(e) => { e.stopPropagation(); go('workshop', w.slug) }}
           >
             bekijk →
@@ -111,9 +111,10 @@ function HeroNew() {
         <div className="max-w-[640px]">
           {/* white on orange only passes as large text, so everything here is big */}
           <h1 className="text-display font-bold tracking-tight">{HERO.title}</h1>
-          <p className="mt-8 text-lead leading-snug">{HERO.sub}</p>
+          {/* the gaps shrink on a short screen, so title, text and both buttons fit in the first screen */}
+          <p className="mt-[clamp(16px,3.5vh,32px)] text-lead leading-snug">{HERO.sub}</p>
           {/* two buttons only: what we do, and who you talk to */}
-          <div className="mt-10 flex flex-wrap gap-3">
+          <div className="mt-[clamp(20px,4.5vh,40px)] flex flex-wrap gap-3">
             <Btn split variant="light" onClick={() => go('workshops')}>bekijk de workshops</Btn>
             <Btn variant="ghostLight" className="normal-case!" onClick={() => go('contact')}>plan een gesprek met Ariën</Btn>
           </div>
@@ -416,13 +417,14 @@ export function Workshop() {
     <>
       <Header active="workshop" />
       <Section id="A" label="workshop-kop" className="bg-white" note="titel + feiten + boekknop boven de vouw">
-        <button onClick={() => go('workshops')} className="mb-6 text-meta underline">← alle workshops</button>
+        <button onClick={() => go('workshops')} className="mb-1 inline-flex min-h-11 items-center text-body underline">← alle workshops</button>
         <div className="grid items-center gap-8 @3xl:grid-cols-[1.2fr_1fr] @3xl:gap-14">
           <div>
             <AudTags aud={w.aud} />
-            <H1 className="mt-5">{w.title}</H1>
-            <p className="mt-5 max-w-xl text-lead leading-snug">{w.tagline}</p>
-            <dl className="mt-6 grid grid-cols-2 gap-3 rounded-box bg-ig-cream p-4 text-meta">
+            {/* the gaps shrink on a short screen, so the facts and the button stay above the fold */}
+            <H1 className="mt-[clamp(12px,2.5vh,20px)]">{w.title}</H1>
+            <p className="mt-[clamp(12px,2.5vh,20px)] max-w-xl text-lead leading-snug">{w.tagline}</p>
+            <dl className="mt-[clamp(16px,3vh,24px)] grid grid-cols-2 gap-[clamp(8px,1.6vh,12px)] rounded-box bg-ig-cream p-4 text-meta">
               {facts.map(([k, v]) => (
                 <div key={k} className={wide.includes(k) ? 'col-span-2' : ''}>
                   <dt className="text-ig-ink/70">{k}</dt>
@@ -430,12 +432,12 @@ export function Workshop() {
                 </div>
               ))}
             </dl>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-[clamp(16px,3vh,24px)] flex flex-wrap gap-3">
               <Btn split variant="primary" onClick={() => go('contact', w.slug)}>vraag deze workshop aan</Btn>
               {game && <Btn variant="ghost" onClick={() => go('game', game.slug)}>bekijk het spel</Btn>}
             </div>
           </div>
-          <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} eager className="h-64 w-full rounded-box @3xl:h-[460px]" />
+          <Photo src={w.photo} alt={ALT[w.photo] ?? w.title} eager className="h-64 w-full rounded-box @3xl:h-[clamp(320px,64vh,460px)]" />
         </div>
       </Section>
 
@@ -798,14 +800,14 @@ export function Contact() {
               <div className="ig-card__body space-y-4">
               {/* naam and organisatie side by side, so the whole form fits on one desktop screen */}
               <div className="grid gap-4 @xl:grid-cols-2">
-                <label className="block text-meta font-semibold">Naam<input required className={`${input} mt-1`} /></label>
-                <label className="block text-meta font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
+                <label className="block text-body font-semibold">Naam<input required className={`${input} mt-1`} /></label>
+                <label className="block text-body font-semibold">Organisatie<input className={`${input} mt-1`} /></label>
               </div>
-              <label className="block text-meta font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
+              <label className="block text-body font-semibold">E-mail<input required type="email" className={`${input} mt-1`} /></label>
               {from && (
-                <label className="block text-meta font-semibold">Workshop<input name="workshop" defaultValue={from.title} className={`${input} mt-1`} /></label>
+                <label className="block text-body font-semibold">Workshop<input name="workshop" defaultValue={from.title} className={`${input} mt-1`} /></label>
               )}
-              <label className="block text-meta font-semibold">Waar kunnen we je mee helpen?
+              <label className="block text-body font-semibold">Waar kunnen we je mee helpen?
                 <select className={`${input} mt-1`} defaultValue={from ? 'een workshop voor mijn team' : undefined}>
                   <option>een workshop voor mijn team</option>
                   <option>een les of spel voor mijn klas</option>
@@ -813,12 +815,12 @@ export function Contact() {
                   <option>iets anders</option>
                 </select>
               </label>
-              <label className="block text-meta font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
-              <label className="block text-meta font-semibold">Wanneer zou u het willen doen? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
+              <label className="block text-body font-semibold">Bericht<textarea required rows={4} className={`${input} mt-1`} /></label>
+              <label className="block text-body font-semibold">Wanneer zou u het willen doen? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
                 <input name="wanneer" type="text" placeholder="bijvoorbeeld: begin maart, een dinsdag" className={`${input} mt-1`} />
               </label>
               {/* optional: after launch this shows where inquiries come from */}
-              <label className="block text-meta font-semibold">Hoe heeft u ons gevonden? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
+              <label className="block text-body font-semibold">Hoe heeft u ons gevonden? <span className="font-normal text-ig-ink/70">(niet verplicht)</span>
                 <select name="gevonden" className={`${input} mt-1`} defaultValue="">
                   <option value="">kies een antwoord</option>
                   <option>via LinkedIn</option>

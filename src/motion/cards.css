@@ -186,7 +186,7 @@
   color: rgb(42 24 16 / 0.8);
 }
 .ig-card__meta {
-  font-size: 14px;
+  font-size: var(--fs-body); /* durations and group sizes are real information: never under 16px */
   line-height: 1.4;
   color: rgb(42 24 16 / 0.72);
 }

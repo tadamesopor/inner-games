@@ -144,13 +144,13 @@ export function Team() {
             </div>
           </div>
           {/* the cut-out without a box: the three of them stand on the bottom edge of the yellow section */}
-          <div className="-mb-16 flex justify-center self-end @3xl:-mb-24">
+          <div className="-mb-(--section-pad) flex justify-center self-end">
             <img
               src="/assets/team-group-cut.webp"
               alt="Ariën, Sanne en Aron van InnerGames staan lachend naast elkaar"
               width={791}
               height={1044}
-              className="h-[420px] w-auto drop-shadow-[0_18px_24px_rgb(42_24_16/0.18)] @3xl:h-[600px]"
+              className="h-[420px] w-auto drop-shadow-[0_18px_24px_rgb(42_24_16/0.18)] @3xl:h-[clamp(420px,calc(100svh-140px),600px)]"
             />
           </div>
         </div>

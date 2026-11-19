@@ -1145,8 +1145,9 @@ function BarSpace({ phone }: { phone: boolean }) {
     ro.observe(bar)
     return () => ro.disconnect()
   })
-  // the game demo (#spel) is one screen high: it gets smaller by the bar, and lands under menu and bar
-  return <style>{phone ? `body{padding-bottom:${h}px}#spel{height:calc(100svh - 112px - ${h}px)!important}` : `body{padding-top:${h}px}.ig-nav{top:${h}px!important}[id]{scroll-margin-top:${h + 96}px!important}#spel{height:calc(100svh - 112px - ${h}px)!important}`}</style>
+  // the game demo (#spel) is one screen high: it gets smaller by the bar, and lands under menu and bar.
+  // --ptask-h: the homepage table gets smaller by the bar too (hero.css), so the hero still fits
+  return <style>{phone ? `body{padding-bottom:${h}px}#spel{height:calc(100svh - 112px - ${h}px)!important}` : `:root{--ptask-h:${h}px}body{padding-top:${h}px}.ig-nav{top:${h}px!important}[id]{scroll-margin-top:${h + 96}px!important}#spel{height:calc(100svh - 112px - ${h}px)!important}`}</style>
 }
 
 // the LinkedIn post: Damian adds public/test/linkedin-post.png. until then a grey box

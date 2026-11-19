@@ -20,7 +20,7 @@
   overflow: clip;
   /* the menu floats on the orange: the hero slides up under it (header.css, .ig-nav--on-orange) */
   margin-top: calc(var(--nav-h, 88px) * -1);
-  padding-top: calc(var(--nav-h, 88px) + 32px) !important;
+  padding-top: calc(var(--nav-h, 88px) + clamp(16px, 4vh, 32px)) !important;
 }
 .ig-hero__waves {
   position: absolute;
@@ -52,6 +52,10 @@
 .ig-table.is-live {
   aspect-ratio: 640 / 620;
   touch-action: none;
+  /* on a short screen (a laptop like 1440 x 647) the table gets smaller, so it fits under the menu and the
+     text next to it isn't pushed down. hero.js scales everything from this width.
+     --ptask-h: the task bar of the user test, when it's there (participant.tsx) */
+  max-width: clamp(360px, calc((100svh - var(--nav-h) - var(--ptask-h, 0px) - 80px) * 640 / 620), 640px);
 }
 .ig-table__item {
   position: absolute;
@@ -157,17 +161,18 @@
   display: none;
 }
 
-/* the labels: small cream buttons, ink text. smaller than the two hero buttons, so they read as extras */
+/* the labels: cream buttons, ink text. lighter than the two hero buttons (no arrow box), so they read as
+   extras, but still 44px high and 16px, for older visitors */
 .ig-table__label {
   display: inline-flex;
   align-items: center;
-  height: 36px;
-  padding: 0 12px;
+  height: 44px;
+  padding: 0 14px;
   border: 0;
   border-radius: var(--r-box);
   background: var(--ig-cream);
   color: var(--ig-ink);
-  font: 600 15px/1 var(--ig-font);
+  font: 600 16px/1 var(--ig-font);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;

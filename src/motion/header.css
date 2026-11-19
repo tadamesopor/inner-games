@@ -26,7 +26,8 @@
    in Enfold: replaces the normal header, as a Code Block at the top of the page wrapper. */
 
 .ig-nav {
-  --nav-h: 88px;
+  /* --nav-h is in tokens.css: 88px, down to 72px on a short screen. the floating bar follows it */
+  --bar-h: max(56px, calc(var(--nav-h) - 20px));
   --item-h: 44px;
   --item-hover: var(--ig-yellow-light); /* light yellow */
   position: sticky;
@@ -34,7 +35,7 @@
   z-index: 60;
   display: flow-root; /* the floating bar's top margin stays inside the strip */
   height: var(--nav-h);
-  padding: 0 20px;
+  padding: 0 var(--side-pad);
   background: var(--nav-strip, #fff);
   transition: background-color 200ms var(--ease-soft);
 }
@@ -59,11 +60,6 @@
 .ig-nav.is-compact {
   background: transparent;
   pointer-events: none;
-}
-@container (min-width: 768px) {
-  .ig-nav {
-    padding: 0 64px;
-  }
 }
 .ig-nav__inner {
   max-width: 1280px;
@@ -90,7 +86,7 @@
 /* the floating cream bar: cream at 92% with a blur and a soft shadow */
 .ig-nav:not(.ig-nav--orange, .ig-nav--hero) .ig-nav__bar,
 .ig-nav.is-compact .ig-nav__bar {
-  height: 68px;
+  height: var(--bar-h);
   margin: 10px -16px 0;
   padding: 0 8px 0 16px;
   background: color-mix(in srgb, var(--ig-cream) 92%, transparent);
@@ -99,7 +95,7 @@
   box-shadow: 0 10px 30px rgb(42 24 16 / 0.12);
 }
 .ig-nav.is-compact .ig-nav__bar {
-  height: 60px;
+  height: min(60px, var(--bar-h));
 }
 
 .ig-nav__logo {
@@ -427,6 +423,7 @@
 @container (max-width: 767px) {
   .ig-nav {
     --nav-h: 72px;
+    --bar-h: 68px;
   }
   .ig-nav__logo img {
     height: 34px;

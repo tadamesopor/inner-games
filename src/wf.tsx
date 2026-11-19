@@ -70,7 +70,7 @@ export function Section({
   const { ann } = useContext(Ctx)
   return (
     <section
-      className={`relative px-5 py-16 @3xl:px-16 @3xl:py-24 ${className} ${ann ? 'outline-dashed outline-1 -outline-offset-1 outline-black/60' : ''}`}
+      className={`relative px-(--side-pad) py-(--section-pad) ${className} ${ann ? 'outline-dashed outline-1 -outline-offset-1 outline-black/60' : ''}`}
     >
       {ann && label && (
         <div className="absolute left-0 top-0 z-30 flex max-w-full items-start">
@@ -260,7 +260,7 @@ export function Tag({ children, tone = 'yellow' }: { children: ReactNode; tone?:
 }
 
 /** a filter button above a list (doelgroep, rol): the same everywhere */
-export const chip = (on: boolean) => `rounded-tag px-4 py-1.5 text-body transition-colors ${on ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow-light'}`
+export const chip = (on: boolean) => `min-h-11 rounded-tag px-4 py-1.5 text-body transition-colors ${on ? 'bg-ig-ink text-white' : 'bg-ig-cream hover:bg-ig-yellow-light'}`
 
 export function AudIcon({ aud, className = '' }: { aud: Aud; className?: string }) {
   const paths: Record<Aud, string> = {
@@ -319,7 +319,7 @@ export function PageHero({
           <H1 className={titleClass}>{title}</H1>
           <p className="mt-6 max-w-xl text-lead leading-snug @3xl:text-lead">{sub}</p>
         </div>
-        <Photo src={photo} alt={alt} className="h-60 w-full rounded-box @3xl:h-[400px]" />
+        <Photo src={photo} alt={alt} className="h-60 w-full rounded-box @3xl:h-[clamp(300px,58vh,400px)]" />
       </div>
     </Section>
   )
@@ -360,7 +360,7 @@ export function ClientStrip() {
       </ul>
       {/* the partners in the same section, a step smaller. the ones without a logo on innergames.nl show
           their name as a label, in the same white and about as tall as a logo */}
-      <p className="relative mb-6 mt-12 text-center text-[13px] font-medium text-ig-cream @3xl:mt-14">we werken samen met</p>
+      <p className="relative mb-6 mt-12 text-center text-meta font-medium text-ig-cream @3xl:mt-14">we werken samen met</p>
       <ul className="relative mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-6 @3xl:gap-x-12" aria-label="partners">
         {PARTNERS.map((p) => (
           <li key={p.name} className="ig-logo min-h-8" tabIndex={0}>

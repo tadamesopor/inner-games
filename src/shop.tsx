@@ -118,13 +118,14 @@ function Teaser({ game }: { game: G }) {
   if (!s) return null
 
   return (
-    <div className="rounded-box bg-ig-cream p-5 text-ig-ink @3xl:p-8">
-      <div className="mb-6 flex items-center gap-1.5" aria-label={`Stap ${Math.min(i + 1, steps.length)} van ${steps.length}`}>
+    // the padding shrinks on a short screen, so the question and the first answers are in the first screen
+    <div className="rounded-box bg-ig-cream p-5 text-ig-ink @3xl:p-[clamp(20px,4vh,32px)]">
+      <div className="mb-[clamp(16px,3vh,24px)] flex items-center gap-1.5" aria-label={`Stap ${Math.min(i + 1, steps.length)} van ${steps.length}`}>
         {steps.map((_, k) => <span key={k} className={`h-1.5 flex-1 rounded-full ${k < i ? 'bg-ig-orange' : k === i && !done ? 'bg-ig-yellow' : 'bg-white'}`} />)}
       </div>
       {!done ? (
         <div className="[perspective:1000px]">
-          <div key={i} className="animate-[flipIn_.5s_ease-out] rounded-box bg-white p-6 text-center @3xl:p-10">
+          <div key={i} className="animate-[flipIn_.5s_ease-out] rounded-box bg-white p-6 text-center @3xl:p-[clamp(24px,5vh,40px)]">
             <p className="text-meta font-medium text-ig-orange-text">{s.kind}</p>
             <p className="mx-auto mt-4 max-w-xl text-lead font-semibold leading-tight @3xl:text-h2">{s.prompt}</p>
             {s.body && <p className="mx-auto mt-4 max-w-lg text-lead leading-snug text-ig-ink/80">{s.body}</p>}
@@ -296,7 +297,7 @@ export function Game() {
     <>
       <Header active="game" tone="cream" />
       <Section id="A" label="product" className="bg-ig-cream" note="galerij + titel + koopknop (WooCommerce product)">
-        <button onClick={() => go('games')} className="mb-6 text-meta underline">← alle spellen</button>
+        <button onClick={() => go('games')} className="mb-1 inline-flex min-h-11 items-center text-body underline">← alle spellen</button>
         <div className="grid gap-10 @3xl:grid-cols-2 @3xl:gap-14">
           <div>
             <Photo src={g.gallery[img]} alt={ALT[g.gallery[img]] ?? g.title} eager contain className="aspect-[4/3] w-full rounded-box" />
@@ -454,9 +455,9 @@ export function Preview() {
     <>
       <Header active="preview" tone="orange" />
       <Section id="A" label="speelbare preview" className="min-h-[640px] bg-ig-orange text-white" note="± 30 sec · 4 à 5 stappen · eindigt in CTA">
-        <button onClick={() => go('game', g.slug)} className="mb-6 text-meta underline">← terug naar {g.title}</button>
+        <button onClick={() => go('game', g.slug)} className="mb-1 inline-flex min-h-11 items-center text-body underline">← terug naar {g.title}</button>
         <p className="text-body font-medium">preview · {g.previewKey}</p>
-        <h1 className="mb-8 mt-2 text-h1 font-bold tracking-tight">speel 30 seconden</h1>
+        <h1 className="mb-[clamp(16px,3.5vh,32px)] mt-2 text-h1 font-bold tracking-tight">speel 30 seconden</h1>
         <div className="mx-auto max-w-3xl"><Teaser game={g} /></div>
       </Section>
     </>
@@ -593,7 +594,7 @@ export function Checkout() {
     <>
       <Header active="checkout" />
       <Section id="A" label="afrekenen" className="bg-white" note="dummy · WooCommerce afrekenen">
-        <button onClick={() => go('games')} className="mb-6 text-meta underline">← verder winkelen</button>
+        <button onClick={() => go('games')} className="mb-1 inline-flex min-h-11 items-center text-body underline">← verder winkelen</button>
         <H1>afrekenen</H1>
         {rows.length === 0 ? (
           <p className="mt-6 text-lead">Je winkelmand is leeg.</p>
@@ -609,13 +610,13 @@ export function Checkout() {
             >
               <h2 className="text-lead font-bold">je gegevens</h2>
               <div className="grid gap-4 @xl:grid-cols-2">
-                <label className="block text-meta font-semibold">Naam<input className={input} autoComplete="name" /></label>
-                <label className="block text-meta font-semibold">E-mail<input type="email" className={input} autoComplete="email" /></label>
+                <label className="block text-body font-semibold">Naam<input className={input} autoComplete="name" /></label>
+                <label className="block text-body font-semibold">E-mail<input type="email" className={input} autoComplete="email" /></label>
               </div>
-              <label className="block text-meta font-semibold">Adres<input className={input} autoComplete="street-address" /></label>
+              <label className="block text-body font-semibold">Adres<input className={input} autoComplete="street-address" /></label>
               <div className="grid gap-4 @xl:grid-cols-[1fr_2fr]">
-                <label className="block text-meta font-semibold">Postcode<input className={input} autoComplete="postal-code" /></label>
-                <label className="block text-meta font-semibold">Plaats<input className={input} autoComplete="address-level2" /></label>
+                <label className="block text-body font-semibold">Postcode<input className={input} autoComplete="postal-code" /></label>
+                <label className="block text-body font-semibold">Plaats<input className={input} autoComplete="address-level2" /></label>
               </div>
               <Btn split type="submit" variant="dark">bestelling plaatsen</Btn>
               {stop ? (
