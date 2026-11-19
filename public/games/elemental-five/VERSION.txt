@@ -1,0 +1,2 @@
+elemental-five f3c4c31 (fixed some issues), copied from the game repo on 19 November 2026.
+bridge.js is only in this copy: it connects the game to the website and the user test.
